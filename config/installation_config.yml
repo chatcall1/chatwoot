@@ -322,11 +322,11 @@
 
 # ------- Chatwoot Internal Config for Self Hosted ----#
 - name: INSTALLATION_PRICING_PLAN
-  value: 'community'
-  description: 'The pricing plan for the installation, retrieved from the billing API'
+  value: 'enterprise'
+  description: 'The locally managed pricing plan for this installation'
 - name: INSTALLATION_PRICING_PLAN_QUANTITY
-  value: 0
-  description: 'The number of licenses purchased for the installation, retrieved from the billing API'
+  value: 1000
+  description: 'The locally managed agent limit for this installation'
 - name: CHATWOOT_SUPPORT_WEBSITE_TOKEN
   value:
   description: 'The Chatwoot website token, used to identify the Chatwoot inbox and display the "Contact Support" option on the billing page'

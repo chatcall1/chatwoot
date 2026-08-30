@@ -194,6 +194,39 @@ Rails.application.routes.draw do
             end
           end
 
+          namespace :internal_chat do
+            resource :search, only: [:show], controller: 'search'
+            resources :categories, only: [:index, :create, :update, :destroy]
+            resources :channels, only: [:index, :create, :show, :update, :destroy] do
+              member do
+                post :archive
+                post :unarchive
+                post :toggle_typing_status
+                post :mark_read
+                post :mark_unread
+              end
+              resources :members, controller: 'channel_members', only: [:index, :create, :update, :destroy]
+              resources :messages, only: [:index, :create, :update, :destroy] do
+                member do
+                  post :pin
+                  delete :unpin
+                  get :thread
+                end
+              end
+              resource :draft, only: [:update, :destroy]
+            end
+            resources :messages, only: [] do
+              resources :reactions, only: [:create, :destroy]
+            end
+            resources :polls, only: [:create] do
+              member do
+                post :vote
+                delete :vote, action: :unvote
+              end
+            end
+            resources :drafts, only: [:index]
+          end
+
           resources :search, only: [:index] do
             collection do
               get :conversations
@@ -742,9 +775,7 @@ Rails.application.routes.draw do
       resources :platform_banners
       resource :instance_status, only: [:show]
 
-      resource :settings, only: [:show] do
-        get :refresh, on: :collection
-      end
+      resource :settings, only: [:show]
 
       # resources that doesn't appear in primary navigation in super admin
       resources :account_users, only: [:new, :create, :show, :destroy]

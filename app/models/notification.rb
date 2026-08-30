@@ -43,8 +43,12 @@ class Notification < ApplicationRecord
     participating_conversation_new_message: 5,
     sla_missed_first_response: 6,
     sla_missed_next_response: 7,
-    sla_missed_resolution: 8
+    sla_missed_resolution: 8,
+    internal_chat_mention: 9,
+    internal_chat_new_message: 10
   }.freeze
+
+  INTERNAL_CHAT_NOTIFICATION_TYPES = %w[internal_chat_mention internal_chat_new_message].freeze
 
   enum notification_type: NOTIFICATION_TYPES
 
@@ -53,7 +57,7 @@ class Notification < ApplicationRecord
   after_destroy_commit :dispatch_destroy_event
   after_update_commit :dispatch_update_event
 
-  PRIMARY_ACTORS = ['Conversation'].freeze
+  PRIMARY_ACTORS = ['Conversation', 'InternalChat::Channel'].freeze
 
   def push_event_data
     # Secondary actor could be nil for cases like system assigning conversation
@@ -96,7 +100,9 @@ class Notification < ApplicationRecord
       'conversation_mention' => 'notifications.notification_title.conversation_mention',
       'sla_missed_first_response' => 'notifications.notification_title.sla_missed_first_response',
       'sla_missed_next_response' => 'notifications.notification_title.sla_missed_next_response',
-      'sla_missed_resolution' => 'notifications.notification_title.sla_missed_resolution'
+      'sla_missed_resolution' => 'notifications.notification_title.sla_missed_resolution',
+      'internal_chat_mention' => 'notifications.notification_title.internal_chat_mention',
+      'internal_chat_new_message' => 'notifications.notification_title.internal_chat_new_message'
     }
 
     i18n_key = notification_title_map[notification_type]
@@ -107,6 +113,8 @@ class Notification < ApplicationRecord
     elsif %w[conversation_assignment assigned_conversation_new_message participating_conversation_new_message
              conversation_mention].include?(notification_type)
       I18n.t(i18n_key, display_id: conversation.display_id)
+    elsif INTERNAL_CHAT_NOTIFICATION_TYPES.include?(notification_type)
+      I18n.t(i18n_key, name: internal_chat_actor_name)
     else
       I18n.t(i18n_key, display_id: primary_actor.display_id)
     end
@@ -117,7 +125,8 @@ class Notification < ApplicationRecord
     case notification_type
     when 'conversation_creation', 'sla_missed_first_response'
       message_body(conversation.messages.first)
-    when 'assigned_conversation_new_message', 'participating_conversation_new_message', 'conversation_mention'
+    when 'assigned_conversation_new_message', 'participating_conversation_new_message', 'conversation_mention',
+         'internal_chat_mention', 'internal_chat_new_message'
       message_body(secondary_actor)
     when 'conversation_assignment', 'sla_missed_next_response', 'sla_missed_resolution'
       message_body((conversation.messages.incoming.last || conversation.messages.outgoing.last))
@@ -131,6 +140,12 @@ class Notification < ApplicationRecord
   end
 
   private
+
+  def internal_chat_actor_name
+    return secondary_actor&.sender&.name.to_s if primary_actor.dm? || primary_actor.name.blank?
+
+    "##{primary_actor.name}"
+  end
 
   def message_body(actor)
     sender_name = sender_name(actor)
@@ -147,10 +162,14 @@ class Notification < ApplicationRecord
     attachments = actor.try(:attachments)
 
     if content.present?
-      transform_user_mention_content(content.truncate_words(10))
+      transform_user_mention_content(strip_internal_chat_mentions(content).truncate_words(10))
     else
       attachments.present? ? I18n.t('notifications.attachment') : I18n.t('notifications.no_content')
     end
+  end
+
+  def strip_internal_chat_mentions(content)
+    content.gsub(%r{(?<!\])\(mention://(?:user|team)/\d+/(.+?)\)}) { "@#{CGI.unescape(Regexp.last_match(1))}" }
   end
 
   def process_notification_delivery
@@ -159,7 +178,9 @@ class Notification < ApplicationRecord
     # Should we do something about the case where user subscribed to both push and email ?
     # In future, we could probably add condition here to enqueue the job for 30 seconds later
     # when push enabled and then check in email job whether notification has been read already.
-    Notification::EmailNotificationJob.perform_later(self) if user_subscribed_to_notification?('email')
+    if INTERNAL_CHAT_NOTIFICATION_TYPES.exclude?(notification_type) && user_subscribed_to_notification?('email')
+      Notification::EmailNotificationJob.perform_later(self)
+    end
 
     Notification::RemoveDuplicateNotificationJob.perform_later(self)
   end

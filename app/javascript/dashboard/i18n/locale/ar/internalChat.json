@@ -1,0 +1,203 @@
+{
+  "INTERNAL_CHAT": {
+    "TITLE": "الدردشة الداخلية",
+    "BACK": "العودة إلى القنوات",
+    "SIDEBAR": {
+      "EXPAND": "توسيع قائمة القنوات",
+      "COLLAPSE": "طي قائمة القنوات",
+      "RESIZE": "تغيير حجم قائمة القنوات"
+    },
+    "REACTIONS": {
+      "THUMBS_UP": "Thumbs up",
+      "HEART": "Heart",
+      "JOY": "Laughing",
+      "SURPRISED": "Surprised",
+      "SAD": "Sad",
+      "PRAY": "Thank you",
+      "FIRE": "Fire",
+      "PARTY": "Celebrate"
+    },
+    "CHANNELS": "القنوات",
+    "DIRECT_MESSAGES": "الرسائل المباشرة",
+    "FAVORITES": "المفضلة",
+    "NEW_CHANNEL": "قناة جديدة",
+    "NEW_DM": "رسالة جديدة",
+    "SEARCH_PLACEHOLDER": "بحث في الدردشة...",
+    "SEARCH": {
+      "CHANNELS": "القنوات",
+      "DIRECT_MESSAGES": "الرسائل المباشرة",
+      "MESSAGES": "الرسائل",
+      "NO_RESULTS": "لا توجد نتائج",
+      "NO_RESULTS_SUBTITLE": "Try a different search term or check the spelling.",
+      "LOAD_MORE": "Load more messages",
+      "SEARCHING": "Searching...",
+      "MIN_CHARS_HINT": "Type at least 3 characters to search."
+    },
+    "NO_CHANNELS": "لا توجد قنوات",
+    "CHANNEL": {
+      "NAME": "اسم القناة",
+      "DESCRIPTION": "الوصف",
+      "TYPE": "نوع القناة",
+      "PUBLIC": "عامة",
+      "PRIVATE": "خاصة",
+      "MEMBERS": "الأعضاء",
+      "ARCHIVE": "أرشفة القناة",
+      "UNARCHIVE": "إلغاء أرشفة القناة",
+      "DELETE": "حذف القناة",
+      "MUTE": "كتم القناة",
+      "UNMUTE": "إلغاء كتم القناة",
+      "FAVORITE": "Add to Favorites",
+      "UNFAVORITE": "Remove from Favorites",
+      "MARK_UNREAD": "Mark as Unread",
+      "NO_MESSAGES": "لا توجد رسائل بعد",
+      "NO_MESSAGES_SUBTITLE": "كن أول من يرسل رسالة في هذه القناة.",
+      "ARCHIVED": "هذه القناة مؤرشفة",
+      "MEMBER_COUNT": "{count} member | {count} members",
+      "SETTINGS": "إعدادات القناة",
+      "INFO": "معلومات القناة",
+      "CREATED_AT": "تاريخ الإنشاء",
+      "CREATED_AT_LABEL": "· أُنشئت في {date}",
+      "MEMBER_COUNT_LABEL": "({count})",
+      "CONFIRM_DELETE": "هل أنت متأكد من حذف هذه القناة؟",
+      "ACTIONS": "الإجراءات",
+      "CREATED": "تم إنشاء القناة بنجاح",
+      "ADMIN": "مسؤول",
+      "YOU": "(أنت)",
+      "NO_MEMBERS": "لا يوجد أعضاء",
+      "ADD_MEMBER": "إضافة عضو...",
+      "REMOVE_MEMBER": "إزالة العضو",
+      "EDIT_MEMBERS": "تعديل الأعضاء",
+      "SAVE_MEMBERS": "حفظ",
+      "MEMBERS_UPDATED": "Members updated successfully",
+      "ALL_AGENTS_NOTE": "This channel will be visible to all users",
+      "CLOSE_DM": "Close conversation",
+      "SELECT_TEAMS": "Select Teams",
+      "SELECT_AGENTS": "Select Agents"
+    },
+    "MESSAGE": {
+      "PLACEHOLDER": "اكتب رسالة...",
+      "EDIT": "تعديل",
+      "DELETE": "حذف",
+      "REPLY": "رد",
+      "REACT": "تفاعل",
+      "EDITED": "(معدّلة)",
+      "DELETED": "تم حذف هذه الرسالة",
+      "SEND": "إرسال",
+      "UPLOAD_FILE": "رفع ملف",
+      "DRAG_DROP": "Drop files here to attach",
+      "MENTION_USER": "Mention a user",
+      "MENTION_CONVERSATION": "Mention a conversation",
+      "CONFIRM_DELETE": "هل أنت متأكد من حذف هذه الرسالة؟",
+      "EDITING": "تعديل الرسالة",
+      "CANCEL_EDIT": "إلغاء التعديل",
+      "BOLD": "Bold",
+      "ITALIC": "Italic",
+      "CODE": "Code",
+      "MORE_ACTIONS": "More actions",
+      "COPY_LINK": "Copy link",
+      "LINK_COPIED": "Message link copied to clipboard",
+      "DELETED_USER": "مستخدم محذوف",
+      "DELETED_USER_LABEL": "(مستخدم محذوف)"
+    },
+    "THREAD": {
+      "TITLE": "سلسلة الردود",
+      "CLOSE": "إغلاق سلسلة الردود",
+      "REPLIES": "{count} ردود",
+      "REPLY_PLACEHOLDER": "اكتب ردًا...",
+      "ALSO_SEND_IN_CHANNEL": "Also send to conversation"
+    },
+    "POLL": {
+      "CREATE": "Create Poll",
+      "QUESTION": "Question",
+      "OPTIONS": "Options",
+      "MULTIPLE_CHOICE": "Multiple choice",
+      "DURATION": "Duration",
+      "DURATION_24H": "24 hours",
+      "DURATION_7D": "7 days",
+      "DURATION_14D": "14 days",
+      "DURATION_30D": "30 days",
+      "PUBLIC_RESULTS": "Public results",
+      "VOTE": "Vote",
+      "VOTES": "{count} votes",
+      "EXPIRED": "Expired",
+      "PIN": "Pin poll",
+      "ADD_OPTION": "Add option",
+      "CANCEL": "Cancel",
+      "PERCENTAGE": "{value}%",
+      "TIME_LEFT": {
+        "DAYS": "{count}d left",
+        "HOURS_MINUTES": "{hours}h {minutes}m left",
+        "MINUTES": "{count}m left"
+      },
+      "DISCARD_TITLE": "Discard poll?",
+      "DISCARD_DESCRIPTION": "You have unsaved changes. Are you sure you want to discard this poll?",
+      "DISCARD": "Discard"
+    },
+    "DRAFT": {
+      "TITLE": "المسودات",
+      "LABEL": "مسودة",
+      "NO_DRAFTS": "لا توجد مسودات",
+      "NO_DRAFTS_SUBTITLE": "Drafts are saved automatically when you start typing in a channel.",
+      "DELETE": "Delete draft",
+      "SAVED_AGO": "Saved {time} ago",
+      "CHANNEL_LABEL": "Channel #{channelId}"
+    },
+    "PIN": {
+      "PINNED_MESSAGE": "رسالة مثبتة",
+      "PIN": "تثبيت الرسالة",
+      "UNPIN": "إلغاء تثبيت الرسالة"
+    },
+    "TYPING": {
+      "SINGLE": "{name} يكتب...",
+      "MULTIPLE": "{names} يكتبون..."
+    },
+    "DM": {
+      "NEW": "رسالة مباشرة جديدة",
+      "SELECT_AGENTS": "اختر الموظفين"
+    },
+    "CATEGORY": {
+      "CREATE": "إنشاء تصنيف",
+      "NAME": "اسم التصنيف",
+      "NAME_PLACEHOLDER": "Enter category name",
+      "NONE": "بدون",
+      "CREATED": "Category created successfully",
+      "DELETE": "Delete Category",
+      "DELETE_DESCRIPTION": "Channels in this category will be moved to uncategorized."
+    },
+    "ERRORS": {
+      "FETCH_CHANNELS": "تعذر تحميل القنوات",
+      "FETCH_MESSAGES": "تعذر تحميل الرسائل",
+      "SEND_MESSAGE": "تعذر إرسال الرسالة",
+      "CREATE_CHANNEL": "تعذر إنشاء القناة"
+    },
+    "DATE_SEPARATOR": {
+      "TODAY": "اليوم",
+      "YESTERDAY": "أمس"
+    },
+    "SCROLL_TO_BOTTOM": "Scroll to bottom",
+    "NEW_MESSAGES": "رسائل جديدة",
+    "LOADING_MESSAGES": "جارٍ تحميل الرسائل...",
+    "MENTION_BADGE": "{'@'}",
+    "EMPTY_STATE": {
+      "TITLE": "مرحبًا بك في الدردشة الداخلية",
+      "SUBTITLE": "اختر قناة أو محادثة من القائمة الجانبية للبدء."
+    },
+    "CONVERSATION_MENTION": {
+      "NO_RESULTS": "No conversations found",
+      "TYPE_TO_SEARCH": "Type a conversation ID or contact name",
+      "HEADER": "Conversations",
+      "PREFIX": "#",
+      "NO_ACCESS": "You don't have access to this conversation",
+      "STATUS": {
+        "OPEN": "Open",
+        "RESOLVED": "Resolved",
+        "PENDING": "Pending",
+        "SNOOZED": "Snoozed"
+      }
+    },
+    "ARCHIVED": {
+      "TITLE": "المؤرشفة",
+      "EMPTY": "لا توجد قنوات مؤرشفة"
+    }
+  }
+}

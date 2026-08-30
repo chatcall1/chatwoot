@@ -272,3 +272,7 @@
   display_name: Delayed Automations
   enabled: false
   column: feature_flags_ext_1
+- name: internal_chat
+  display_name: Internal Chat
+  enabled: false
+  column: feature_flags_ext_1

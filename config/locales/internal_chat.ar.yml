@@ -1,0 +1,10 @@
+ar:
+  internal_chat:
+    default_category_name: القنوات
+    default_channel_name: عام
+    messages:
+      deleted: تم حذف هذه الرسالة
+  notifications:
+    notification_title:
+      internal_chat_mention: تمت الإشارة إليك في %{name}
+      internal_chat_new_message: رسالة جديدة من %{name}

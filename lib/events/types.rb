@@ -42,6 +42,17 @@ module Events::Types
   REPLY_CREATED = 'reply.created'
   MESSAGE_UPDATED = 'message.updated'
 
+  # internal chat events
+  INTERNAL_CHAT_MESSAGE_CREATED = 'internal_chat.message.created'
+  INTERNAL_CHAT_MESSAGE_UPDATED = 'internal_chat.message.updated'
+  INTERNAL_CHAT_MESSAGE_DELETED = 'internal_chat.message.deleted'
+  INTERNAL_CHAT_CHANNEL_UPDATED = 'internal_chat.channel.updated'
+  INTERNAL_CHAT_TYPING_ON = 'internal_chat.typing_on'
+  INTERNAL_CHAT_TYPING_OFF = 'internal_chat.typing_off'
+  INTERNAL_CHAT_REACTION_CREATED = 'internal_chat.reaction.created'
+  INTERNAL_CHAT_REACTION_DELETED = 'internal_chat.reaction.deleted'
+  INTERNAL_CHAT_POLL_VOTED = 'internal_chat.poll.voted'
+
   # contact events
   CONTACT_CREATED = 'contact.created'
   CONTACT_UPDATED = 'contact.updated'

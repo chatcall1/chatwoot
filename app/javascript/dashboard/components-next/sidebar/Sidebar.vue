@@ -76,6 +76,13 @@ const hasAdvancedAssignment = computed(() => {
   );
 });
 
+const hasInternalChat = computed(() => {
+  return isFeatureEnabledonAccount.value(
+    accountId.value,
+    FEATURE_FLAGS.INTERNAL_CHAT
+  );
+});
+
 const hasConversationUnreadCounts = computed(() => {
   return isFeatureEnabledonAccount.value(
     accountId.value,
@@ -574,6 +581,25 @@ const menuItems = computed(() => {
         },
       ],
     },
+    ...(hasInternalChat.value
+      ? [
+          {
+            name: 'InternalChat',
+            label: t('SIDEBAR.INTERNAL_CHAT'),
+            icon: 'i-lucide-messages-square',
+            to: accountScopedRoute('internal_chat_home'),
+            activeOn: [
+              'internal_chat',
+              'internal_chat_home',
+              'internal_chat_channel',
+              'internal_chat_dm',
+              'internal_chat_thread',
+              'internal_chat_drafts',
+            ],
+            getterKeys: { count: 'internalChat/getUnreadCount' },
+          },
+        ]
+      : []),
     ...(isCallsAvailable.value
       ? [
           {

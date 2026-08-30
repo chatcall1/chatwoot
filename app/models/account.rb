@@ -86,6 +86,8 @@ class Account < ApplicationRecord
   has_many :tiktok_channels, dependent: :destroy_async, class_name: '::Channel::Tiktok'
   has_many :hooks, dependent: :destroy_async, class_name: 'Integrations::Hook'
   has_many :inboxes, dependent: :destroy_async
+  has_many :internal_chat_categories, class_name: 'InternalChat::Category', dependent: :destroy_async
+  has_many :internal_chat_channels, class_name: 'InternalChat::Channel', dependent: :destroy_async
   has_many :labels, dependent: :destroy_async
   has_many :line_channels, dependent: :destroy_async, class_name: '::Channel::Line'
   has_many :mentions, dependent: :destroy_async
@@ -114,6 +116,7 @@ class Account < ApplicationRecord
 
   before_validation :validate_limit_keys
   after_create_commit :notify_creation
+  after_update_commit :setup_internal_chat, if: -> { saved_change_to_feature_internal_chat? && feature_internal_chat? }
   after_update_commit :clear_unread_conversation_counts_cache, if: :saved_change_to_feature_conversation_unread_counts?
   after_update :resume_delayed_automations, if: -> { saved_change_to_feature_delayed_automations? && feature_delayed_automations? }
   after_destroy :remove_account_sequences
@@ -189,6 +192,10 @@ class Account < ApplicationRecord
   end
 
   private
+
+  def setup_internal_chat
+    InternalChat::DefaultChannelSetupService.new(account: self).perform
+  end
 
   def notify_creation
     Rails.configuration.dispatcher.dispatch(ACCOUNT_CREATED, Time.zone.now, account: self)
