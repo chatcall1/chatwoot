@@ -157,9 +157,14 @@
         }
       },
       "CREATE": {
-        "TITLE": "Create WhatsApp campaign",
+        "TITLE": "إنشاء حملة واتساب",
         "CANCEL_BUTTON_TEXT": "إلغاء",
         "CREATE_BUTTON_TEXT": "إنشاء",
+        "DISCARD": {
+          "TITLE": "إلغاء إنشاء الحملة؟",
+          "DESCRIPTION": "لديك بيانات لم تُحفظ. هل أنت متأكد من رغبتك في إلغاء إنشاء الحملة؟",
+          "CONFIRM": "تجاهل التغييرات"
+        },
         "FORM": {
           "TITLE": {
             "LABEL": "العنوان",
@@ -172,32 +177,82 @@
             "ERROR": "صندوق الوارد مطلوب"
           },
           "TEMPLATE": {
-            "LABEL": "WhatsApp Template",
-            "PLACEHOLDER": "Select a template",
-            "INFO": "Select a template to use for this campaign.",
-            "ERROR": "Template is required",
+            "LABEL": "قالب واتساب",
+            "PLACEHOLDER": "اختر قالباً",
+            "INFO": "اختر القالب المستخدم في هذه الحملة.",
+            "ERROR": "القالب مطلوب",
+            "CUSTOM": "رسالة خاصة",
+            "CUSTOM_INFO": "يشترط توفر نافذة مراسلة مدتها 24 ساعة — لا يمكن إرسال الرسائل الخاصة إلا لجهات الاتصال التي راسلتك خلال آخر 24 ساعة. استخدم قالب واتساب معتمداً للوصول إلى بقية العملاء.",
+            "SYNC": "تحديث القوالب",
+            "SYNC_SUCCESS": "بدأ تحديث القوالب وتم تحديث القائمة.",
+            "SYNC_ERROR": "تعذر تحديث القوالب.",
             "PREVIEW_TITLE": "معالجة {templateName}",
             "LANGUAGE": "اللغة",
             "CATEGORY": "الفئة",
             "VARIABLES_LABEL": "المتغيرات",
-            "VARIABLE_PLACEHOLDER": "Enter value for {variable}"
+            "VARIABLE_PLACEHOLDER": "أدخل قيمة {variable}"
           },
           "AUDIENCE": {
             "LABEL": "الجمهور",
             "PLACEHOLDER": "حدد أوسمة العملاء",
-            "ERROR": "الجمهور مطلوب"
+            "ERROR": "الجمهور مطلوب",
+            "BY_LABELS": "تصنيفات العملاء",
+            "ALL": "الإرسال لجميع العملاء",
+            "TARGET_LABELS": "تصنيفات جهات الاتصال المستهدفة (إلزامي)",
+            "EXCLUDED_LABELS": "تصنيفات جهات الاتصال المستثناة (اختياري)",
+            "CONVERSATION_LABELS": "تصنيفات المحادثة (اختياري)"
+          },
+          "SECTIONS": {
+            "CHANNEL": "إعداد القناة",
+            "CONTENT": "محتوى الرسالة",
+            "AUDIENCE": "الجهات المستهدفة",
+            "SCHEDULE": "الجدولة"
+          },
+          "CUSTOM_MESSAGE": {
+            "PLACEHOLDER": "اكتب الرسالة المراد إرسالها إلى المحادثات المؤهلة"
+          },
+          "IMPORT": {
+            "TITLE": "استيراد جمهور الحملة",
+            "DESCRIPTION": "يمكنك رفع ملف CSV وإضافة التصنيفات المستهدفة إلى كل جهة اتصال مقبولة.",
+            "DOWNLOAD": "تنزيل نموذج CSV",
+            "CHOOSE_FILE": "اختيار ملف CSV",
+            "ACTION": "استيراد الجمهور",
+            "SUCCESS": "اكتمل الاستيراد: قُبلت {processed} جهة ورُفضت {rejected} جهة.",
+            "ERROR": "فشل استيراد الجمهور. راجع ملف CSV وحاول مجدداً.",
+            "RESULT": "مقبول: {processed} · مرفوض: {rejected}",
+            "DOWNLOAD_REJECTED": "تنزيل الصفوف المرفوضة"
           },
           "SCHEDULED_AT": {
             "LABEL": "الوقت المجدول",
             "PLACEHOLDER": "الرجاء اختيار الوقت",
             "ERROR": "الوقت المجدول مطلوب"
           },
+          "SCHEDULE": {
+            "IMMEDIATE": "إرسال فوري",
+            "LATER": "جدولة لوقت لاحق"
+          },
+          "TEST": {
+            "TITLE": "إرسال رسالة تجريبية",
+            "DESCRIPTION": "أرسل القالب المحدد وقيم متغيراته الحالية إلى رقم واتساب واحد.",
+            "PHONE_LABEL": "رقم هاتف الاختبار",
+            "PLACEHOLDER": "+14155552671",
+            "PHONE_ERROR": "أدخل رقماً دولياً صالحاً بتنسيق E.164.",
+            "ACTION": "إرسال اختبار",
+            "SUCCESS": "تم إرسال القالب التجريبي بنجاح.",
+            "ERROR": "تعذر إرسال القالب التجريبي."
+          },
+          "CAPACITY": {
+            "AUDIENCE": "إجمالي المستلمين المؤهلين",
+            "META_LIMIT": "حد المراسلة لدى ميتا",
+            "DESCRIPTION": "عدد العملاء الفريدين خلال 24 ساعة متحركة، وليس الرصيد المتبقي.",
+            "HEALTH_ERROR": "تعذر تحميل حد المراسلة الحالي من ميتا."
+          },
           "BUTTONS": {
             "CREATE": "إنشاء",
             "CANCEL": "إلغاء"
           },
           "API": {
-            "SUCCESS_MESSAGE": "WhatsApp campaign created successfully",
+            "SUCCESS_MESSAGE": "تم إنشاء حملة واتساب بنجاح",
             "ERROR_MESSAGE": "حدث خطأ، الرجاء المحاولة مرة أخرى."
           }
         }

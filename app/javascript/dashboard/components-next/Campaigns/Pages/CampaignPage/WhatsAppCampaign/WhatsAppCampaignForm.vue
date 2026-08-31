@@ -329,7 +329,7 @@ watch(
 
 <template>
   <form class="flex flex-col gap-6" @submit.prevent="handleSubmit">
-    <section class="flex flex-col gap-4 p-5 rounded-xl bg-n-alpha-black2">
+    <section class="flex flex-col gap-4 p-5 rounded-xl bg-n-blue-2">
       <h3 class="text-base font-semibold text-n-slate-12">
         {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.SECTIONS.CHANNEL') }}
       </h3>
@@ -344,7 +344,7 @@ watch(
         />
       </div>
     </section>
-    <section class="flex flex-col gap-4 p-5 rounded-xl bg-n-alpha-black2">
+    <section class="flex flex-col gap-4 p-5 rounded-xl bg-n-blue-2">
       <h3 class="text-base font-semibold text-n-slate-12">
         {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.SECTIONS.CONTENT') }}
       </h3>
@@ -371,9 +371,9 @@ watch(
       />
       <div
         v-if="isCustomMessage"
-        class="flex gap-3 p-4 border rounded-lg border-n-amber-7 bg-n-amber-2"
+        class="flex gap-3 p-4 border rounded-lg border-n-blue-4 bg-n-blue-2"
       >
-        <span class="mt-0.5 i-lucide-clock-3 size-4 text-n-amber-11" />
+        <span class="mt-0.5 i-lucide-clock-3 size-4 text-n-blue-11" />
         <p class="text-sm text-n-slate-12">
           {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.TEMPLATE.CUSTOM_INFO') }}
         </p>
@@ -387,7 +387,7 @@ watch(
         v-if="isCustomMessage"
         v-model="state.customMessage"
         rows="5"
-        class="w-full p-3 text-sm border rounded-lg resize-y bg-n-alpha-black2 border-n-weak text-n-slate-12"
+        class="w-full p-3 text-sm border rounded-lg resize-y bg-n-blue-2 border-n-blue-4 text-n-slate-12"
         :placeholder="
           t('CAMPAIGN.WHATSAPP.CREATE.FORM.CUSTOM_MESSAGE.PLACEHOLDER')
         "
@@ -398,7 +398,7 @@ watch(
         :template="selectedTemplate"
       />
     </section>
-    <section class="flex flex-col gap-4 p-5 rounded-xl bg-n-alpha-black2">
+    <section class="flex flex-col gap-4 p-5 rounded-xl bg-n-blue-2">
       <h3 class="text-base font-semibold text-n-slate-12">
         {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.SECTIONS.AUDIENCE') }}
       </h3>
@@ -408,7 +408,7 @@ watch(
           class="p-4 text-start border rounded-xl"
           :class="
             state.audienceType === 'labels'
-              ? 'border-n-brand bg-n-brand/5'
+              ? 'border-n-blue-7 bg-n-blue-3'
               : 'border-n-weak'
           "
           @click="state.audienceType = 'labels'"
@@ -420,7 +420,7 @@ watch(
           class="p-4 text-start border rounded-xl"
           :class="
             state.audienceType === 'all'
-              ? 'border-n-brand bg-n-brand/5'
+              ? 'border-n-blue-7 bg-n-blue-3'
               : 'border-n-weak'
           "
           @click="state.audienceType = 'all'"
@@ -448,7 +448,7 @@ watch(
           t('CAMPAIGN.WHATSAPP.CREATE.FORM.AUDIENCE.CONVERSATION_LABELS')
         "
       />
-      <div class="flex flex-col gap-3 p-4 rounded-lg bg-n-alpha-black2">
+      <div class="flex flex-col gap-3 p-4 rounded-lg bg-n-blue-2">
         <div>
           <p class="text-sm font-medium text-n-slate-12">
             {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.IMPORT.TITLE') }}
@@ -514,7 +514,7 @@ watch(
         />
       </div>
     </section>
-    <section class="flex flex-col gap-4 p-5 rounded-xl bg-n-alpha-black2">
+    <section class="flex flex-col gap-4 p-5 rounded-xl bg-n-blue-2">
       <h3 class="text-base font-semibold text-n-slate-12">
         {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.SECTIONS.SCHEDULE') }}
       </h3>
@@ -524,7 +524,7 @@ watch(
           class="p-4 text-start border rounded-xl"
           :class="
             state.deliveryType === 'immediate'
-              ? 'border-n-brand bg-n-brand/5'
+              ? 'border-n-blue-7 bg-n-blue-3'
               : 'border-n-weak'
           "
           @click="state.deliveryType = 'immediate'"
@@ -536,7 +536,7 @@ watch(
           class="p-4 text-start border rounded-xl"
           :class="
             state.deliveryType === 'scheduled'
-              ? 'border-n-brand bg-n-brand/5'
+              ? 'border-n-blue-7 bg-n-blue-3'
               : 'border-n-weak'
           "
           @click="state.deliveryType = 'scheduled'"
@@ -554,7 +554,7 @@ watch(
     </section>
     <section
       v-if="!isCustomMessage"
-      class="flex flex-col gap-3 p-5 rounded-xl bg-n-alpha-black2"
+      class="flex flex-col gap-3 p-5 rounded-xl bg-n-blue-2"
     >
       <h3 class="text-base font-semibold text-n-slate-12">
         {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.TEST.TITLE') }}
@@ -587,7 +587,7 @@ watch(
       </div>
     </section>
     <section class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-      <div class="p-5 rounded-xl bg-n-alpha-black2">
+      <div class="p-5 rounded-xl bg-n-blue-2">
         <p class="text-sm text-n-slate-11">
           {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.CAPACITY.AUDIENCE') }}
         </p>
@@ -595,7 +595,7 @@ watch(
           {{ audienceCountDisplay }}
         </p>
       </div>
-      <div class="p-5 rounded-xl bg-n-alpha-black2">
+      <div class="p-5 rounded-xl bg-n-blue-2">
         <div class="flex items-center justify-between">
           <p class="text-sm text-n-slate-11">
             {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.CAPACITY.META_LIMIT') }}
