@@ -6,8 +6,9 @@
     "LIST": {
       "404": "لا توجد محادثات نشطة في هذه المجموعة."
     },
-    "FAILED_TO_SEND": "Failed to send",
-    "FETCH_ERROR": "Couldn't load conversations. Please try again.",
+    "FAILED_TO_SEND": "فشل الإرسال",
+    "FETCH_ERROR": "تعذر تحميل المحادثات. حاول مرة أخرى.",
+    "REFRESH": "تحديث المحادثات",
     "TAB_HEADING": "المحادثات",
     "MENTION_HEADING": "الإشارات",
     "UNATTENDED_HEADING": "بدون حضور",

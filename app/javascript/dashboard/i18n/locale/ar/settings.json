@@ -326,17 +326,17 @@
     "ACTIVE": "مفعل",
     "COMPANIES": "الشركات",
     "ALL_COMPANIES": "كل الحملات",
-    "CAPTAIN": "قائد",
+    "CAPTAIN": "الذكاء الاصطناعي",
     "INTERNAL_CHAT": "محادثة داخلية",
     "CALLS": "Calls",
-    "CAPTAIN_ASSISTANTS": "Assistants",
+    "CAPTAIN_ASSISTANTS": "المساعدون",
     "CAPTAIN_OVERVIEW": "نظرة عامة",
-    "CAPTAIN_DOCUMENTS": "Documents",
-    "CAPTAIN_RESPONSES": "FAQs",
-    "CAPTAIN_TOOLS": "Tools",
-    "CAPTAIN_SCENARIOS": "Scenarios",
-    "CAPTAIN_PLAYGROUND": "Playground",
-    "CAPTAIN_INBOXES": "قنوات التواصل",
+    "CAPTAIN_DOCUMENTS": "المستندات",
+    "CAPTAIN_RESPONSES": "الأسئلة الشائعة",
+    "CAPTAIN_TOOLS": "الأدوات",
+    "CAPTAIN_SCENARIOS": "السيناريوهات",
+    "CAPTAIN_PLAYGROUND": "ساحة التجربة",
+    "CAPTAIN_INBOXES": "اختيار قناة",
     "CAPTAIN_SETTINGS": "الإعدادات",
     "HOME": "الرئيسية",
     "AGENTS": "وكيل الدعم",
@@ -416,7 +416,7 @@
     },
     "DOCS": "قراءة المستندات",
     "SECURITY": "Security",
-    "CAPTAIN_AI": "قائد",
+    "CAPTAIN_AI": "الذكاء الاصطناعي",
     "CONVERSATION_WORKFLOW": "Conversation Workflow"
   },
   "DATA_IMPORTS": {
@@ -531,53 +531,53 @@
     }
   },
   "CAPTAIN_SETTINGS": {
-    "TITLE": "Captain Settings",
-    "DESCRIPTION": "Configure your AI models and features for Captain. Captain follows a credit based billing, you will be charged credits for every action Captain takes based on the model selected.",
-    "LOADING": "Loading Captain configuration...",
-    "LINK_TEXT": "Learn more about Captain Credits",
-    "NOT_ENABLED": "Captain is not enabled for your account. Please upgrade your plan to access Captain features.",
+    "TITLE": "إعدادات الذكاء الاصطناعي",
+    "DESCRIPTION": "اضبط نماذج الذكاء الاصطناعي وميزاته. تُحتسب الأرصدة لكل إجراء وفق النموذج المحدد.",
+    "LOADING": "جارٍ تحميل إعدادات الذكاء الاصطناعي...",
+    "LINK_TEXT": "معرفة المزيد عن أرصدة الذكاء الاصطناعي",
+    "NOT_ENABLED": "الذكاء الاصطناعي غير مفعّل لهذا الحساب. حدّث خطتك للوصول إلى ميزاته.",
     "MODEL_CONFIG": {
-      "TITLE": "Model Configuration",
-      "DESCRIPTION": "Select AI models for different features.",
-      "SELECT_MODEL": "Select model",
-      "CREDITS_PER_MESSAGE": "{credits} credit/message",
-      "COMING_SOON": "Coming soon",
+      "TITLE": "إعداد النماذج",
+      "DESCRIPTION": "اختر نموذج الذكاء الاصطناعي المناسب لكل ميزة.",
+      "SELECT_MODEL": "اختر النموذج",
+      "CREDITS_PER_MESSAGE": "{credits} رصيد لكل رسالة",
+      "COMING_SOON": "قريبًا",
       "EDITOR": {
-        "TITLE": "Editor Features",
-        "DESCRIPTION": "Powers smart compose, grammar corrections, tone adjustments, and content enhancement in your message editor."
+        "TITLE": "ميزات المحرر",
+        "DESCRIPTION": "تشغّل الكتابة الذكية وتصحيح اللغة وتعديل النبرة وتحسين المحتوى في محرر الرسائل."
       },
       "ASSISTANT": {
-        "TITLE": "Assistant",
-        "DESCRIPTION": "Handles automated responses, conversation summaries, and intelligent reply suggestions for customer interactions."
+        "TITLE": "المساعد",
+        "DESCRIPTION": "يتولى الردود الآلية وملخصات المحادثات واقتراحات الردود الذكية لتفاعلات العملاء."
       },
       "COPILOT": {
-        "TITLE": "Co-pilot",
-        "DESCRIPTION": "Provides real-time contextual suggestions, knowledge base recommendations, and proactive insights during conversations."
+        "TITLE": "المساعد الذكي",
+        "DESCRIPTION": "يقدم اقتراحات فورية حسب السياق وتوصيات من قاعدة المعرفة ومعلومات استباقية أثناء المحادثات."
       }
     },
     "FEATURES": {
       "TITLE": "الخصائص",
-      "DESCRIPTION": "Enable or disable AI-powered features.",
+      "DESCRIPTION": "فعّل ميزات الذكاء الاصطناعي أو عطّلها.",
       "AUDIO_TRANSCRIPTION": {
-        "TITLE": "Audio Transcription",
-        "DESCRIPTION": "Automatically convert voice messages and call recordings into searchable text transcripts.",
-        "MODEL_TITLE": "Audio Transcription Model",
-        "MODEL_DESCRIPTION": "Select the AI model to use for converting audio messages into text transcripts"
+        "TITLE": "تحويل الصوت إلى نص",
+        "DESCRIPTION": "حوّل الرسائل الصوتية وتسجيلات المكالمات تلقائيًا إلى نص يمكن البحث فيه.",
+        "MODEL_TITLE": "نموذج تحويل الصوت إلى نص",
+        "MODEL_DESCRIPTION": "اختر نموذج الذكاء الاصطناعي المستخدم لتحويل الرسائل الصوتية إلى نص"
       },
       "HELP_CENTER_SEARCH": {
-        "TITLE": "Help Center Search Indexing",
-        "DESCRIPTION": "Use AI for context aware search inside your help center articles."
+        "TITLE": "فهرسة بحث مركز المساعدة",
+        "DESCRIPTION": "استخدم الذكاء الاصطناعي للبحث حسب السياق داخل مقالات مركز المساعدة."
       },
       "LABEL_SUGGESTION": {
-        "TITLE": "Label Suggestion",
-        "DESCRIPTION": "Automatically suggest relevant labels and tags for conversations based on content analysis and context.",
-        "MODEL_TITLE": "Label Suggestion Model",
-        "MODEL_DESCRIPTION": "Select the AI model to use for analyzing conversations and suggesting appropriate labels"
+        "TITLE": "اقتراح التصنيفات",
+        "DESCRIPTION": "اقترح تلقائيًا تصنيفات ووسومًا مناسبة للمحادثات بناءً على المحتوى والسياق.",
+        "MODEL_TITLE": "نموذج اقتراح التصنيفات",
+        "MODEL_DESCRIPTION": "اختر نموذج الذكاء الاصطناعي المستخدم لتحليل المحادثات واقتراح التصنيفات المناسبة"
       }
     },
     "API": {
-      "SUCCESS": "Captain settings updated successfully.",
-      "ERROR": "Failed to update Captain settings. Please try again."
+      "SUCCESS": "تم تحديث إعدادات الذكاء الاصطناعي بنجاح.",
+      "ERROR": "تعذر تحديث إعدادات الذكاء الاصطناعي. حاول مرة أخرى."
     }
   },
   "BILLING_SETTINGS": {
@@ -608,11 +608,11 @@
     },
     "CAPTAIN": {
       "TITLE": "قائد",
-      "DESCRIPTION": "Manage usage and credits for Captain AI.",
-      "BUTTON_TXT": "Buy more credits",
-      "DOCUMENTS": "Documents",
-      "RESPONSES": "Responses",
-      "UPGRADE": "Captain is not available on the free plan, upgrade now to get access to assistants, copilot and more.",
+      "DESCRIPTION": "إدارة استخدام الذكاء الاصطناعي وأرصدته.",
+      "BUTTON_TXT": "شراء أرصدة إضافية",
+      "DOCUMENTS": "المستندات",
+      "RESPONSES": "الردود",
+      "UPGRADE": "الذكاء الاصطناعي غير متاح في الخطة المجانية. حدّث خطتك للوصول إلى المساعدين والميزات الأخرى.",
       "REFRESH_CREDITS": "تحديث"
     },
     "CHAT_WITH_US": {

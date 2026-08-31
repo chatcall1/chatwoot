@@ -397,81 +397,163 @@
     }
   },
   "CAPTAIN": {
-    "NAME": "قائد",
+    "NAME": "الذكاء الاصطناعي",
     "HEADER_KNOW_MORE": "اعرف المزيد",
     "OVERVIEW": {
       "HEADER": "نظرة عامة",
       "WELCOME": {
-        "LABEL": "Captain summary",
-        "LOADING": "Generating summary…"
+        "LABEL": "ملخص الذكاء الاصطناعي",
+        "LOADING": "جارٍ إنشاء الملخص..."
       },
       "INBOX_BANNER": {
-        "TEXT": "This assistant isn't connected to any inbox yet, so it won't respond to conversations.",
-        "ACTION": "Connect inbox",
+        "TEXT": "هذا المساعد غير متصل بأي صندوق وارد، لذلك لن يرد على المحادثات.",
+        "ACTION": "ربط صندوق وارد",
         "DISMISS": "تجاهل"
       },
       "COVERAGE_BANNER": {
-        "TEXT": "{count} FAQ suggestions are ready for review, keeping coverage at {coverage}%. Approve them so your assistant can resolve more on its own.",
-        "ACTION": "Review suggestions",
+        "TEXT": "لديك {count} اقتراحات لأسئلة شائعة جاهزة للمراجعة، ونسبة التغطية {coverage}%. اعتمدها ليتمكن المساعد من حل المزيد تلقائيًا.",
+        "ACTION": "مراجعة الاقتراحات",
         "DISMISS": "تجاهل"
       },
       "RANGES": {
-        "LAST_DAYS": "Last {count} days",
-        "THIS_MONTH": "This month",
-        "LAST_MONTH": "Last month"
+        "LAST_DAYS": "آخر {count} أيام",
+        "THIS_MONTH": "هذا الشهر",
+        "LAST_MONTH": "الشهر الماضي"
       },
       "METRICS": {
         "HANDLED": {
-          "LABEL": "Conversations handled",
-          "HINT": "Distinct conversations this assistant replied in."
+          "LABEL": "المحادثات التي عالجها",
+          "HINT": "عدد المحادثات المختلفة التي رد فيها هذا المساعد."
         },
         "AUTO_RESOLUTION": {
-          "LABEL": "Auto-resolution rate",
-          "HINT": "Share of handled conversations closed without a human reply."
+          "LABEL": "معدل الحل التلقائي",
+          "HINT": "نسبة المحادثات التي أُغلقت دون رد موظف."
         },
         "HANDOFF": {
-          "LABEL": "Handoff rate",
-          "HINT": "Share of handled conversations escalated to a human agent."
+          "LABEL": "معدل التحويل",
+          "HINT": "نسبة المحادثات التي حُولت إلى موظف."
         },
         "HOURS_SAVED": {
-          "LABEL": "Time saved",
-          "HINT": "Estimate: Captain replies times ~2 minutes of assumed agent effort per reply. Directional, not measured labor."
+          "LABEL": "الوقت الموفّر",
+          "HINT": "تقدير تقريبي يفترض أن كل رد يوفر نحو دقيقتين من وقت الموظف.",
+          "NOTE": "تقدير للوقت الذي وفره المساعد على الموظفين."
         },
         "REOPEN": {
-          "LABEL": "Reopen rate",
-          "HINT": "Auto-resolved conversations that were reopened afterwards."
+          "LABEL": "معدل إعادة الفتح",
+          "HINT": "نسبة المحادثات المحلولة تلقائيًا التي أُعيد فتحها لاحقًا.",
+          "NOTE": "تشمل المحادثات التي مضى على حلها وقت كافٍ لقياس إعادة فتحها."
         },
         "DEPTH": {
-          "LABEL": "Messages / conversation",
-          "HINT": "Average replies the assistant sends per conversation."
+          "LABEL": "الرسائل لكل محادثة",
+          "HINT": "متوسط الردود التي يرسلها المساعد في كل محادثة.",
+          "NOTE": "يوضح متوسط عدد الرسائل في المحادثات التي عالجها المساعد."
         }
       },
       "DRILLDOWN": {
-        "EMPTY": "No records found for this metric.",
-        "ERROR": "Could not load records. Please try again.",
-        "LOAD_MORE": "Load more",
-        "RESULT_COUNT_CONVERSATION": "{count} conversation | {count} conversations"
+        "EMPTY": "لا توجد سجلات لهذا المؤشر.",
+        "ERROR": "تعذر تحميل السجلات. حاول مرة أخرى.",
+        "LOAD_MORE": "تحميل المزيد",
+        "RESULT_COUNT_CONVERSATION": "محادثة واحدة | {count} محادثات"
       },
       "KNOWLEDGE": {
-        "TITLE": "Knowledge coverage",
-        "COVERAGE": "{pct}% approved",
-        "APPROVED": "Approved FAQs",
-        "SUGGESTIONS": "FAQ suggestions",
-        "DOCUMENTS": "Documents"
+        "TITLE": "تغطية المعرفة",
+        "COVERAGE": "تم اعتماد {pct}%",
+        "APPROVED": "الأسئلة الشائعة المعتمدة",
+        "SUGGESTIONS": "اقتراحات الأسئلة الشائعة",
+        "DOCUMENTS": "المستندات"
       },
       "LINKS": {
         "DOCS": {
-          "TITLE": "Captain docs",
-          "DESCRIPTION": "Guides and how-tos for Captain"
+          "TITLE": "دليل الذكاء الاصطناعي",
+          "DESCRIPTION": "أدلة وتعليمات استخدام الذكاء الاصطناعي"
         },
         "PLAYGROUND": {
-          "TITLE": "ساحة اللعب",
-          "DESCRIPTION": "Test this assistant's replies"
+          "TITLE": "ساحة التجربة",
+          "DESCRIPTION": "اختبر ردود هذا المساعد"
         },
         "BILLING": {
           "TITLE": "الفواتير",
-          "DESCRIPTION": "Manage credits and plan"
+          "DESCRIPTION": "إدارة الأرصدة والخطة"
         }
+      },
+      "V2": {
+        "EMPTY": "لا تتوفر بيانات لهذه الفترة.",
+        "SUMMARY": {
+          "GREETING": "مرحبًا، {name}!",
+          "DEFAULT_NAME": "بك",
+          "EMPTY": "سيظهر ملخص أداء الذكاء الاصطناعي هنا عند توفر نشاط كافٍ.",
+          "PREVIOUS": "الملخص السابق",
+          "NEXT": "الملخص التالي"
+        },
+        "UNITS": { "DAYS": "{value} يوم", "HOURS": "{value} ساعة", "MINUTES": "{value} دقيقة" },
+        "METRICS": {
+          "TIME_SAVED": { "LABEL": "الجهد والوقت الموفّران للموظفين" },
+          "DURABLE": {
+            "LABEL": "الحلول التي بقيت مغلقة",
+            "HINT": "نسبة المحادثات التي حلها الذكاء الاصطناعي وبقيت مغلقة بعد سبعة أيام.",
+            "NOTE": "تشمل فقط الحلول التي مضى عليها سبعة أيام على الأقل."
+          },
+          "MEDIAN_RESOLUTION": {
+            "LABEL": "متوسط وقت الحل",
+            "HINT": "الوقت المعتاد منذ وصول المحادثة إلى الذكاء الاصطناعي حتى حلها.",
+            "NOTE": "كلما انخفضت القيمة، وصل العملاء إلى الحل أسرع عادةً."
+          },
+          "DEPTH": { "LABEL": "الرسائل لكل محادثة" },
+          "OF_TOTAL": "من أصل {total}"
+        },
+        "RESOLUTION_FLOW": {
+          "ARIA_LABEL": "مسار المحادثات التي عالجها الذكاء الاصطناعي ونتائج الفريق",
+          "NODES": {
+            "HANDLED": "تمت معالجتها",
+            "RESOLVED_BY_CAPTAIN": "حلها الذكاء الاصطناعي",
+            "HANDED_OFF": "حُولت إلى الفريق",
+            "CLOSED_WITH_TEAM": "أغلقها الفريق",
+            "REOPENED": "أُعيد فتحها خلال 7 أيام",
+            "STAYED_CLOSED": "بقيت مغلقة",
+            "OTHER_REASONS": "أسباب أخرى"
+          }
+        },
+        "HANDOFF_REASONS": {
+          "TITLE": "أسباب التحويل",
+          "CUSTOMER_REQUEST": "طلب العميل",
+          "MISSING_KNOWLEDGE": "نقص المعلومات",
+          "UNSUPPORTED_REQUEST": "طلب غير مدعوم",
+          "POLICY_RESTRICTION": "قيود السياسة",
+          "TOOL_FAILURE": "فشل الأداة",
+          "PENDING_CLARIFICATION": "بانتظار توضيح العميل",
+          "PERCENTAGE": "({value}٪)",
+          "USAGE_LIMIT": "حد الاستخدام",
+          "UNCLASSIFIED": "غير مصنف"
+        },
+        "RESOLUTION_TREND": {
+          "TITLE": "اتجاه الحل",
+          "CONVERSATION_COUNT": "عدد المحادثات",
+          "RESOLUTION_RATE": "معدل الحل",
+          "CURRENT_PERIOD": "الفترة الحالية",
+          "PREVIOUS_PERIOD": "الفترة السابقة",
+          "HANDLED": "تمت معالجتها",
+          "RESOLVED": "حلها الذكاء الاصطناعي",
+          "ARIA_LABEL": "المحادثات التي عولجت وحلها الذكاء الاصطناعي حسب فترة التقرير",
+          "RATE_ARIA_LABEL": "معدلات حل الذكاء الاصطناعي للفترتين الحالية والسابقة"
+        },
+        "CSAT": {
+          "TITLE": "رضا العملاء عن الذكاء الاصطناعي",
+          "AUTONOMOUS": "محادثات حلها الذكاء الاصطناعي",
+          "AUTONOMOUS_HINT": "متوسط تقييم العملاء للمحادثات التي حلها الذكاء الاصطناعي دون مساعدة الفريق.",
+          "ASSISTED": "محادثات ساعد فيها الذكاء الاصطناعي",
+          "ASSISTED_HINT": "متوسط تقييم العملاء عندما ساعد الذكاء الاصطناعي قبل أن يحل الفريق المحادثة.",
+          "VS_HUMANS": "{value} مقارنةً بالموظفين"
+        },
+        "USAGE": {
+          "TITLE": "الاستخدام",
+          "CREDITS": "الأرصدة",
+          "DOCUMENTS": "المستندات",
+          "USED": "(تم استخدام {percentage}٪)",
+          "VALUE": "{used}/{total}",
+          "REFRESH": "تحديث الاستخدام",
+          "BUY_MORE": "شراء أرصدة إضافية"
+        },
+        "KNOWLEDGE": { "REVIEW": "مراجعة الأسئلة الشائعة" }
       }
     },
     "ASSISTANT_SWITCHER": {
@@ -482,12 +564,12 @@
     },
     "COPILOT": {
       "TITLE": "Copilot",
-      "TRY_THESE_PROMPTS": "Try these prompts",
+      "TRY_THESE_PROMPTS": "جرّب هذه الأوامر",
       "PANEL_TITLE": "ابدأ مع Copilot",
       "KICK_OFF_MESSAGE": "هل تحتاج إلى ملخص سريع، ترغب في مراجعة المحادثات السابقة، أو صياغة رد أفضل؟ Copilot هنا لتسريع الأمور.",
       "SEND_MESSAGE": "إرسال الرسالة...",
       "EMPTY_MESSAGE": "حدث خطأ أثناء توليد الاستجابة. يرجى المحاولة مرة أخرى.",
-      "LOADER": "يقوم Captain بالتفكير",
+      "LOADER": "جارٍ التفكير...",
       "YOU": "أنت",
       "USE": "استخدام هذا",
       "RESET": "إعادة تعيين",
@@ -520,25 +602,25 @@
       "USER": "أنت",
       "ASSISTANT": "مساعد",
       "MESSAGE_PLACEHOLDER": "أكتب رسالتك...",
-      "HEADER": "ساحة اللعب",
+      "HEADER": "ساحة التجربة",
       "DESCRIPTION": "استخدم هذه الساحة لإرسال رسائل إلى مساعدك والتحقق مما إذا كان يرد بدقة وسرعة وبالنغمة التي تتوقعها.",
-      "CREDIT_NOTE": "الرسائل المرسلة هنا ستُحتسب ضمن رصيد Captain الخاص بك."
+      "CREDIT_NOTE": "تُحتسب الرسائل المرسلة هنا من رصيد الذكاء الاصطناعي."
     },
     "PAYWALL": {
-      "TITLE": "قم بالترقية لاستخدام Captain AI",
-      "AVAILABLE_ON": "Captain غير متاح على الخطة المجانية.",
-      "UPGRADE_PROMPT": "قم بترقية خطتك للحصول على الوصول إلى مساعدينا، وcopilot، والمزيد.",
-      "UPGRADE_NOW": "Upgrade now",
-      "CANCEL_ANYTIME": "You can change or cancel your plan anytime"
+      "TITLE": "حدّث خطتك لاستخدام الذكاء الاصطناعي",
+      "AVAILABLE_ON": "الذكاء الاصطناعي غير متاح في الخطة المجانية.",
+      "UPGRADE_PROMPT": "حدّث خطتك للوصول إلى المساعد الذكي والميزات الأخرى.",
+      "UPGRADE_NOW": "تحديث الخطة الآن",
+      "CANCEL_ANYTIME": "يمكنك تغيير خطتك أو إلغاؤها في أي وقت"
     },
     "ENTERPRISE_PAYWALL": {
       "AVAILABLE_ON": "ولا يتوفر الكابتن AI إلا في خطط المؤسسة.",
-      "UPGRADE_PROMPT": "قم بترقية خطتك للحصول على الوصول إلى مساعدينا، وcopilot، والمزيد.",
-      "ASK_ADMIN": "Please reach out to your administrator for the upgrade."
+      "UPGRADE_PROMPT": "حدّث خطتك للوصول إلى المساعد الذكي والميزات الأخرى.",
+      "ASK_ADMIN": "تواصل مع مسؤول الحساب لتحديث الخطة."
     },
     "BANNER": {
-      "RESPONSES": "لقد استخدمت أكثر من 80٪ من حد الاستجابات الخاص بك. للاستمرار في استخدام Captain AI، يرجى الترقية.",
-      "DOCUMENTS": "تم الوصول إلى حد المستندات. قم بالترقية للاستمرار في استخدام Captain AI."
+      "RESPONSES": "استخدمت أكثر من 80٪ من حد الردود. حدّث خطتك للاستمرار في استخدام الذكاء الاصطناعي.",
+      "DOCUMENTS": "وصلت إلى حد المستندات. حدّث خطتك للاستمرار في استخدام الذكاء الاصطناعي."
     },
     "FORM": {
       "CANCEL": "إلغاء",
@@ -546,243 +628,301 @@
       "EDIT": "تحديث"
     },
     "ASSISTANTS": {
-      "HEADER": "Assistants",
-      "NO_ASSISTANTS_AVAILABLE": "There are no assistants available in your account.",
-      "ADD_NEW": "Create a new assistant",
+      "HEADER": "المساعدون",
+      "NO_ASSISTANTS_AVAILABLE": "لا يوجد مساعدون في حسابك.",
+      "ADD_NEW": "إنشاء مساعد",
       "DELETE": {
-        "TITLE": "Are you sure to delete the assistant?",
-        "DESCRIPTION": "This action is permanent. Deleting this assistant will remove it from all connected inboxes and permanently erase all generated knowledge.",
+        "TITLE": "هل تريد حذف المساعد؟",
+        "DESCRIPTION": "هذا الإجراء نهائي. سيؤدي حذف المساعد إلى إزالته من جميع صناديق الوارد المتصلة وحذف المعرفة التي أنشأها.",
         "CONFIRM": "نعم، احذف",
-        "SUCCESS_MESSAGE": "The assistant has been successfully deleted",
-        "ERROR_MESSAGE": "There was an error deleting the assistant, please try again."
+        "SUCCESS_MESSAGE": "تم حذف المساعد بنجاح",
+        "ERROR_MESSAGE": "تعذر حذف المساعد. حاول مرة أخرى."
       },
-      "FORM_DESCRIPTION": "Fill out the details below to name your assistant, describe its purpose, and specify the product it will support.",
+      "FORM_DESCRIPTION": "أدخل اسم المساعد ووصف مهمته والمنتج الذي سيدعمه.",
       "CREATE": {
-        "TITLE": "Create an assistant",
-        "SUCCESS_MESSAGE": "The assistant has been successfully created",
-        "ERROR_MESSAGE": "There was an error creating the assistant, please try again."
+        "TITLE": "إنشاء مساعد",
+        "SUCCESS_MESSAGE": "تم إنشاء المساعد بنجاح",
+        "ERROR_MESSAGE": "تعذر إنشاء المساعد. حاول مرة أخرى."
       },
       "FORM": {
         "UPDATE": "تحديث",
         "SECTIONS": {
-          "BASIC_INFO": "Basic Information",
-          "SYSTEM_MESSAGES": "System Messages",
-          "INSTRUCTIONS": "Instructions",
+          "BASIC_INFO": "المعلومات الأساسية",
+          "SYSTEM_MESSAGES": "رسائل النظام",
+          "INSTRUCTIONS": "التعليمات",
           "FEATURES": "الخصائص",
-          "TOOLS": "Tools "
+          "TOOLS": "الأدوات"
         },
         "NAME": {
           "LABEL": "الاسم",
-          "PLACEHOLDER": "Enter assistant name",
-          "ERROR": "The name is required"
+          "PLACEHOLDER": "أدخل اسم المساعد",
+          "ERROR": "الاسم مطلوب"
         },
         "DESCRIPTION": {
           "LABEL": "الوصف",
-          "PLACEHOLDER": "Enter assistant description",
-          "ERROR": "The description is required"
+          "PLACEHOLDER": "أدخل وصف المساعد",
+          "ERROR": "الوصف مطلوب"
         },
         "PRODUCT_NAME": {
-          "LABEL": "Product Name",
-          "PLACEHOLDER": "Enter product name",
-          "ERROR": "The product name is required"
+          "LABEL": "اسم المنتج",
+          "PLACEHOLDER": "أدخل اسم المنتج",
+          "ERROR": "اسم المنتج مطلوب"
         },
         "WELCOME_MESSAGE": {
-          "LABEL": "Welcome Message",
-          "PLACEHOLDER": "Enter welcome message"
+          "LABEL": "رسالة الترحيب",
+          "PLACEHOLDER": "أدخل رسالة الترحيب"
         },
         "HANDOFF_MESSAGE": {
-          "LABEL": "Handoff Message",
-          "PLACEHOLDER": "Enter handoff message"
+          "LABEL": "رسالة التحويل",
+          "PLACEHOLDER": "أدخل رسالة التحويل"
         },
         "RESOLUTION_MESSAGE": {
-          "LABEL": "Resolution Message",
-          "PLACEHOLDER": "Enter resolution message"
+          "LABEL": "رسالة الحل",
+          "PLACEHOLDER": "أدخل رسالة الحل"
         },
         "INSTRUCTIONS": {
-          "LABEL": "Instructions",
-          "PLACEHOLDER": "Enter instructions for the assistant"
+          "LABEL": "التعليمات",
+          "PLACEHOLDER": "أدخل تعليمات المساعد"
         },
         "FEATURES": {
           "TITLE": "الخصائص",
-          "ALLOW_CONVERSATION_FAQS": "Generate FAQs from resolved conversations",
-          "ALLOW_MEMORIES": "Capture key details as memories from customer interactions.",
-          "ALLOW_CITATIONS": "Include source citations in responses",
-          "ALLOW_CONTACT_ATTRIBUTES": "Allow access to contact information"
+          "ALLOW_CONVERSATION_FAQS": "إنشاء أسئلة شائعة من المحادثات المحلولة",
+          "ALLOW_MEMORIES": "حفظ التفاصيل المهمة من تفاعلات العملاء.",
+          "ALLOW_CITATIONS": "إضافة مراجع المصادر إلى الردود",
+          "ALLOW_CONTACT_ATTRIBUTES": "السماح بالوصول إلى معلومات جهة الاتصال"
+        },
+        "INACTIVITY_RESOLUTION": {
+          "TITLE": "عندما يتوقف العملاء عن الرد",
+          "DESCRIPTION": "اختر طريقة تعامل الذكاء الاصطناعي مع المحادثة.",
+          "MODE_LABEL": "الإجراء عند توقف العميل عن الرد",
+          "REVIEW_AFTER": "المراجعة بعد",
+          "RESOLVE_AFTER": "الحل بعد",
+          "ALWAYS_WARNING": "سيحل الذكاء الاصطناعي كل محادثة بعد المدة المحددة دون مراجعتها، وقد تُغلق محادثات لا تزال بحاجة إلى مساعدة.",
+          "PENDING_INFO": "تبقى المحادثة معلقة حتى يرد العميل.",
+          "RESOLUTION_MESSAGE": {
+            "TITLE": "إرسال رسالة عند الحل",
+            "DESCRIPTION": "يرسل الذكاء الاصطناعي رسالة الختام هذه قبل حل المحادثة."
+          },
+          "MODES": {
+            "DISABLED": { "LABEL": "انتظار العميل", "DESCRIPTION": "لا يحل الذكاء الاصطناعي المحادثة، ويمكنه تحويلها إذا طلب العميل ذلك." },
+            "LEGACY": { "LABEL": "الحل دائمًا", "DESCRIPTION": "يحل الذكاء الاصطناعي كل محادثة بعد المدة المحددة." },
+            "EVALUATED": { "LABEL": "دع الذكاء الاصطناعي يراجعها (موصى به)", "DESCRIPTION": "يقرر الذكاء الاصطناعي حل المحادثة أو تحويلها إلى الفريق." }
+          },
+          "DURATION_HOURS_ARIA_LABEL": "الساعات قبل الإجراء",
+          "DURATION_MINUTES_ARIA_LABEL": "الدقائق قبل الإجراء",
+          "DURATION_HOURS_SHORT": "{count} س",
+          "DURATION_MINUTES_SHORT": "{count} د"
+        },
+        "AUDIENCE": {
+          "EVERYONE": { "LABEL": "الجميع", "DESC": "يرد الذكاء الاصطناعي على كل محادثة في صناديق الوارد المتصلة." },
+          "SPECIFIC": { "LABEL": "جمهور محدد", "DESC": "يرد الذكاء الاصطناعي فقط على العملاء المطابقين للشروط أدناه." },
+          "ADD_CONDITION": "إضافة شرط",
+          "ADD_GROUP": "إضافة مجموعة شروط",
+          "EMPTY_TITLE": "لا توجد شروط بعد",
+          "EMPTY_BODY": "أضف شرطًا لاستهداف عملاء محددين، أو مجموعة شروط للجمع بينها بمنطق و/أو.",
+          "EMPTY_ERROR": "أضف شرطًا واحدًا على الأقل للجمهور المحدد.",
+          "MATCH_PREFIX": "مطابقة",
+          "MATCH_SUFFIX": "من الشروط التالية",
+          "MATCH_ALL": "كل",
+          "MATCH_ANY": "أي",
+          "GROUP_CONTACT": "خصائص جهة الاتصال",
+          "GROUP_CONVERSATION": "المحادثة",
+          "GROUP_CUSTOM": "الخصائص المخصصة",
+          "BROWSER_LANGUAGE": "لغة المتصفح",
+          "CONVERSATION_LANGUAGE": "لغة الرسالة الأولى",
+          "LOGGED_IN": "مستخدم مسجل الدخول",
+          "LOGGED_IN_TRUE": "نعم",
+          "LOGGED_IN_FALSE": "لا"
+        },
+        "SCHEDULE": {
+          "ALWAYS": { "LABEL": "في أي وقت", "DESC": "يرد الذكاء الاصطناعي على كل محادثة بغض النظر عن الوقت." },
+          "BUSINESS_HOURS": { "LABEL": "خلال ساعات العمل", "DESC": "يرد الذكاء الاصطناعي خلال ساعات عمل كل صندوق وارد فقط." },
+          "OUTSIDE_BUSINESS_HOURS": { "LABEL": "خارج ساعات العمل", "DESC": "يرد الذكاء الاصطناعي عندما يكون كل صندوق وارد مغلقًا فقط." },
+          "HINT": "تظل صناديق الوارد التي لم تُضبط لها ساعات عمل مشمولة دائمًا."
         }
       },
       "EDIT": {
-        "TITLE": "Update the assistant",
-        "SUCCESS_MESSAGE": "The assistant has been successfully updated",
-        "ERROR_MESSAGE": "There was an error updating the assistant, please try again.",
-        "NOT_FOUND": "Could not find the assistant. Please try again."
+        "TITLE": "تحديث المساعد",
+        "SUCCESS_MESSAGE": "تم تحديث المساعد بنجاح",
+        "ERROR_MESSAGE": "تعذر تحديث المساعد. حاول مرة أخرى.",
+        "NOT_FOUND": "تعذر العثور على المساعد. حاول مرة أخرى."
       },
       "SETTINGS": {
         "HEADER": "الإعدادات",
         "BASIC_SETTINGS": {
-          "TITLE": "Basic settings",
-          "DESCRIPTION": "Customize what the assistant says when ending a conversation or transferring to a human."
+          "TITLE": "الإعدادات الأساسية",
+          "DESCRIPTION": "خصّص ما يقوله المساعد عند إنهاء محادثة أو تحويلها إلى موظف."
         },
         "SYSTEM_SETTINGS": {
-          "TITLE": "System settings",
-          "DESCRIPTION": "Customize what the assistant says when ending a conversation or transferring to a human."
+          "TITLE": "إعدادات النظام",
+          "DESCRIPTION": "خصّص ما يقوله المساعد عند إنهاء محادثة أو تحويلها إلى موظف.",
+          "DESCRIPTION_V2": "اضبط سلوك الذكاء الاصطناعي ورسائله في المحادثات."
+        },
+        "AUDIENCE": {
+          "TITLE": "الجمهور",
+          "DESCRIPTION": "اختر ما إذا كان المساعد يرد على الجميع أو على جمهور محدد فقط."
+        },
+        "SCHEDULE": {
+          "TITLE": "الجدول الزمني",
+          "DESCRIPTION": "اختر أوقات رد الذكاء الاصطناعي؛ وخارجها تُحوّل المحادثات إلى فريقك."
         },
         "CONTROL_ITEMS": {
-          "TITLE": "The Fun Stuff",
-          "DESCRIPTION": "Add more control to the assistant. (a bit more visual like a story : Query guardrail → scenarios → output) Nudges user to actually utilise these.",
+          "TITLE": "ضوابط المساعد",
+          "DESCRIPTION": "تحكّم في أسئلة المستخدم والسيناريوهات وطريقة صياغة الرد.",
           "OPTIONS": {
             "GUARDRAILS": {
-              "TITLE": "Guardrails",
-              "DESCRIPTION": "Keeps things on track—only the kinds of questions you want your assistant to answer, nothing off-limits or off-topic."
+              "TITLE": "ضوابط الأسئلة",
+              "DESCRIPTION": "حدّد أنواع الأسئلة التي يمكن للمساعد الإجابة عنها وتجنب الموضوعات غير المناسبة."
             },
             "RESPONSE_GUIDELINES": {
-              "TITLE": "Response guidelines",
-              "DESCRIPTION": "The vibe and structure of your assistant’s replies—clear and friendly? Short and snappy? Detailed and formal?"
+              "TITLE": "إرشادات الرد",
+              "DESCRIPTION": "حدّد أسلوب ردود المساعد وبنيتها، مثل الوضوح والود والاختصار أو التفصيل."
             }
           }
         },
         "DELETE": {
-          "TITLE": "Delete Assistant",
-          "DESCRIPTION": "This action is permanent. Deleting this assistant will remove it from all connected inboxes and permanently erase all generated knowledge.",
-          "BUTTON_TEXT": "Delete {assistantName}"
+          "TITLE": "حذف المساعد",
+          "DESCRIPTION": "هذا الإجراء نهائي. سيؤدي حذف المساعد إلى إزالته من صناديق الوارد المتصلة وحذف المعرفة التي أنشأها.",
+          "BUTTON_TEXT": "حذف {assistantName}"
         }
       },
       "OPTIONS": {
-        "EDIT_ASSISTANT": "Edit Assistant",
-        "DELETE_ASSISTANT": "Delete Assistant",
-        "VIEW_CONNECTED_INBOXES": "View connected inboxes"
+        "EDIT_ASSISTANT": "تعديل المساعد",
+        "DELETE_ASSISTANT": "حذف المساعد",
+        "VIEW_CONNECTED_INBOXES": "عرض صناديق الوارد المتصلة"
       },
       "EMPTY_STATE": {
-        "TITLE": "No assistants available",
-        "SUBTITLE": "Create an assistant to provide quick and accurate responses to your users. It can learn from your help articles and past conversations.",
+        "TITLE": "لا يوجد مساعدون",
+        "SUBTITLE": "أنشئ مساعدًا لتقديم ردود سريعة ودقيقة اعتمادًا على مقالات المساعدة والمحادثات السابقة.",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Captain Assistant",
-          "NOTE": "Captain Assistant engages directly with customers, learns from your help docs and past conversations, and delivers instant, accurate responses. It handles the initial queries, providing quick resolutions before  transferring to an agent when needed."
+          "TITLE": "مساعد الذكاء الاصطناعي",
+          "NOTE": "يتفاعل المساعد مباشرة مع العملاء ويتعلم من مستندات المساعدة والمحادثات السابقة لتقديم ردود فورية ودقيقة، ثم يحوّل المحادثة إلى موظف عند الحاجة."
         }
       },
       "GUARDRAILS": {
-        "TITLE": "Guardrails",
-        "DESCRIPTION": "Keeps things on track—only the kinds of questions you want your assistant to answer, nothing off-limits or off-topic.",
+        "TITLE": "ضوابط الأسئلة",
+        "DESCRIPTION": "حدّد أنواع الأسئلة التي يمكن للمساعد الإجابة عنها وتجنب الموضوعات غير المناسبة.",
         "BULK_ACTION": {
-          "SELECTED": "{count} item selected | {count} items selected",
-          "SELECT_ALL": "Select all ({count})",
-          "UNSELECT_ALL": "Unselect all ({count})",
+          "SELECTED": "عنصر واحد محدد | {count} عناصر محددة",
+          "SELECT_ALL": "تحديد الكل ({count})",
+          "UNSELECT_ALL": "إلغاء تحديد الكل ({count})",
           "BULK_DELETE_BUTTON": "حذف"
         },
         "ADD": {
           "SUGGESTED": {
-            "TITLE": "Example guardrails",
-            "ADD": "Add all",
-            "ADD_SINGLE": "Add this",
-            "SAVE": "Add and save (↵)",
-            "PLACEHOLDER": "Type in another guardrail..."
+            "TITLE": "أمثلة لضوابط الأسئلة",
+            "ADD": "إضافة الكل",
+            "ADD_SINGLE": "إضافة هذا",
+            "SAVE": "إضافة وحفظ (↵)",
+            "PLACEHOLDER": "اكتب ضابطًا آخر..."
           },
           "NEW": {
-            "TITLE": "Add a guardrail",
+            "TITLE": "إضافة ضابط للأسئلة",
             "CREATE": "إنشاء",
             "CANCEL": "إلغاء",
-            "PLACEHOLDER": "Type in another guardrail...",
-            "TEST_ALL": "Test all"
+            "PLACEHOLDER": "اكتب ضابطًا آخر...",
+            "TEST_ALL": "اختبار الكل"
           }
         },
         "LIST": {
-          "SEARCH_PLACEHOLDER": "Search..."
+          "SEARCH_PLACEHOLDER": "بحث"
         },
-        "EMPTY_MESSAGE": "No guardrails found. Create or add examples to begin.",
-        "SEARCH_EMPTY_MESSAGE": "No guardrails found for this search.",
+        "EMPTY_MESSAGE": "لا توجد ضوابط للأسئلة. أنشئ ضابطًا أو أضف أحد الأمثلة للبدء.",
+        "SEARCH_EMPTY_MESSAGE": "لا توجد ضوابط مطابقة للبحث.",
         "API": {
           "ADD": {
-            "SUCCESS": "Guardrails added successfully",
-            "ERROR": "There was an error adding guardrails, please try again."
+            "SUCCESS": "تمت إضافة ضوابط الأسئلة بنجاح",
+            "ERROR": "تعذرت إضافة ضوابط الأسئلة. حاول مرة أخرى."
           },
           "UPDATE": {
-            "SUCCESS": "Guardrails updated successfully",
-            "ERROR": "There was an error updating guardrails, please try again."
+            "SUCCESS": "تم تحديث ضوابط الأسئلة بنجاح",
+            "ERROR": "تعذر تحديث ضوابط الأسئلة. حاول مرة أخرى."
           },
           "DELETE": {
-            "SUCCESS": "Guardrails deleted successfully",
-            "ERROR": "There was an error deleting guardrails, please try again."
+            "SUCCESS": "تم حذف ضوابط الأسئلة بنجاح",
+            "ERROR": "تعذر حذف ضوابط الأسئلة. حاول مرة أخرى."
           }
         }
       },
       "RESPONSE_GUIDELINES": {
-        "TITLE": "Response Guidelines",
-        "DESCRIPTION": "The vibe and structure of your assistant’s replies—clear and friendly? Short and snappy? Detailed and formal?",
+        "TITLE": "إرشادات الرد",
+        "DESCRIPTION": "حدّد أسلوب ردود المساعد وبنيتها، مثل الوضوح والود والاختصار أو التفصيل.",
         "BULK_ACTION": {
-          "SELECTED": "{count} item selected | {count} items selected",
-          "SELECT_ALL": "Select all ({count})",
-          "UNSELECT_ALL": "Unselect all ({count})",
+          "SELECTED": "عنصر واحد محدد | {count} عناصر محددة",
+          "SELECT_ALL": "تحديد الكل ({count})",
+          "UNSELECT_ALL": "إلغاء تحديد الكل ({count})",
           "BULK_DELETE_BUTTON": "حذف"
         },
         "ADD": {
           "SUGGESTED": {
-            "TITLE": "Example response guidelines",
-            "ADD": "Add all",
-            "ADD_SINGLE": "Add this",
-            "SAVE": "Add and save (↵)",
-            "PLACEHOLDER": "Type in another response guideline..."
+            "TITLE": "أمثلة لإرشادات الرد",
+            "ADD": "إضافة الكل",
+            "ADD_SINGLE": "إضافة هذا",
+            "SAVE": "إضافة وحفظ (↵)",
+            "PLACEHOLDER": "اكتب إرشاد رد آخر..."
           },
           "NEW": {
-            "TITLE": "Add a response guideline",
+            "TITLE": "إضافة إرشاد للرد",
             "CREATE": "إنشاء",
             "CANCEL": "إلغاء",
-            "PLACEHOLDER": "Type in another response guideline...",
-            "TEST_ALL": "Test all"
+            "PLACEHOLDER": "اكتب إرشاد رد آخر...",
+            "TEST_ALL": "اختبار الكل"
           }
         },
         "LIST": {
-          "SEARCH_PLACEHOLDER": "Search..."
+          "SEARCH_PLACEHOLDER": "بحث"
         },
-        "EMPTY_MESSAGE": "No response guidelines found. Create or add examples to begin.",
-        "SEARCH_EMPTY_MESSAGE": "No response guidelines found for this search.",
+        "EMPTY_MESSAGE": "لا توجد إرشادات للرد. أنشئ إرشادًا أو أضف أحد الأمثلة للبدء.",
+        "SEARCH_EMPTY_MESSAGE": "لا توجد إرشادات رد مطابقة للبحث.",
         "API": {
           "ADD": {
-            "SUCCESS": "Response Guidelines added successfully",
-            "ERROR": "There was an error adding response guidelines, please try again."
+            "SUCCESS": "تمت إضافة إرشادات الرد بنجاح",
+            "ERROR": "تعذرت إضافة إرشادات الرد. حاول مرة أخرى."
           },
           "UPDATE": {
-            "SUCCESS": "Response Guidelines updated successfully",
-            "ERROR": "There was an error updating response guidelines, please try again."
+            "SUCCESS": "تم تحديث إرشادات الرد بنجاح",
+            "ERROR": "تعذر تحديث إرشادات الرد. حاول مرة أخرى."
           },
           "DELETE": {
-            "SUCCESS": "Response Guidelines deleted successfully",
-            "ERROR": "There was an error deleting response guidelines, please try again."
+            "SUCCESS": "تم حذف إرشادات الرد بنجاح",
+            "ERROR": "تعذر حذف إرشادات الرد. حاول مرة أخرى."
           }
         }
       },
       "SCENARIOS": {
-        "TITLE": "Scenarios",
-        "DESCRIPTION": "Give your assistant some context—like “what to do when a user is stuck,” or “how to act during a refund request.”",
+        "TITLE": "السيناريوهات",
+        "DESCRIPTION": "زوّد المساعد بسياق يوضح ما يجب فعله في مواقف مثل تعثر المستخدم أو طلب استرداد الأموال.",
         "BULK_ACTION": {
-          "SELECTED": "{count} item selected | {count} items selected",
-          "SELECT_ALL": "Select all ({count})",
-          "UNSELECT_ALL": "Unselect all ({count})",
+          "SELECTED": "عنصر واحد محدد | {count} عناصر محددة",
+          "SELECT_ALL": "تحديد الكل ({count})",
+          "UNSELECT_ALL": "إلغاء تحديد الكل ({count})",
           "BULK_DELETE_BUTTON": "حذف"
         },
         "ADD": {
           "SUGGESTED": {
-            "TITLE": "Example scenarios",
-            "ADD": "Add all",
-            "ADD_SINGLE": "Add this",
-            "TOOLS_USED": "Tools used :"
+            "TITLE": "أمثلة للسيناريوهات",
+            "ADD": "إضافة الكل",
+            "ADD_SINGLE": "إضافة هذا",
+            "TOOLS_USED": "الأدوات المستخدمة:"
           },
           "NEW": {
-            "CREATE": "Add a scenario",
-            "TITLE": "Create a scenario",
+            "CREATE": "إضافة سيناريو",
+            "TITLE": "إنشاء سيناريو",
             "FORM": {
               "TITLE": {
                 "LABEL": "العنوان",
-                "PLACEHOLDER": "Enter a name for the scenario",
-                "ERROR": "Scenario name is required"
+                "PLACEHOLDER": "أدخل اسم السيناريو",
+                "ERROR": "اسم السيناريو مطلوب"
               },
               "DESCRIPTION": {
                 "LABEL": "الوصف",
-                "PLACEHOLDER": "Describe how and where this scenario will be used",
-                "ERROR": "Scenario description is required"
+                "PLACEHOLDER": "اشرح كيف وأين سيُستخدم هذا السيناريو",
+                "ERROR": "وصف السيناريو مطلوب"
               },
               "INSTRUCTION": {
-                "LABEL": "How to handle",
-                "PLACEHOLDER": "Describe how and where this scenario will be handled",
-                "ERROR": "Scenario content is required"
+                "LABEL": "طريقة التعامل",
+                "PLACEHOLDER": "اشرح كيفية التعامل مع هذا السيناريو",
+                "ERROR": "محتوى السيناريو مطلوب"
               },
               "CREATE": "إنشاء",
               "CANCEL": "إلغاء"
@@ -791,241 +931,245 @@
         },
         "UPDATE": {
           "CANCEL": "إلغاء",
-          "UPDATE": "Update changes"
+          "UPDATE": "حفظ التغييرات"
         },
         "LIST": {
-          "SEARCH_PLACEHOLDER": "Search..."
+          "SEARCH_PLACEHOLDER": "بحث"
         },
-        "EMPTY_MESSAGE": "No scenarios found. Create or add examples to begin.",
-        "SEARCH_EMPTY_MESSAGE": "No scenarios found for this search.",
+        "EMPTY_MESSAGE": "لا توجد سيناريوهات. أنشئ سيناريو أو أضف أحد الأمثلة للبدء.",
+        "SEARCH_EMPTY_MESSAGE": "لا توجد سيناريوهات مطابقة للبحث.",
         "API": {
           "ADD": {
-            "SUCCESS": "Scenarios added successfully",
-            "ERROR": "There was an error adding scenarios, please try again."
+            "SUCCESS": "تمت إضافة السيناريوهات بنجاح",
+            "ERROR": "تعذرت إضافة السيناريوهات. حاول مرة أخرى."
           },
           "UPDATE": {
-            "SUCCESS": "Scenarios updated successfully",
-            "ERROR": "There was an error updating scenarios, please try again."
+            "SUCCESS": "تم تحديث السيناريوهات بنجاح",
+            "ERROR": "تعذر تحديث السيناريوهات. حاول مرة أخرى."
           },
           "DELETE": {
-            "SUCCESS": "Scenarios deleted successfully",
-            "ERROR": "There was an error deleting scenarios, please try again."
+            "SUCCESS": "تم حذف السيناريوهات بنجاح",
+            "ERROR": "تعذر حذف السيناريوهات. حاول مرة أخرى."
           }
         }
       }
     },
     "DOCUMENTS": {
-      "HEADER": "Documents",
-      "ADD_NEW": "Create a new document",
-      "FAQ_COUNT": "{n} FAQ | {n} FAQs",
-      "SELECTED": "{count} selected",
-      "SELECT_ALL": "Select all ({count})",
-      "UNSELECT_ALL": "Unselect all ({count})",
+      "HEADER": "المستندات",
+      "ADD_NEW": "إنشاء مستند",
+      "FAQ_COUNT": "سؤال شائع واحد | {n} أسئلة شائعة",
+      "USED_IN_CONVERSATIONS": "مستخدم في محادثة واحدة | مستخدم في {n} محادثات",
+      "NO_USED_CONVERSATIONS": "لم يتم العثور على محادثات لهذا المستند.",
+      "SELECTED": "تم تحديد {count}",
+      "SELECT_ALL": "تحديد الكل ({count})",
+      "UNSELECT_ALL": "إلغاء تحديد الكل ({count})",
       "BULK_DELETE_BUTTON": "حذف",
       "BULK_SYNC_BUTTON": "تحديث",
       "BULK_DELETE": {
-        "TITLE": "Delete documents?",
-        "DESCRIPTION": "Are you sure you want to delete the selected documents? This action cannot be undone.",
-        "CONFIRM": "Yes, delete all",
-        "SUCCESS_MESSAGE": "Documents deleted successfully",
-        "ERROR_MESSAGE": "There was an error deleting the documents, please try again."
+        "TITLE": "حذف المستندات؟",
+        "DESCRIPTION": "هل تريد حذف المستندات المحددة؟ لا يمكن التراجع عن هذا الإجراء.",
+        "CONFIRM": "نعم، حذف الكل",
+        "SUCCESS_MESSAGE": "تم حذف المستندات بنجاح",
+        "ERROR_MESSAGE": "تعذر حذف المستندات. حاول مرة أخرى."
       },
       "BULK_SYNC": {
-        "SUCCESS_MESSAGE_ONE": "Refresh queued for 1 document",
-        "SUCCESS_MESSAGE": "Refresh queued for {count} documents",
-        "ZERO_MESSAGE": "No documents marked for refresh.",
-        "ERROR_MESSAGE": "There was an error queuing the refresh, please try again."
+        "SUCCESS_MESSAGE_ONE": "تمت جدولة تحديث مستند واحد",
+        "SUCCESS_MESSAGE": "تمت جدولة تحديث {count} مستندات",
+        "ZERO_MESSAGE": "لم تُحدد مستندات للتحديث.",
+        "ERROR_MESSAGE": "تعذرت جدولة التحديث. حاول مرة أخرى."
       },
       "SYNC": {
-        "QUEUED_MESSAGE": "Refresh queued. We'll update the document shortly.",
-        "ERROR_MESSAGE": "Could not queue refresh, please try again."
+        "QUEUED_MESSAGE": "تمت جدولة التحديث، وسيُحدّث المستند قريبًا.",
+        "ERROR_MESSAGE": "تعذرت جدولة التحديث. حاول مرة أخرى."
       },
       "FILTERS": {
         "SOURCE": {
-          "ALL": "All sources",
-          "WEB": "Web pages",
-          "PDF": "PDFs"
+          "ALL": "كل المصادر",
+          "WEB": "صفحات الويب",
+          "PDF": "ملفات PDF"
         },
         "STATUS": {
-          "ANY": "Any status",
-          "UPDATED": "Updated",
-          "NEEDS_UPDATE": "Needs update",
-          "UPDATING": "Updating",
-          "FAILED": "Failed"
+          "ANY": "كل الحالات",
+          "UPDATED": "محدّث",
+          "NEEDS_UPDATE": "يحتاج إلى تحديث",
+          "UPDATING": "جارٍ التحديث",
+          "FAILED": "فشل"
         },
         "SORT": {
-          "RECENTLY_UPDATED": "Recently updated",
-          "RECENTLY_CREATED": "Recently created"
+          "RECENTLY_UPDATED": "الأحدث تحديثًا",
+          "RECENTLY_CREATED": "الأحدث إنشاءً",
+          "MOST_USED": "الأكثر استخدامًا في المحادثات"
         },
-        "SEARCH_PLACEHOLDER": "Search..."
+        "SEARCH_PLACEHOLDER": "بحث"
       },
       "SYNC_STATUS": {
-        "SYNCED": "last updated {time}",
+        "SYNCED": "آخر تحديث {time}",
         "SYNCING": "جاري التحديث...",
-        "STALE_SYNC": "update stalled",
-        "FAILED": "Failed to sync",
-        "NEVER_SYNCED": "not updated yet"
+        "STALE_SYNC": "توقف التحديث",
+        "FAILED": "فشل التحديث",
+        "NEVER_SYNCED": "لم يُحدّث بعد"
       },
       "SYNC_ERRORS": {
         "NOT_FOUND": "لم يتم العثور على الصفحة",
-        "ACCESS_DENIED": "Access denied",
-        "TIMEOUT": "Page took too long to respond",
-        "CONTENT_EMPTY": "Page returned empty content",
-        "FETCH_FAILED": "Could not fetch page",
-        "SYNC_ERROR": "Unexpected error",
-        "DEFAULT": "Sync error"
+        "ACCESS_DENIED": "الوصول مرفوض",
+        "TIMEOUT": "استغرقت الصفحة وقتًا طويلًا للرد",
+        "CONTENT_EMPTY": "محتوى الصفحة فارغ",
+        "FETCH_FAILED": "تعذر جلب الصفحة",
+        "SYNC_ERROR": "خطأ غير متوقع",
+        "DEFAULT": "خطأ في التحديث"
       },
       "RELATED_RESPONSES": {
-        "TITLE": "Related FAQs",
-        "EMPTY": "No FAQs have been generated from this document yet."
+        "TITLE": "الأسئلة الشائعة المرتبطة",
+        "EMPTY": "لم تُنشأ أسئلة شائعة من هذا المستند بعد."
       },
       "DETAILS": {
-        "DESCRIPTION": "Review the crawled content and the FAQs generated from this source.",
-        "SOURCE": "Source",
-        "GENERATED_FAQS": "Generated FAQs",
-        "LAST_UPDATED": "Last updated",
+        "DESCRIPTION": "راجع المحتوى المستخرج والأسئلة الشائعة المنشأة من هذا المصدر.",
+        "SOURCE": "المصدر",
+        "GENERATED_FAQS": "الأسئلة الشائعة المنشأة",
+        "USED_IN_CONVERSATIONS": "مستخدم في المحادثات",
+        "LAST_UPDATED": "آخر تحديث",
         "NOT_AVAILABLE": "غير متاح",
-        "CONTENT_TAB": "Crawled content",
-        "PDF_TAB": "PDF details",
-        "CONTENT_TITLE": "Crawled content",
-        "PDF_TITLE": "PDF file",
-        "PDF_DESCRIPTION": "Review the original PDF source.",
-        "CHARACTER_COUNT": "{count} characters extracted",
+        "CONTENT_TAB": "المحتوى المستخرج",
+        "PDF_TAB": "تفاصيل PDF",
+        "CONTENT_TITLE": "المحتوى المستخرج",
+        "PDF_TITLE": "ملف PDF",
+        "PDF_DESCRIPTION": "راجع ملف PDF الأصلي.",
+        "CHARACTER_COUNT": "تم استخراج {count} حرفًا",
         "COPY_CONTENT": "نسخ",
-        "COPY_SUCCESS": "Crawled content copied to clipboard",
-        "COPY_ERROR": "Could not copy crawled content",
-        "VIEW_RAW": "View raw",
-        "VIEW_PREVIEW": "View preview",
-        "UNREADABLE_CONTENT": "Readable content could not be extracted from this document. You can view the raw extracted content.",
-        "EMPTY_CONTENT": "No crawled content is available for this document yet."
+        "COPY_SUCCESS": "تم نسخ المحتوى المستخرج",
+        "COPY_ERROR": "تعذر نسخ المحتوى المستخرج",
+        "VIEW_RAW": "عرض المحتوى الخام",
+        "VIEW_PREVIEW": "عرض المعاينة",
+        "UNREADABLE_CONTENT": "تعذر استخراج محتوى مقروء من المستند. يمكنك عرض المحتوى الخام المستخرج.",
+        "EMPTY_CONTENT": "لا يتوفر محتوى مستخرج لهذا المستند بعد."
       },
-      "FORM_DESCRIPTION": "Enter the URL of the document to add it as a knowledge source and choose the assistant to associate it with.",
+      "FORM_DESCRIPTION": "أدخل رابط المستند لإضافته كمصدر معرفة، ثم اختر المساعد المرتبط به.",
       "CREATE": {
-        "TITLE": "Add a document",
-        "SUCCESS_MESSAGE": "The document has been successfully created",
-        "ERROR_MESSAGE": "There was an error creating the document, please try again."
+        "TITLE": "إضافة مستند",
+        "SUCCESS_MESSAGE": "تم إنشاء المستند بنجاح",
+        "ERROR_MESSAGE": "تعذر إنشاء المستند. حاول مرة أخرى."
       },
       "FORM": {
         "TYPE": {
-          "LABEL": "Document Type",
+          "LABEL": "نوع المستند",
           "URL": "الرابط",
-          "PDF": "PDF File"
+          "PDF": "ملف PDF"
         },
         "URL": {
           "LABEL": "الرابط",
-          "PLACEHOLDER": "Enter the URL of the document",
-          "ERROR": "Please provide a valid URL for the document"
+          "PLACEHOLDER": "أدخل رابط المستند",
+          "ERROR": "أدخل رابطًا صحيحًا للمستند"
         },
         "PDF_FILE": {
-          "LABEL": "PDF File",
-          "CHOOSE_FILE": "Choose PDF file",
-          "ERROR": "Please select a PDF file",
-          "HELP_TEXT": "Maximum file size: 10MB",
-          "INVALID_TYPE": "Please select a valid PDF file",
-          "TOO_LARGE": "File size exceeds 10MB limit"
+          "LABEL": "ملف PDF",
+          "CHOOSE_FILE": "اختر ملف PDF",
+          "ERROR": "اختر ملف PDF",
+          "HELP_TEXT": "الحد الأقصى لحجم الملف: 10 ميجابايت",
+          "INVALID_TYPE": "اختر ملف PDF صالحًا",
+          "TOO_LARGE": "يتجاوز حجم الملف الحد الأقصى وهو 10 ميجابايت"
         },
         "NAME": {
-          "LABEL": "Document Name (Optional)",
-          "PLACEHOLDER": "Enter a name for the document"
+          "LABEL": "اسم المستند (اختياري)",
+          "PLACEHOLDER": "أدخل اسم المستند"
         }
       },
       "DELETE": {
-        "TITLE": "Are you sure to delete the document?",
-        "DESCRIPTION": "This action is permanent. Deleting this document will permanently erase all generated knowledge.",
+        "TITLE": "هل تريد حذف المستند؟",
+        "DESCRIPTION": "هذا الإجراء نهائي وسيحذف كل المعرفة المنشأة من هذا المستند.",
         "CONFIRM": "نعم، احذف",
-        "SUCCESS_MESSAGE": "The document has been successfully deleted",
-        "ERROR_MESSAGE": "There was an error deleting the document, please try again."
+        "SUCCESS_MESSAGE": "تم حذف المستند بنجاح",
+        "ERROR_MESSAGE": "تعذر حذف المستند. حاول مرة أخرى."
       },
       "OPTIONS": {
         "VIEW_DETAILS": "عرض التفاصيل",
-        "SYNC_NOW": "Refresh now",
-        "RETRY_SYNC": "Retry refresh",
-        "DELETE_DOCUMENT": "Delete Document"
+        "SYNC_NOW": "تحديث الآن",
+        "RETRY_SYNC": "إعادة محاولة التحديث",
+        "DELETE_DOCUMENT": "حذف المستند"
       },
       "EMPTY_STATE": {
-        "TITLE": "No documents available",
-        "SUBTITLE": "Documents are used by your assistant to generate FAQs. You can import documents to provide context for your assistant.",
-        "FILTERED_TITLE": "No matching documents",
-        "FILTERED_SUBTITLE": "Try changing the source, status, or search term.",
+        "TITLE": "لا توجد مستندات",
+        "SUBTITLE": "يستخدم المساعد المستندات لإنشاء أسئلة شائعة. أضف مستندات لتزويده بالمعلومات.",
+        "FILTERED_TITLE": "لا توجد مستندات مطابقة",
+        "FILTERED_SUBTITLE": "جرّب تغيير المصدر أو الحالة أو عبارة البحث.",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Captain Document",
-          "NOTE": "A document in Captain serves as a knowledge resource for the assistant. By connecting your help center or guides, Captain can analyze the content and provide accurate responses for customer inquiries."
+          "TITLE": "مستند الذكاء الاصطناعي",
+          "NOTE": "يمثل المستند مصدر معرفة للمساعد. عند ربط مركز المساعدة أو الأدلة، يمكنه تحليل المحتوى وتقديم ردود دقيقة على استفسارات العملاء."
         }
       }
     },
     "CUSTOM_TOOLS": {
-      "HEADER": "Tools",
-      "ADD_NEW": "Create a new tool",
-      "SOFT_LIMIT_WARNING": "Having more than 10 tools may reduce the assistant's reliability in selecting the right tool. Consider removing unused tools for better results.",
+      "HEADER": "الأدوات",
+      "ADD_NEW": "إنشاء أداة",
+      "SOFT_LIMIT_WARNING": "قد تقل دقة اختيار الأداة المناسبة عند إضافة أكثر من 10 أدوات. احذف الأدوات غير المستخدمة للحصول على نتائج أفضل.",
       "EMPTY_STATE": {
-        "TITLE": "No custom tools available",
-        "SUBTITLE": "Create custom tools to connect your assistant with external APIs and services, enabling it to fetch data and perform actions on your behalf.",
+        "TITLE": "لا توجد أدوات مخصصة",
+        "SUBTITLE": "أنشئ أدوات مخصصة لربط المساعد بواجهات API والخدمات الخارجية كي يجلب البيانات وينفذ الإجراءات.",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Custom Tools",
-          "NOTE": "Custom tools allow your assistant to interact with external APIs and services. Create tools to fetch data, perform actions, or integrate with your existing systems to enhance your assistant's capabilities."
+          "TITLE": "الأدوات المخصصة",
+          "NOTE": "تتيح الأدوات المخصصة للمساعد التعامل مع واجهات API والخدمات الخارجية لجلب البيانات وتنفيذ الإجراءات والتكامل مع أنظمتك."
         }
       },
-      "FORM_DESCRIPTION": "Configure your custom tool to connect with external APIs",
+      "FORM_DESCRIPTION": "اضبط الأداة المخصصة للاتصال بواجهات API خارجية.",
       "OPTIONS": {
-        "EDIT_TOOL": "Edit tool",
-        "DELETE_TOOL": "Delete tool"
+        "EDIT_TOOL": "تعديل الأداة",
+        "DELETE_TOOL": "حذف الأداة"
       },
       "CREATE": {
-        "TITLE": "Create Custom Tool",
-        "SUCCESS_MESSAGE": "Custom tool created successfully",
-        "ERROR_MESSAGE": "Failed to create custom tool"
+        "TITLE": "إنشاء أداة مخصصة",
+        "SUCCESS_MESSAGE": "تم إنشاء الأداة المخصصة بنجاح",
+        "ERROR_MESSAGE": "تعذر إنشاء الأداة المخصصة"
       },
       "EDIT": {
-        "TITLE": "Edit Custom Tool",
-        "SUCCESS_MESSAGE": "Custom tool updated successfully",
-        "ERROR_MESSAGE": "Failed to update custom tool"
+        "TITLE": "تعديل أداة مخصصة",
+        "SUCCESS_MESSAGE": "تم تحديث الأداة المخصصة بنجاح",
+        "ERROR_MESSAGE": "تعذر تحديث الأداة المخصصة"
       },
       "DELETE": {
-        "TITLE": "Delete Custom Tool",
-        "DESCRIPTION": "Are you sure you want to delete this custom tool? This action cannot be undone.",
+        "TITLE": "حذف أداة مخصصة",
+        "DESCRIPTION": "هل تريد حذف هذه الأداة المخصصة؟ لا يمكن التراجع عن هذا الإجراء.",
         "CONFIRM": "نعم، احذف",
-        "SUCCESS_MESSAGE": "Custom tool deleted successfully",
-        "ERROR_MESSAGE": "Failed to delete custom tool"
+        "SUCCESS_MESSAGE": "تم حذف الأداة المخصصة بنجاح",
+        "ERROR_MESSAGE": "تعذر حذف الأداة المخصصة"
       },
       "PAYWALL": {
-        "TITLE": "Upgrade to use tools with Captain",
-        "AVAILABLE_ON": "Captain Tools are only available in Business and Enterprise plans. Please upgrade to Business plan to use the feature.",
+        "TITLE": "حدّث خطتك لاستخدام أدوات الذكاء الاصطناعي",
+        "AVAILABLE_ON": "تتوفر أدوات الذكاء الاصطناعي في خطط الأعمال والمؤسسات. حدّث خطتك لاستخدامها.",
         "UPGRADE_PROMPT": "",
         "UPGRADE_NOW": "فتح الفواتير",
         "CANCEL_ANYTIME": ""
       },
       "ENTERPRISE_PAYWALL": {
-        "AVAILABLE_ON": "Captain Tools are only available in the paid plans.",
-        "UPGRADE_PROMPT": "Please upgrade to a paid plan to use this feature.",
-        "ASK_ADMIN": "Please reach out to your administrator for the upgrade."
+        "AVAILABLE_ON": "تتوفر أدوات الذكاء الاصطناعي في الخطط المدفوعة فقط.",
+        "UPGRADE_PROMPT": "حدّث إلى خطة مدفوعة لاستخدام هذه الميزة.",
+        "ASK_ADMIN": "تواصل مع مسؤول الحساب لتحديث الخطة."
       },
       "TEST": {
-        "BUTTON": "Test connection",
-        "SUCCESS": "Endpoint returned HTTP {status}",
-        "ERROR": "Connection failed",
-        "DISABLED_HINT": "Testing is only available for endpoints without templates or request bodies."
+        "BUTTON": "اختبار الاتصال",
+        "SUCCESS": "أعادت نقطة النهاية حالة HTTP {status}",
+        "ERROR": "فشل الاتصال",
+        "DISABLED_HINT": "يتوفر الاختبار فقط لنقاط النهاية التي لا تستخدم قوالب أو محتوى طلب."
       },
       "FORM": {
         "TITLE": {
-          "LABEL": "Tool Name",
+          "LABEL": "اسم الأداة",
           "PLACEHOLDER": "Order Lookup",
-          "ERROR": "Tool name is required",
-          "MAX_LENGTH_ERROR": "Tool name must be {max} characters or fewer"
+          "ERROR": "اسم الأداة مطلوب",
+          "MAX_LENGTH_ERROR": "يجب ألا يتجاوز اسم الأداة {max} حرفًا"
         },
         "DESCRIPTION": {
           "LABEL": "الوصف",
-          "PLACEHOLDER": "Looks up order details by order ID"
+          "PLACEHOLDER": "يبحث عن تفاصيل الطلب باستخدام معرّف الطلب"
         },
         "HTTP_METHOD": {
-          "LABEL": "Method"
+          "LABEL": "طريقة الطلب"
         },
         "ENDPOINT_URL": {
-          "LABEL": "Endpoint URL",
+          "LABEL": "رابط نقطة النهاية",
           "PLACEHOLDER": "https://api.example.com/orders/{'{{'} order_id {'}}'}",
-          "ERROR": "Valid URL is required"
+          "ERROR": "يجب إدخال رابط صالح"
         },
         "AUTH_TYPE": {
-          "LABEL": "Authentication Type"
+          "LABEL": "نوع المصادقة"
         },
         "AUTH_TYPES": {
           "NONE": "لا شيء",
@@ -1035,190 +1179,191 @@
         },
         "AUTH_CONFIG": {
           "BEARER_TOKEN": "Bearer Token",
-          "BEARER_TOKEN_PLACEHOLDER": "Enter your bearer token",
-          "USERNAME": "Username",
-          "USERNAME_PLACEHOLDER": "Enter username",
+          "BEARER_TOKEN_PLACEHOLDER": "أدخل رمز Bearer",
+          "USERNAME": "اسم المستخدم",
+          "USERNAME_PLACEHOLDER": "أدخل اسم المستخدم",
           "PASSWORD": "كلمة المرور",
-          "PASSWORD_PLACEHOLDER": "Enter password",
-          "API_KEY": "Header Name",
+          "PASSWORD_PLACEHOLDER": "أدخل كلمة المرور",
+          "API_KEY": "اسم الترويسة",
           "API_KEY_PLACEHOLDER": "X-API-Key",
-          "API_VALUE": "Header Value",
-          "API_VALUE_PLACEHOLDER": "Enter API key value"
+          "API_VALUE": "قيمة الترويسة",
+          "API_VALUE_PLACEHOLDER": "أدخل قيمة مفتاح API"
         },
         "PARAMETERS": {
-          "LABEL": "Parameters",
-          "HELP_TEXT": "Define the parameters that will be extracted from user queries"
+          "LABEL": "المعاملات",
+          "HELP_TEXT": "حدّد المعاملات التي ستُستخرج من استفسارات المستخدم"
         },
-        "ADD_PARAMETER": "Add Parameter",
+        "ADD_PARAMETER": "إضافة معامل",
         "PARAM_NAME": {
-          "PLACEHOLDER": "Parameter name (e.g., order_id)"
+          "PLACEHOLDER": "اسم المعامل، مثل order_id"
         },
         "PARAM_TYPE": {
           "PLACEHOLDER": "النوع"
         },
         "PARAM_TYPES": {
-          "STRING": "String",
+          "STRING": "نص",
           "NUMBER": "العدد",
-          "BOOLEAN": "Boolean",
-          "ARRAY": "Array",
-          "OBJECT": "Object"
+          "BOOLEAN": "قيمة منطقية",
+          "ARRAY": "مصفوفة",
+          "OBJECT": "كائن"
         },
         "PARAM_DESCRIPTION": {
-          "PLACEHOLDER": "Description of the parameter"
+          "PLACEHOLDER": "وصف المعامل"
         },
         "PARAM_REQUIRED": {
           "LABEL": "مطلوب"
         },
         "REQUEST_TEMPLATE": {
-          "LABEL": "Request Body Template (Optional)",
+          "LABEL": "قالب محتوى الطلب (اختياري)",
           "PLACEHOLDER": "{'{'}\n  \"order_id\": \"{'{{'} order_id {'}}'}\"\n{'}'}"
         },
         "RESPONSE_TEMPLATE": {
-          "LABEL": "Response Template (Optional)",
+          "LABEL": "قالب الاستجابة (اختياري)",
           "PLACEHOLDER": "Order {'{{'} order_id {'}}'} status: {'{{'} status {'}}'}"
         },
         "ERRORS": {
-          "PARAM_NAME_REQUIRED": "Parameter name is required"
+          "PARAM_NAME_REQUIRED": "اسم المعامل مطلوب"
         }
       }
     },
     "RESPONSES": {
-      "HEADER": "FAQs",
-      "ADD_NEW": "Create new FAQ",
+      "HEADER": "الأسئلة الشائعة",
+      "ADD_NEW": "إنشاء سؤال شائع",
+      "NO_USED_CONVERSATIONS": "لم يتم العثور على محادثات لهذا السؤال الشائع.",
       "DOCUMENTABLE": {
-        "CONVERSATION": "Conversation #{id}"
+        "CONVERSATION": "المحادثة #{id}"
       },
-      "SELECTED": "{count} selected",
-      "SELECT_ALL": "Select all ({count})",
-      "UNSELECT_ALL": "Unselect all ({count})",
-      "SEARCH_PLACEHOLDER": "Search FAQs...",
+      "SELECTED": "تم تحديد {count}",
+      "SELECT_ALL": "تحديد الكل ({count})",
+      "UNSELECT_ALL": "إلغاء تحديد الكل ({count})",
+      "SEARCH_PLACEHOLDER": "بحث",
       "ERRORS": {
-        "LOAD": "There was an error loading FAQs. Please try again."
+        "LOAD": "تعذر تحميل الأسئلة الشائعة. حاول مرة أخرى."
       },
       "BULK_DELETE_BUTTON": "حذف",
       "BULK_DELETE": {
-        "TITLE": "Delete FAQs?",
-        "DESCRIPTION": "Are you sure you want to delete the selected FAQs? This action cannot be undone.",
-        "CONFIRM": "Yes, delete all",
-        "SUCCESS_MESSAGE": "FAQs deleted successfully",
-        "ERROR_MESSAGE": "There was an error deleting the FAQs, please try again."
+        "TITLE": "حذف الأسئلة الشائعة؟",
+        "DESCRIPTION": "هل تريد حذف الأسئلة الشائعة المحددة؟ لا يمكن التراجع عن هذا الإجراء.",
+        "CONFIRM": "نعم، حذف الكل",
+        "SUCCESS_MESSAGE": "تم حذف الأسئلة الشائعة بنجاح",
+        "ERROR_MESSAGE": "تعذر حذف الأسئلة الشائعة. حاول مرة أخرى."
       },
       "DELETE": {
-        "TITLE": "Are you sure to delete the FAQ?",
+        "TITLE": "هل تريد حذف السؤال الشائع؟",
         "DESCRIPTION": "",
         "CONFIRM": "نعم، احذف",
-        "SUCCESS_MESSAGE": "FAQ deleted successfully",
-        "ERROR_MESSAGE": "There was an error deleting the FAQ, please try again."
+        "SUCCESS_MESSAGE": "تم حذف السؤال الشائع بنجاح",
+        "ERROR_MESSAGE": "تعذر حذف السؤال الشائع. حاول مرة أخرى."
       },
       "SUGGESTIONS_BANNER": {
-        "TITLE": "Captain grouped recurring customer questions into FAQ suggestions.",
-        "ACTION": "Review suggestions"
+        "TITLE": "جمع الذكاء الاصطناعي أسئلة العملاء المتكررة في اقتراحات لأسئلة شائعة.",
+        "ACTION": "مراجعة الاقتراحات"
       },
-      "FORM_DESCRIPTION": "Add a question and its corresponding answer to the knowledge base and select the assistant it should be associated with.",
+      "FORM_DESCRIPTION": "أضف السؤال وإجابته إلى قاعدة المعرفة، ثم اختر المساعد المرتبط به.",
       "CREATE": {
-        "TITLE": "Add an FAQ",
-        "SUCCESS_MESSAGE": "The response has been added successfully.",
-        "ERROR_MESSAGE": "An error occurred while adding the response. Please try again."
+        "TITLE": "إضافة سؤال شائع",
+        "SUCCESS_MESSAGE": "تمت إضافة السؤال الشائع بنجاح.",
+        "ERROR_MESSAGE": "تعذرت إضافة السؤال الشائع. حاول مرة أخرى."
       },
       "FORM": {
         "QUESTION": {
-          "LABEL": "Question",
-          "PLACEHOLDER": "Enter the question here",
-          "ERROR": "Please provide a valid question."
+          "LABEL": "السؤال",
+          "PLACEHOLDER": "أدخل السؤال هنا",
+          "ERROR": "أدخل سؤالًا صحيحًا."
         },
         "ANSWER": {
-          "LABEL": "Answer",
-          "PLACEHOLDER": "Enter the answer here",
-          "ERROR": "Please provide a valid answer."
+          "LABEL": "الإجابة",
+          "PLACEHOLDER": "أدخل الإجابة هنا",
+          "ERROR": "أدخل إجابة صحيحة."
         }
       },
       "EDIT": {
-        "TITLE": "Update the FAQ",
-        "SUCCESS_MESSAGE": "The FAQ has been successfully updated",
-        "ERROR_MESSAGE": "There was an error updating the FAQ, please try again",
-        "APPROVE_SUCCESS_MESSAGE": "The FAQ was marked as approved"
+        "TITLE": "تحديث السؤال الشائع",
+        "SUCCESS_MESSAGE": "تم تحديث السؤال الشائع بنجاح",
+        "ERROR_MESSAGE": "تعذر تحديث السؤال الشائع. حاول مرة أخرى.",
+        "APPROVE_SUCCESS_MESSAGE": "تم اعتماد السؤال الشائع"
       },
       "OPTIONS": {
-        "APPROVE": "Approve",
+        "APPROVE": "اعتماد",
         "EDIT_RESPONSE": "تعديل",
         "DELETE_RESPONSE": "حذف"
       },
       "EMPTY_STATE": {
-        "TITLE": "No FAQs Found",
-        "SUBTITLE": "FAQs help your assistant provide quick and accurate answers to questions from your customers. They can be generated automatically from your content or can be added manually.",
-        "CLEAR_SEARCH": "Clear active filters",
+        "TITLE": "لا توجد أسئلة شائعة",
+        "SUBTITLE": "تساعد الأسئلة الشائعة المساعد على تقديم إجابات سريعة ودقيقة. يمكن إنشاؤها تلقائيًا من المحتوى أو إضافتها يدويًا.",
+        "CLEAR_SEARCH": "مسح عوامل التصفية",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Captain FAQ",
-          "NOTE": "Captain FAQs detects common customer questions—whether missing from your knowledge base or frequently asked—and generates relevant FAQs to improve support. You can review each suggestion and decide whether to approve or reject it."
+          "TITLE": "أسئلة الذكاء الاصطناعي الشائعة",
+          "NOTE": "يكتشف الذكاء الاصطناعي أسئلة العملاء المتكررة أو غير الموجودة في قاعدة المعرفة، ويقترح أسئلة شائعة مناسبة يمكنك مراجعتها واعتمادها أو رفضها."
         }
       }
     },
     "FAQ_SUGGESTIONS": {
-      "HEADER": "FAQ suggestions",
-      "SEARCH_PLACEHOLDER": "Search suggestions...",
-      "QUEUE_COUNT": "{count} suggestion to review | {count} suggestions to review",
-      "QUEUE_HINT": "Ranked by customer demand",
-      "SOURCE_COUNT": "{count} conversation | {count} conversations",
-      "REVIEW": "Review sources",
-      "APPROVE": "Approve",
-      "APPROVE_FAQ": "Approve FAQ",
+      "HEADER": "اقتراحات الأسئلة الشائعة",
+      "SEARCH_PLACEHOLDER": "بحث",
+      "QUEUE_COUNT": "اقتراح واحد للمراجعة | {count} اقتراحات للمراجعة",
+      "QUEUE_HINT": "مرتبة حسب طلب العملاء",
+      "SOURCE_COUNT": "محادثة واحدة | {count} محادثات",
+      "REVIEW": "مراجعة المصادر",
+      "APPROVE": "اعتماد",
+      "APPROVE_FAQ": "اعتماد السؤال الشائع",
       "DISMISS": "تجاهل",
-      "SAVE": "Save changes",
+      "SAVE": "حفظ التغييرات",
       "DETAILS": {
-        "TITLE": "Review FAQ suggestion",
-        "DESCRIPTION": "Captain grouped {count} conversation into this suggestion. Review the evidence and refine the FAQ before approval. | Captain grouped {count} conversations into this suggestion. Review the evidence and refine the FAQ before approval.",
-        "SOURCES": "Source conversations",
-        "SOURCE_PROGRESS": "{visible} of {total}",
-        "NO_SOURCES": "No accessible source conversations were found.",
-        "RETRY": "Retry"
+        "TITLE": "مراجعة اقتراح سؤال شائع",
+        "DESCRIPTION": "جمع الذكاء الاصطناعي محادثة واحدة في هذا الاقتراح. راجع المصدر وحسّن السؤال قبل اعتماده. | جمع الذكاء الاصطناعي {count} محادثات في هذا الاقتراح. راجع المصادر وحسّن السؤال قبل اعتماده.",
+        "SOURCES": "المحادثات المصدرية",
+        "SOURCE_PROGRESS": "{visible} من {total}",
+        "NO_SOURCES": "لم يتم العثور على محادثات مصدرية يمكن الوصول إليها.",
+        "RETRY": "إعادة المحاولة"
       },
       "EMPTY_STATE": {
-        "TITLE": "The review queue is clear",
-        "SUBTITLE": "New FAQ suggestions will appear here when they are ready to review.",
-        "CLEAR_SEARCH": "Clear search"
+        "TITLE": "لا توجد اقتراحات للمراجعة",
+        "SUBTITLE": "ستظهر اقتراحات الأسئلة الشائعة الجديدة هنا عندما تصبح جاهزة للمراجعة.",
+        "CLEAR_SEARCH": "مسح البحث"
       },
       "SUCCESS": {
-        "APPROVED": "FAQ approved and added to Captain's knowledge.",
-        "DISMISSED": "Suggestion dismissed.",
-        "SAVED": "Suggestion updated."
+        "APPROVED": "تم اعتماد السؤال الشائع وإضافته إلى معرفة الذكاء الاصطناعي.",
+        "DISMISSED": "تم تجاهل الاقتراح.",
+        "SAVED": "تم تحديث الاقتراح."
       },
       "ERRORS": {
-        "LOAD": "There was an error loading FAQ suggestions. Please try again.",
-        "LOAD_DETAILS": "There was an error loading the source conversations.",
-        "APPROVE": "There was an error approving the FAQ. Please try again.",
-        "DISMISS": "There was an error dismissing the suggestion. Please try again.",
-        "SAVE": "There was an error saving the suggestion. Please try again."
+        "LOAD": "تعذر تحميل اقتراحات الأسئلة الشائعة. حاول مرة أخرى.",
+        "LOAD_DETAILS": "تعذر تحميل المحادثات المصدرية.",
+        "APPROVE": "تعذر اعتماد السؤال الشائع. حاول مرة أخرى.",
+        "DISMISS": "تعذر تجاهل الاقتراح. حاول مرة أخرى.",
+        "SAVE": "تعذر حفظ الاقتراح. حاول مرة أخرى."
       }
     },
     "INBOXES": {
-      "HEADER": "Connected Inboxes",
-      "ADD_NEW": "Connect a new inbox",
+      "HEADER": "صناديق الوارد المتصلة",
+      "ADD_NEW": "ربط صندوق جديد",
       "OPTIONS": {
         "DISCONNECT": "قطع الاتصال"
       },
       "DELETE": {
-        "TITLE": "Are you sure to disconnect the inbox?",
+        "TITLE": "هل تريد قطع اتصال صندوق الوارد؟",
         "DESCRIPTION": "",
         "CONFIRM": "نعم، احذف",
-        "SUCCESS_MESSAGE": "The inbox was successfully disconnected.",
-        "ERROR_MESSAGE": "There was an error disconnecting the inbox, please try again."
+        "SUCCESS_MESSAGE": "تم قطع اتصال صندوق الوارد بنجاح.",
+        "ERROR_MESSAGE": "تعذر قطع اتصال صندوق الوارد. حاول مرة أخرى."
       },
-      "FORM_DESCRIPTION": "Choose an inbox to connect with the assistant.",
+      "FORM_DESCRIPTION": "اختر صندوق وارد لربطه بالمساعد.",
       "CREATE": {
-        "TITLE": "Connect an Inbox",
-        "SUCCESS_MESSAGE": "The inbox was successfully connected.",
-        "ERROR_MESSAGE": "An error occurred while connecting the inbox. Please try again."
+        "TITLE": "ربط صندوق وارد",
+        "SUCCESS_MESSAGE": "تم ربط صندوق الوارد بنجاح.",
+        "ERROR_MESSAGE": "تعذر ربط صندوق الوارد. حاول مرة أخرى."
       },
       "FORM": {
         "INBOX": {
           "LABEL": "صندوق الوارد",
-          "PLACEHOLDER": "Choose the inbox to deploy the assistant.",
-          "ERROR": "An inbox selection is required."
+          "PLACEHOLDER": "اختر صندوق الوارد لتشغيل المساعد.",
+          "ERROR": "يجب اختيار صندوق وارد."
         }
       },
       "EMPTY_STATE": {
-        "TITLE": "No Connected Inboxes",
-        "SUBTITLE": "Connecting an inbox allows the assistant to handle initial questions from your customers before transferring them to you."
+        "TITLE": "لا توجد صناديق وارد متصلة",
+        "SUBTITLE": "يتيح ربط صندوق وارد للمساعد التعامل مع أسئلة العملاء الأولية قبل تحويلها إلى فريقك."
       }
     }
   }

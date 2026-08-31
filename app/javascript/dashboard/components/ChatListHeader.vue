@@ -16,6 +16,7 @@ const props = defineProps({
   isOnExpandedLayout: { type: Boolean, required: true },
   conversationStats: { type: Object, required: true },
   isListLoading: { type: Boolean, required: true },
+  isRefreshing: { type: Boolean, required: true },
 });
 
 const emit = defineEmits([
@@ -24,6 +25,7 @@ const emit = defineEmits([
   'resetFilters',
   'basicFilterChange',
   'filtersModal',
+  'refresh',
 ]);
 
 const { uiSettings, updateUISettings } = useUISettings();
@@ -162,6 +164,16 @@ const toggleConversationLayout = () => {
       <SwitchLayout
         :is-on-expanded-layout="isOnExpandedLayout"
         @toggle="toggleConversationLayout"
+      />
+      <NextButton
+        v-tooltip.top-end="$t('CHAT_LIST.REFRESH')"
+        icon="i-lucide-refresh-cw"
+        slate
+        xs
+        faded
+        :disabled="isRefreshing"
+        :is-loading="isRefreshing"
+        @click="emit('refresh')"
       />
     </div>
   </div>

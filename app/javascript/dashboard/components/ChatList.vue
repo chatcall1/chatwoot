@@ -573,7 +573,23 @@ function onToggleAdvanceFiltersModal() {
 
 function fetchConversations() {
   store.dispatch('updateChatListFilters', conversationFilters.value);
-  store.dispatch('fetchAllConversations').then(emitConversationLoaded);
+  return store.dispatch('fetchAllConversations').then(emitConversationLoaded);
+}
+
+function refreshConversations() {
+  if (chatListLoading.value) return;
+
+  resetBulkActions();
+  store.dispatch('conversationPage/reset');
+  store.dispatch('emptyAllConversations');
+
+  if (hasActiveFolders.value) {
+    fetchSavedFilteredConversations(activeFolder.value.query.payload);
+  } else if (hasAppliedFilters.value) {
+    fetchFilteredConversations(appliedFilters.value);
+  } else {
+    fetchConversations();
+  }
 }
 
 function resetAndFetchData() {
@@ -903,11 +919,13 @@ watch(conversationFilters, (newVal, oldVal) => {
       :is-on-expanded-layout="isOnExpandedLayout"
       :conversation-stats="conversationStats"
       :is-list-loading="chatListLoading && !conversationList.length"
+      :is-refreshing="chatListLoading"
       @add-folders="onClickOpenAddFoldersModal"
       @delete-folders="onClickOpenDeleteFoldersModal"
       @filters-modal="onToggleAdvanceFiltersModal"
       @reset-filters="resetAndFetchData"
       @basic-filter-change="onBasicFilterChange"
+      @refresh="refreshConversations"
     />
 
     <TeleportWithDirection
