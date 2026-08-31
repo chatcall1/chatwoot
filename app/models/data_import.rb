@@ -135,6 +135,8 @@ class DataImport < ApplicationRecord
     return unless legacy_contacts_csv_import?
 
     # we wait for the file to be uploaded to the cloud
+    return DataImportJob.perform_later(self) if source_metadata['process_immediately']
+
     DataImportJob.set(wait: 1.minute).perform_later(self)
   end
 

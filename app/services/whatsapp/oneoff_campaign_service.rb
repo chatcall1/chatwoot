@@ -3,7 +3,7 @@ class Whatsapp::OneoffCampaignService
 
   def perform
     validate_campaign!
-    process_audience(extract_audience_labels)
+    audience_service.custom_message? ? process_custom_messages : process_templates
     campaign.completed!
   end
 
@@ -39,9 +39,26 @@ class Whatsapp::OneoffCampaignService
     validate_feature_flag!
   end
 
-  def extract_audience_labels
-    audience_label_ids = campaign.audience.select { |audience| audience['type'] == 'Label' }.pluck('id')
-    campaign.account.labels.where(id: audience_label_ids).pluck(:title)
+  def audience_service
+    @audience_service ||= Whatsapp::CampaignAudienceService.new(campaign: campaign)
+  end
+
+  def process_custom_messages
+    audience_service.conversations.each do |conversation|
+      Messages::MessageBuilder.new(campaign.sender, conversation, {
+                                     content: campaign.message,
+                                     message_type: 'outgoing',
+                                     campaign_id: campaign.id
+                                   }).perform
+    rescue StandardError => e
+      Rails.logger.error "Failed to send custom campaign #{campaign.id} to conversation #{conversation.id}: #{e.message}"
+    end
+  end
+
+  def process_templates
+    Rails.logger.info "Processing #{audience_service.count} contacts for campaign #{campaign.id}"
+    audience_service.contacts.find_each { |contact| process_contact(contact) }
+    Rails.logger.info "Campaign #{campaign.id} processing completed"
   end
 
   def process_contact(contact)
@@ -61,15 +78,6 @@ class Whatsapp::OneoffCampaignService
     return if processed_template_params.nil?
 
     send_whatsapp_template_message(to: contact.phone_number, template_params: processed_template_params)
-  end
-
-  def process_audience(audience_labels)
-    contacts = campaign.account.contacts.tagged_with(audience_labels, any: true)
-    Rails.logger.info "Processing #{contacts.count} contacts for campaign #{campaign.id}"
-
-    contacts.each { |contact| process_contact(contact) }
-
-    Rails.logger.info "Campaign #{campaign.id} processing completed"
   end
 
   def process_liquid_template_params(contact)

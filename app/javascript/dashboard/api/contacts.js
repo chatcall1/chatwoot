@@ -78,11 +78,23 @@ class ContactAPI extends ApiClient {
     });
   }
 
-  importContacts(file) {
+  importContacts(file, { labelIds = [], inboxId = null } = {}) {
     const formData = new FormData();
     formData.append('import_file', file);
+    labelIds.forEach(id => formData.append('label_ids[]', id));
+    if (inboxId) formData.append('inbox_id', inboxId);
     return axios.post(`${this.url}/import`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  }
+
+  importStatus(importId) {
+    return axios.get(`${this.url}/imports/${importId}`);
+  }
+
+  downloadFailedImportRecords(importId) {
+    return axios.get(`${this.url}/imports/${importId}/failed_records`, {
+      responseType: 'blob',
     });
   }
 

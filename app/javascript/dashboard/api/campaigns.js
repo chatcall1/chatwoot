@@ -16,6 +16,14 @@ class CampaignsAPI extends ApiClient {
       params: { status, page },
     });
   }
+
+  testTemplate(payload) {
+    return axios.post(`${this.url}/test`, { campaign: payload });
+  }
+
+  audienceCount(payload) {
+    return axios.post(`${this.url}/audience_count`, { campaign: payload });
+  }
 }
 
 export default new CampaignsAPI();

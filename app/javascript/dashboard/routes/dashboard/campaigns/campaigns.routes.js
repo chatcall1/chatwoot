@@ -21,7 +21,7 @@ const campaignsRoutes = {
         {
           path: '',
           redirect: to => {
-            return { name: 'campaigns_ongoing_index', params: to.params };
+            return { name: 'campaigns_whatsapp_index', params: to.params };
           },
         },
         {
@@ -29,7 +29,7 @@ const campaignsRoutes = {
           name: 'campaigns_ongoing_index',
           meta,
           redirect: to => {
-            return { name: 'campaigns_livechat_index', params: to.params };
+            return { name: 'campaigns_whatsapp_index', params: to.params };
           },
         },
         {
@@ -37,7 +37,7 @@ const campaignsRoutes = {
           name: 'campaigns_one_off_index',
           meta,
           redirect: to => {
-            return { name: 'campaigns_sms_index', params: to.params };
+            return { name: 'campaigns_whatsapp_index', params: to.params };
           },
         },
         {

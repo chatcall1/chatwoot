@@ -34,12 +34,10 @@ class Api::V1::Accounts::ContactsController < Api::V1::Accounts::BaseController
   def import
     render json: { error: I18n.t('errors.contacts.import.failed') }, status: :unprocessable_entity and return if params[:import_file].blank?
 
-    ActiveRecord::Base.transaction do
-      import = Current.account.data_imports.create!(data_type: 'contacts')
-      import.import_file.attach(params[:import_file])
-    end
-
-    head :ok
+    import = Contacts::ImportService.new(
+      account: Current.account, user: Current.user, file: params[:import_file], label_ids: params[:label_ids], inbox_id: params[:inbox_id]
+    ).perform
+    render json: { id: import.id, status: import.status }, status: :accepted
   end
 
   def export

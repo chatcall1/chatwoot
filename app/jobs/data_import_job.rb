@@ -46,6 +46,12 @@ class DataImportJob < ApplicationJob
 
   def build_contact_from_row(row, contacts, rejected_contacts)
     row_hash = row.to_h.with_indifferent_access
+    if @data_import.source_metadata['campaign_label_titles'].present? && row_hash[:phone_number].blank?
+      row['errors'] = 'Phone number is required for a WhatsApp campaign audience'
+      rejected_contacts << row
+      return
+    end
+
     labels = extract_labels(row_hash)
     invalid_labels = labels.map(&:downcase) - approved_labels
 
@@ -63,7 +69,8 @@ class DataImportJob < ApplicationJob
   end
 
   def extract_labels(row_hash)
-    row_hash[:labels].to_s.split(LABELS_DELIMITER).map(&:strip).reject(&:blank?)
+    csv_labels = row_hash[:labels].to_s.split(LABELS_DELIMITER).map(&:strip).reject(&:blank?)
+    (csv_labels + Array(@data_import.source_metadata['campaign_label_titles'])).uniq
   end
 
   def append_rejected_contact(row, contact, rejected_contacts)
@@ -76,6 +83,7 @@ class DataImportJob < ApplicationJob
     # <struct ActiveRecord::Import::Result failed_instances=[], num_inserts=1, ids=[444, 445], results=[]>
     Contact.import(contacts, synchronize: contacts, on_duplicate_key_ignore: true, track_validation_failures: true, validate: true, batch_size: 1000)
     apply_labels_to_contacts(contacts_with_labels)
+    Contacts::CampaignInboxAssociationService.new(data_import: @data_import, contacts: contacts).perform
   end
 
   def apply_labels_to_contacts(contacts_with_labels)

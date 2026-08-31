@@ -179,13 +179,15 @@ export const actions = {
   import: async ({ commit }, file) => {
     commit(types.SET_CONTACT_UI_FLAG, { isImporting: true });
     try {
-      await ContactAPI.importContacts(file);
+      const response = await ContactAPI.importContacts(file);
       commit(types.SET_CONTACT_UI_FLAG, { isImporting: false });
+      return response.data;
     } catch (error) {
       commit(types.SET_CONTACT_UI_FLAG, { isImporting: false });
       if (error.response?.data?.message) {
         throw new ExceptionWithMessage(error.response.data.message);
       }
+      throw new Error(error);
     }
   },
 

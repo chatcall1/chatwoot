@@ -47,6 +47,7 @@ const handleAnalytics = campaign => {
 
 <template>
   <CampaignLayout
+    :close-on-click-outside="false"
     :header-title="t('CAMPAIGN.WHATSAPP.HEADER_TITLE')"
     :button-label="t('CAMPAIGN.WHATSAPP.NEW_CAMPAIGN')"
     @click="toggleWhatsAppCampaignDialog()"

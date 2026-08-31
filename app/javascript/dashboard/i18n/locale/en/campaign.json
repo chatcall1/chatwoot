@@ -161,6 +161,11 @@
         "TITLE": "Create WhatsApp campaign",
         "CANCEL_BUTTON_TEXT": "Cancel",
         "CREATE_BUTTON_TEXT": "Create",
+        "DISCARD": {
+          "TITLE": "Discard campaign?",
+          "DESCRIPTION": "You have unsaved campaign details. Are you sure you want to discard them?",
+          "CONFIRM": "Discard"
+        },
         "FORM": {
           "TITLE": {
             "LABEL": "Title",
@@ -177,6 +182,11 @@
             "PLACEHOLDER": "Select a template",
             "INFO": "Select a template to use for this campaign.",
             "ERROR": "Template is required",
+            "CUSTOM": "Custom message",
+            "CUSTOM_INFO": "24-hour messaging window required — custom messages can only be sent to contacts who messaged you during the last 24 hours. Use an approved WhatsApp template to reach other contacts.",
+            "SYNC": "Sync templates",
+            "SYNC_SUCCESS": "Template sync initiated and the list was refreshed.",
+            "SYNC_ERROR": "Templates could not be synced.",
             "PREVIEW_TITLE": "Process {templateName}",
             "LANGUAGE": "Language",
             "CATEGORY": "Category",
@@ -186,12 +196,57 @@
           "AUDIENCE": {
             "LABEL": "Audience",
             "PLACEHOLDER": "Select the customer labels",
-            "ERROR": "Audience is required"
+            "ERROR": "Audience is required",
+            "BY_LABELS": "Customer labels",
+            "ALL": "Send to all customers",
+            "TARGET_LABELS": "Target contact labels (required)",
+            "EXCLUDED_LABELS": "Excluded contact labels (optional)",
+            "CONVERSATION_LABELS": "Conversation labels (optional)"
+          },
+          "SECTIONS": {
+            "CHANNEL": "Channel setup",
+            "CONTENT": "Message content",
+            "AUDIENCE": "Target audience",
+            "SCHEDULE": "Schedule"
+          },
+          "CUSTOM_MESSAGE": {
+            "PLACEHOLDER": "Write the message to send to eligible conversations"
+          },
+          "IMPORT": {
+            "TITLE": "Import campaign audience",
+            "DESCRIPTION": "Optionally upload a CSV and apply the selected audience labels to every accepted contact.",
+            "DOWNLOAD": "Download sample CSV",
+            "CHOOSE_FILE": "Choose CSV file",
+            "ACTION": "Import audience",
+            "SUCCESS": "Audience import completed: {processed} accepted, {rejected} rejected.",
+            "ERROR": "Audience import failed. Review the CSV and try again.",
+            "RESULT": "{processed} contacts accepted · {rejected} rejected",
+            "DOWNLOAD_REJECTED": "Download rejected rows"
           },
           "SCHEDULED_AT": {
             "LABEL": "Scheduled time",
             "PLACEHOLDER": "Please select the time",
             "ERROR": "Scheduled time is required"
+          },
+          "SCHEDULE": {
+            "IMMEDIATE": "Send immediately",
+            "LATER": "Schedule for later"
+          },
+          "TEST": {
+            "TITLE": "Send a test",
+            "DESCRIPTION": "Send the selected template and its current variable values to one WhatsApp number.",
+            "PHONE_LABEL": "Test phone number",
+            "PLACEHOLDER": "+14155552671",
+            "PHONE_ERROR": "Enter a valid international number in E.164 format.",
+            "ACTION": "Send test",
+            "SUCCESS": "Test template sent successfully.",
+            "ERROR": "The test template could not be sent."
+          },
+          "CAPACITY": {
+            "AUDIENCE": "Eligible recipients",
+            "META_LIMIT": "Meta messaging limit",
+            "DESCRIPTION": "Unique customers per rolling 24-hour period; this is not the remaining balance.",
+            "HEALTH_ERROR": "The current Meta messaging limit could not be loaded."
           },
           "BUTTONS": {
             "CREATE": "Create",

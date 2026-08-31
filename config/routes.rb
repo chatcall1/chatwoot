@@ -148,6 +148,8 @@ Rails.application.routes.draw do
             end
           end
           resources :campaigns, only: [:index, :create, :show, :update, :destroy] do
+            post :test, on: :collection
+            post :audience_count, on: :collection
             if ChatwootApp.enterprise?
               get 'analytics/metrics', to: 'campaigns/analytics#metrics'
               get 'analytics/contacts', to: 'campaigns/analytics#contacts'
@@ -260,6 +262,8 @@ Rails.application.routes.draw do
               get :search
               post :filter
               post :import
+              get 'imports/:id', to: 'contacts/imports#show', as: :import_status
+              get 'imports/:id/failed_records', to: 'contacts/imports#failed_records', as: :import_failed_records
               post :export
             end
             member do
