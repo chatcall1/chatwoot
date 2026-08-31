@@ -62,7 +62,7 @@ onMounted(() => dialogRef.value?.open());
     ref="dialogRef"
     persistent
     overflow-y-auto
-    width="6xl"
+    width="5xl"
     :show-cancel-button="false"
     :show-confirm-button="false"
     :title="t('CAMPAIGN.WHATSAPP.CREATE.TITLE')"
