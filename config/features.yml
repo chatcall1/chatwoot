@@ -276,3 +276,7 @@
   display_name: Internal Chat
   enabled: false
   column: feature_flags_ext_1
+- name: flow_builder
+  display_name: Flow Builder
+  enabled: false
+  column: feature_flags_ext_1

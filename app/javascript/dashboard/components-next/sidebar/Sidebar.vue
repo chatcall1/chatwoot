@@ -83,6 +83,13 @@ const hasInternalChat = computed(() => {
   );
 });
 
+const hasFlowBuilder = computed(() => {
+  return isFeatureEnabledonAccount.value(
+    accountId.value,
+    FEATURE_FLAGS.FLOW_BUILDER
+  );
+});
+
 const hasConversationUnreadCounts = computed(() => {
   return isFeatureEnabledonAccount.value(
     accountId.value,
@@ -608,6 +615,17 @@ const menuItems = computed(() => {
             icon: 'i-lucide-phone',
             to: accountScopedRoute('calls_dashboard_index'),
             activeOn: ['calls_dashboard_index'],
+          },
+        ]
+      : []),
+    ...(hasFlowBuilder.value
+      ? [
+          {
+            name: 'Flows',
+            label: t('SIDEBAR.FLOWS'),
+            icon: 'i-lucide-workflow',
+            to: accountScopedRoute('flows_index'),
+            activeOn: ['flows_index'],
           },
         ]
       : []),

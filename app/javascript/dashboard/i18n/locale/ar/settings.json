@@ -329,6 +329,7 @@
     "CAPTAIN": "الذكاء الاصطناعي",
     "INTERNAL_CHAT": "محادثة داخلية",
     "CALLS": "Calls",
+    "FLOWS": "التدفقات",
     "CAPTAIN_ASSISTANTS": "المساعدون",
     "CAPTAIN_OVERVIEW": "نظرة عامة",
     "CAPTAIN_DOCUMENTS": "المستندات",
@@ -1082,6 +1083,75 @@
       "DESCRIPTION": "Are you sure you want to delete this policy? This action cannot be undone.",
       "CONFIRM_BUTTON_LABEL": "حذف",
       "CANCEL_BUTTON_LABEL": "إلغاء"
+    }
+  },
+  "FLOW_BUILDER": {
+    "EYEBROW": "الأتمتة",
+    "TITLE": "بوتات المحادثة",
+    "DESCRIPTION": "أنشئ تدفقات متوافقة مع واتساب وإنستغرام وماسنجر.",
+    "IMPORT": "استيراد JSON",
+    "CREATE": "إنشاء بوت",
+    "CREATE_FIRST": "إنشاء أول بوت",
+    "EMPTY_TITLE": "لا توجد بوتات حتى الآن",
+    "EMPTY_DESCRIPTION": "أنشئ بوتًا وحدد قنواته، ثم صمم المحادثة بصريًا.",
+    "TABLE": {
+      "NUMBER": "#",
+      "REFERENCE": "الرقم الفريد",
+      "NAME": "اسم البوت",
+      "CHANNELS": "القنوات",
+      "UPDATED": "آخر تحديث",
+      "ACTIONS": "الإجراءات"
+    },
+    "ACTIONS": {
+      "EDIT": "تعديل",
+      "DUPLICATE": "إنشاء نسخة",
+      "EXPORT": "تصدير",
+      "DELETE": "حذف"
+    },
+    "DIALOG": {
+      "CANCEL": "إلغاء",
+      "CLOSE": "إغلاق",
+      "CREATE_TITLE": "إنشاء بوت جديد",
+      "CREATE_DESCRIPTION": "اختر قنوات Chatwoot الفعلية التي سيعمل عليها البوت.",
+      "CREATE_CONFIRM": "إنشاء وفتح المحرر",
+      "NAME": "اسم البوت",
+      "NAME_PLACEHOLDER": "مثال: بوت دعم العملاء",
+      "INBOXES": "قنوات البوت",
+      "NO_INBOXES": "لا توجد قنوات واتساب أو إنستغرام أو ماسنجر في هذا الحساب.",
+      "TRIGGER_TYPE": "نوع نقطة البداية",
+      "DELETE_TITLE": "حذف البوت؟",
+      "DELETE_DESCRIPTION": "سيُحذف «{name}» نهائيًا من هذا المتصفح.",
+      "DELETE_CONFIRM": "حذف البوت"
+    },
+    "EDITOR": {
+      "BACK": "العودة إلى قائمة البوتات",
+      "SAVED": "محفوظ محليًا",
+      "UNSAVED": "تغييرات غير محفوظة",
+      "FIT": "ملاءمة",
+      "SAVE": "حفظ",
+      "MESSAGE_NODES": "عقد الرسائل",
+      "DUPLICATE_NODE": "نسخ العقدة",
+      "DELETE_NODE": "حذف العقدة"
+    },
+    "SETTINGS": {
+      "TITLE": "إعدادات العقدة",
+      "CLOSE": "إغلاق الإعدادات",
+      "TRIGGER_NAME": "اسم نقطة البداية",
+      "TRIGGER_TYPE": "نوع التشغيل",
+      "MATCH_TYPE": "نوع التطابق",
+      "KEYWORDS": "الكلمات المفتاحية",
+      "KEYWORD_PLACEHOLDER": "اكتب كلمة ثم اضغط Enter",
+      "ADD_KEYWORD": "إضافة كلمة",
+      "CONTENT": "محتوى الرسالة",
+      "MEDIA_URL": "رابط الملف العام HTTPS",
+      "FILE_NAME": "اسم الملف",
+      "CAPTION": "وصف مرفق اختياري"
+    },
+    "NODE": {
+      "TRIGGER": "نقطة بداية",
+      "MESSAGE": "رسالة",
+      "ADD_KEYWORDS": "أضف الكلمات المفتاحية",
+      "NO_MATCH_DESCRIPTION": "يرد عند عدم وجود تطابق"
     }
   }
 }

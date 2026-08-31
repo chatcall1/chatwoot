@@ -1,0 +1,19 @@
+@import '@vue-flow/core/dist/style.css';
+@import '@vue-flow/core/dist/theme-default.css';
+@import '@vue-flow/controls/dist/style.css';
+
+.flow-label {
+  @apply mb-2 block text-xs font-medium text-n-slate-11;
+}
+
+.flow-btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg border border-n-weak bg-n-alpha-2 px-3 py-2 text-sm font-medium text-n-slate-12 transition hover:border-n-strong hover:bg-n-alpha-2 disabled:cursor-not-allowed disabled:opacity-40;
+}
+
+.flow-btn-primary {
+  @apply border-n-brand bg-n-brand text-n-slate-1 hover:border-n-blue-10 hover:bg-n-blue-10;
+}
+
+.flow-icon-btn {
+  @apply inline-flex size-9 items-center justify-center rounded-lg text-n-slate-11 transition hover:bg-n-alpha-2 hover:text-n-slate-12;
+}

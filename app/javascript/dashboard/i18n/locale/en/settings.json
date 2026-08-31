@@ -329,6 +329,7 @@
     "CAPTAIN": "Captain",
     "INTERNAL_CHAT": "Internal Chat",
     "CALLS": "Calls",
+    "FLOWS": "Flows",
     "CAPTAIN_ASSISTANTS": "Assistants",
     "CAPTAIN_OVERVIEW": "Overview",
     "CAPTAIN_DOCUMENTS": "Documents",
@@ -1082,6 +1083,75 @@
       "DESCRIPTION": "Are you sure you want to delete this policy? This action cannot be undone.",
       "CONFIRM_BUTTON_LABEL": "Delete",
       "CANCEL_BUTTON_LABEL": "Cancel"
+    }
+  },
+  "FLOW_BUILDER": {
+    "EYEBROW": "Automation",
+    "TITLE": "Conversation bots",
+    "DESCRIPTION": "Build channel-aware flows for WhatsApp, Instagram, and Messenger.",
+    "IMPORT": "Import JSON",
+    "CREATE": "Create bot",
+    "CREATE_FIRST": "Create your first bot",
+    "EMPTY_TITLE": "No bots yet",
+    "EMPTY_DESCRIPTION": "Create a bot, select its inboxes, and design the conversation visually.",
+    "TABLE": {
+      "NUMBER": "#",
+      "REFERENCE": "Unique ID",
+      "NAME": "Bot name",
+      "CHANNELS": "Channels",
+      "UPDATED": "Last updated",
+      "ACTIONS": "Actions"
+    },
+    "ACTIONS": {
+      "EDIT": "Edit",
+      "DUPLICATE": "Duplicate",
+      "EXPORT": "Export",
+      "DELETE": "Delete"
+    },
+    "DIALOG": {
+      "CANCEL": "Cancel",
+      "CLOSE": "Close",
+      "CREATE_TITLE": "Create a new bot",
+      "CREATE_DESCRIPTION": "Select the real inboxes where this bot will operate.",
+      "CREATE_CONFIRM": "Create and open editor",
+      "NAME": "Bot name",
+      "NAME_PLACEHOLDER": "e.g. Customer support bot",
+      "INBOXES": "Bot inboxes",
+      "NO_INBOXES": "This account has no WhatsApp, Instagram, or Messenger inboxes.",
+      "TRIGGER_TYPE": "Starting trigger",
+      "DELETE_TITLE": "Delete bot?",
+      "DELETE_DESCRIPTION": "“{name}” will be permanently removed from this browser.",
+      "DELETE_CONFIRM": "Delete bot"
+    },
+    "EDITOR": {
+      "BACK": "Back to bots",
+      "SAVED": "Saved locally",
+      "UNSAVED": "Unsaved changes",
+      "FIT": "Fit view",
+      "SAVE": "Save",
+      "MESSAGE_NODES": "Message nodes",
+      "DUPLICATE_NODE": "Duplicate node",
+      "DELETE_NODE": "Delete node"
+    },
+    "SETTINGS": {
+      "TITLE": "Node settings",
+      "CLOSE": "Close settings",
+      "TRIGGER_NAME": "Trigger name",
+      "TRIGGER_TYPE": "Trigger type",
+      "MATCH_TYPE": "Match type",
+      "KEYWORDS": "Keywords",
+      "KEYWORD_PLACEHOLDER": "Type a keyword and press Enter",
+      "ADD_KEYWORD": "Add keyword",
+      "CONTENT": "Message content",
+      "MEDIA_URL": "Public HTTPS file URL",
+      "FILE_NAME": "File name",
+      "CAPTION": "Optional caption"
+    },
+    "NODE": {
+      "TRIGGER": "Trigger",
+      "MESSAGE": "Message",
+      "ADD_KEYWORDS": "Add keywords",
+      "NO_MATCH_DESCRIPTION": "Replies when no keyword matches"
     }
   }
 }
