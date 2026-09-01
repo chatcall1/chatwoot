@@ -44,7 +44,7 @@ class Api::V1::Accounts::Campaigns::AnalyticsController < Api::V1::Accounts::Bas
 
     {
       audience: recipients.count,
-      sent: recipients.where.not(source_id: nil).count,
+      sent: recipients.where(status: %i[sent delivered read]).count,
       delivered: counts['delivered'].to_i + counts['read'].to_i,
       read: counts['read'].to_i,
       failed: counts['failed'].to_i,

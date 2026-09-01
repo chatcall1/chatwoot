@@ -22,7 +22,10 @@ class Whatsapp::CampaignAudienceService
   end
 
   def count
-    custom_message? ? conversations.count : contacts.count
+    return conversations.count if custom_message?
+    return phone_numbers.count if targeting_by_phones?
+
+    contacts.count
   end
 
   def custom_message?
@@ -33,6 +36,7 @@ class Whatsapp::CampaignAudienceService
 
   def filtered_contacts
     scope = campaign.inbox.contacts.where.not(phone_number: [nil, ''])
+    scope = scope.where(phone_number: phone_numbers) if targeting_by_phones?
     scope = scope.tagged_with(target_label_titles, any: true) if targeting_by_labels? && target_label_titles.present?
     scope = scope.where.not(id: excluded_contacts.select(:id)) if excluded_label_titles.present?
     return scope if conversation_label_titles.blank?
@@ -50,6 +54,14 @@ class Whatsapp::CampaignAudienceService
 
   def targeting_by_labels?
     campaign.trigger_rules.fetch('audience_type', 'labels') == 'labels'
+  end
+
+  def targeting_by_phones?
+    campaign.trigger_rules['audience_type'] == 'phones'
+  end
+
+  def phone_numbers
+    Array(campaign.trigger_rules['phone_numbers']).uniq
   end
 
   def target_label_titles

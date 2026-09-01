@@ -34,6 +34,7 @@ const state = reactive({
   templateId: CUSTOM_MESSAGE,
   customMessage: '',
   audienceType: 'labels',
+  phoneNumbersText: '',
   targetLabelIds: [],
   excludedLabelIds: [],
   conversationLabelIds: [],
@@ -60,6 +61,30 @@ const audienceImport = reactive({
   rejectedRecords: 0,
   hasFailedRecords: false,
 });
+const normalizePhoneNumber = value =>
+  value
+    .replace(/[٠-٩]/g, digit => '0123456789'['٠١٢٣٤٥٦٧٨٩'.indexOf(digit)])
+    .replace(/[۰-۹]/g, digit => '0123456789'['۰۱۲۳۴۵۶۷۸۹'.indexOf(digit)])
+    .replace(/[\s\-()]/g, '')
+    .replace(/^00/, '+');
+const phoneNumberEntries = computed(() =>
+  state.phoneNumbersText
+    .split(/[,\n]+/)
+    .map(normalizePhoneNumber)
+    .filter(Boolean)
+);
+const validPhoneNumbers = computed(() => [
+  ...new Set(
+    phoneNumberEntries.value.filter(number => isValidPhoneNumber(number))
+  ),
+]);
+const invalidPhoneNumbers = computed(() =>
+  phoneNumberEntries.value.filter(number => !isValidPhoneNumber(number))
+);
+const isPhoneAudienceValid = () =>
+  state.audienceType !== 'phones' ||
+  (validPhoneNumbers.value.length > 0 &&
+    invalidPhoneNumbers.value.length === 0);
 const rules = computed(() => ({
   title: { required },
   inboxId: { required },
@@ -70,6 +95,7 @@ const rules = computed(() => ({
   targetLabelIds: {
     required: requiredIf(() => state.audienceType === 'labels'),
   },
+  phoneNumbersText: { validPhoneNumbers: isPhoneAudienceValid },
   scheduledAt: {
     required: requiredIf(() => state.deliveryType === 'scheduled'),
   },
@@ -182,8 +208,15 @@ const prepareCampaignDetails = () => ({
     target_label_ids: state.targetLabelIds,
     excluded_label_ids: state.excludedLabelIds,
     conversation_label_ids: state.conversationLabelIds,
+    phone_numbers: validPhoneNumbers.value,
   },
 });
+const handlePhoneNumbersInput = event => {
+  state.phoneNumbersText = event.target.value
+    .split(/([,\n]+)/)
+    .map(part => (/^[,\n]+$/.test(part) ? part : normalizePhoneNumber(part)))
+    .join('');
+};
 const refreshAudienceCount = async () => {
   if (
     !state.inboxId ||
@@ -329,7 +362,9 @@ watch(
 
 <template>
   <form class="flex flex-col gap-6" @submit.prevent="handleSubmit">
-    <section class="flex flex-col gap-4 p-5 rounded-xl bg-n-blue-2">
+    <section
+      class="flex flex-col gap-4 p-5 border rounded-xl border-n-strong bg-n-blue-2"
+    >
       <h3 class="text-base font-semibold text-n-slate-12">
         {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.SECTIONS.CHANNEL') }}
       </h3>
@@ -344,7 +379,9 @@ watch(
         />
       </div>
     </section>
-    <section class="flex flex-col gap-4 p-5 rounded-xl bg-n-blue-2">
+    <section
+      class="flex flex-col gap-4 p-5 border rounded-xl border-n-strong bg-n-blue-2"
+    >
       <h3 class="text-base font-semibold text-n-slate-12">
         {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.SECTIONS.CONTENT') }}
       </h3>
@@ -371,7 +408,7 @@ watch(
       />
       <div
         v-if="isCustomMessage"
-        class="flex gap-3 p-4 border rounded-lg border-n-blue-4 bg-n-blue-2"
+        class="flex gap-3 p-4 border rounded-lg border-n-strong bg-n-blue-2"
       >
         <span class="mt-0.5 i-lucide-clock-3 size-4 text-n-blue-11" />
         <p class="text-sm text-n-slate-12">
@@ -387,7 +424,7 @@ watch(
         v-if="isCustomMessage"
         v-model="state.customMessage"
         rows="5"
-        class="w-full p-3 text-sm border rounded-lg resize-y bg-n-blue-2 border-n-blue-4 text-n-slate-12"
+        class="w-full p-3 text-sm border rounded-lg resize-y bg-n-blue-2 border-n-strong text-n-slate-12"
         :placeholder="
           t('CAMPAIGN.WHATSAPP.CREATE.FORM.CUSTOM_MESSAGE.PLACEHOLDER')
         "
@@ -398,18 +435,20 @@ watch(
         :template="selectedTemplate"
       />
     </section>
-    <section class="flex flex-col gap-4 p-5 rounded-xl bg-n-blue-2">
+    <section
+      class="flex flex-col gap-4 p-5 border rounded-xl border-n-strong bg-n-blue-2"
+    >
       <h3 class="text-base font-semibold text-n-slate-12">
         {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.SECTIONS.AUDIENCE') }}
       </h3>
-      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <button
           type="button"
           class="p-4 text-start border rounded-xl"
           :class="
             state.audienceType === 'labels'
-              ? 'border-n-blue-7 bg-n-blue-3'
-              : 'border-n-weak'
+              ? 'border-n-strong bg-n-blue-3'
+              : 'border-n-strong'
           "
           @click="state.audienceType = 'labels'"
         >
@@ -420,12 +459,24 @@ watch(
           class="p-4 text-start border rounded-xl"
           :class="
             state.audienceType === 'all'
-              ? 'border-n-blue-7 bg-n-blue-3'
-              : 'border-n-weak'
+              ? 'border-n-strong bg-n-blue-3'
+              : 'border-n-strong'
           "
           @click="state.audienceType = 'all'"
         >
           {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.AUDIENCE.ALL') }}
+        </button>
+        <button
+          type="button"
+          class="p-4 text-start border rounded-xl"
+          :class="
+            state.audienceType === 'phones'
+              ? 'border-n-strong bg-n-blue-3'
+              : 'border-n-strong'
+          "
+          @click="state.audienceType = 'phones'"
+        >
+          {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.AUDIENCE.PHONE_NUMBERS') }}
         </button>
       </div>
       <TagMultiSelectComboBox
@@ -434,6 +485,38 @@ watch(
         :options="labelOptions"
         :placeholder="t('CAMPAIGN.WHATSAPP.CREATE.FORM.AUDIENCE.TARGET_LABELS')"
       />
+      <div v-if="state.audienceType === 'phones'" class="flex flex-col gap-2">
+        <label class="text-sm font-medium text-n-slate-12">
+          {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.AUDIENCE.PHONE_NUMBERS') }}
+        </label>
+        <textarea
+          :value="state.phoneNumbersText"
+          dir="ltr"
+          rows="6"
+          class="w-full p-3 font-mono text-sm text-left border rounded-lg resize-y bg-n-blue-2 border-n-strong text-n-slate-12"
+          :placeholder="
+            t('CAMPAIGN.WHATSAPP.CREATE.FORM.AUDIENCE.PHONE_PLACEHOLDER')
+          "
+          @input="handlePhoneNumbersInput"
+        />
+        <p class="text-xs text-n-slate-11">
+          {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.AUDIENCE.PHONE_HELP') }}
+        </p>
+        <p v-if="invalidPhoneNumbers.length" class="text-xs text-n-ruby-9">
+          {{
+            t('CAMPAIGN.WHATSAPP.CREATE.FORM.AUDIENCE.PHONE_INVALID', {
+              numbers: invalidPhoneNumbers.join(', '),
+            })
+          }}
+        </p>
+        <p v-else-if="validPhoneNumbers.length" class="text-xs text-n-slate-11">
+          {{
+            t('CAMPAIGN.WHATSAPP.CREATE.FORM.AUDIENCE.PHONE_VALID_COUNT', {
+              count: validPhoneNumbers.length,
+            })
+          }}
+        </p>
+      </div>
       <TagMultiSelectComboBox
         v-model="state.excludedLabelIds"
         :options="labelOptions"
@@ -448,7 +531,10 @@ watch(
           t('CAMPAIGN.WHATSAPP.CREATE.FORM.AUDIENCE.CONVERSATION_LABELS')
         "
       />
-      <div class="flex flex-col gap-3 p-4 rounded-lg bg-n-blue-2">
+      <div
+        v-if="state.audienceType !== 'phones'"
+        class="flex flex-col gap-3 p-4 border rounded-lg border-n-strong bg-n-blue-2"
+      >
         <div>
           <p class="text-sm font-medium text-n-slate-12">
             {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.IMPORT.TITLE') }}
@@ -514,7 +600,9 @@ watch(
         />
       </div>
     </section>
-    <section class="flex flex-col gap-4 p-5 rounded-xl bg-n-blue-2">
+    <section
+      class="flex flex-col gap-4 p-5 border rounded-xl border-n-strong bg-n-blue-2"
+    >
       <h3 class="text-base font-semibold text-n-slate-12">
         {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.SECTIONS.SCHEDULE') }}
       </h3>
@@ -524,8 +612,8 @@ watch(
           class="p-4 text-start border rounded-xl"
           :class="
             state.deliveryType === 'immediate'
-              ? 'border-n-blue-7 bg-n-blue-3'
-              : 'border-n-weak'
+              ? 'border-n-strong bg-n-blue-3'
+              : 'border-n-strong'
           "
           @click="state.deliveryType = 'immediate'"
         >
@@ -536,8 +624,8 @@ watch(
           class="p-4 text-start border rounded-xl"
           :class="
             state.deliveryType === 'scheduled'
-              ? 'border-n-blue-7 bg-n-blue-3'
-              : 'border-n-weak'
+              ? 'border-n-strong bg-n-blue-3'
+              : 'border-n-strong'
           "
           @click="state.deliveryType = 'scheduled'"
         >
@@ -554,7 +642,7 @@ watch(
     </section>
     <section
       v-if="!isCustomMessage"
-      class="flex flex-col gap-3 p-5 rounded-xl bg-n-blue-2"
+      class="flex flex-col gap-3 p-5 border rounded-xl border-n-strong bg-n-blue-2"
     >
       <h3 class="text-base font-semibold text-n-slate-12">
         {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.TEST.TITLE') }}
@@ -587,7 +675,7 @@ watch(
       </div>
     </section>
     <section class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-      <div class="p-5 rounded-xl bg-n-blue-2">
+      <div class="p-5 border rounded-xl border-n-strong bg-n-blue-2">
         <p class="text-sm text-n-slate-11">
           {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.CAPACITY.AUDIENCE') }}
         </p>
@@ -595,7 +683,7 @@ watch(
           {{ audienceCountDisplay }}
         </p>
       </div>
-      <div class="p-5 rounded-xl bg-n-blue-2">
+      <div class="p-5 border rounded-xl border-n-strong bg-n-blue-2">
         <div class="flex items-center justify-between">
           <p class="text-sm text-n-slate-11">
             {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.CAPACITY.META_LIMIT') }}

@@ -199,6 +199,11 @@
             "ERROR": "Audience is required",
             "BY_LABELS": "Customer labels",
             "ALL": "Send to all customers",
+            "PHONE_NUMBERS": "Phone numbers",
+            "PHONE_PLACEHOLDER": "+966510123456\n+971501234567",
+            "PHONE_HELP": "Enter one international phone number per line or separate numbers with commas. Spaces, hyphens, and parentheses are removed automatically.",
+            "PHONE_INVALID": "Fix or remove these invalid numbers: {numbers}",
+            "PHONE_VALID_COUNT": "{count} valid unique phone numbers",
             "TARGET_LABELS": "Target contact labels (required)",
             "EXCLUDED_LABELS": "Excluded contact labels (optional)",
             "CONVERSATION_LABELS": "Conversation labels (optional)"

@@ -1,7 +1,7 @@
 module Enterprise::Whatsapp::OneoffCampaignService
   def perform
     validate_campaign!
-    recipients = create_recipients(extract_audience_labels)
+    recipients = create_recipients
     process_recipients(recipients)
     campaign.completed!
   end
@@ -9,6 +9,12 @@ module Enterprise::Whatsapp::OneoffCampaignService
   private
 
   def process_recipient(recipient)
+    return process_custom_recipient(recipient) if audience_service.custom_message?
+
+    process_template_recipient(recipient)
+  end
+
+  def process_template_recipient(recipient)
     contact = recipient.contact
     Rails.logger.info "Processing contact: #{contact.name} (#{contact.phone_number})"
 
@@ -35,11 +41,8 @@ module Enterprise::Whatsapp::OneoffCampaignService
     send_whatsapp_template_message(recipient: recipient, to: contact.phone_number, template_params: processed_template_params)
   end
 
-  def create_recipients(audience_labels)
-    contacts = campaign.account.contacts.tagged_with(audience_labels, any: true)
-    Rails.logger.info "Processing #{contacts.count} contacts for campaign #{campaign.id}"
-
-    contacts.find_each.map do |contact|
+  def create_recipients
+    recipient_contacts.find_each.map do |contact|
       campaign.campaign_recipients.find_or_create_by!(contact: contact) do |recipient|
         recipient.account = campaign.account
         recipient.inbox = campaign.inbox
@@ -47,10 +50,34 @@ module Enterprise::Whatsapp::OneoffCampaignService
     end
   end
 
+  def recipient_contacts
+    return audience_service.contacts unless audience_service.custom_message?
+
+    campaign.account.contacts.where(id: audience_service.conversations.select(:contact_id))
+  end
+
+  def process_custom_recipient(recipient)
+    conversation = conversations_by_contact_id[recipient.contact_id]
+    return recipient.mark_skipped!('No eligible conversation inside the 24-hour messaging window') unless conversation
+
+    message = Messages::MessageBuilder.new(campaign.sender, conversation, {
+                                             content: campaign.message,
+                                             message_type: 'outgoing',
+                                             campaign_id: campaign.id
+                                           }).perform
+    recipient.update!(message_content: campaign.message)
+    recipient.mark_sent!(message.source_id)
+  rescue StandardError => e
+    Rails.logger.error "Failed to send custom campaign #{campaign.id} to contact #{recipient.contact_id}: #{e.message}"
+    recipient.mark_failed!(message: e.message)
+  end
+
+  def conversations_by_contact_id
+    @conversations_by_contact_id ||= audience_service.conversations.index_by(&:contact_id)
+  end
+
   def process_recipients(recipients)
     recipients.each { |recipient| process_recipient(recipient) }
-
-    Rails.logger.info "Campaign #{campaign.id} processing completed"
   end
 
   def rendered_message_content(contact)
