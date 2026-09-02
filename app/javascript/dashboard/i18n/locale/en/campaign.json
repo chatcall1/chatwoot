@@ -141,6 +141,7 @@
     "WHATSAPP": {
       "HEADER_TITLE": "WhatsApp campaigns",
       "NEW_CAMPAIGN": "Create campaign",
+      "MANAGE_TEMPLATES": "Manage templates",
       "EMPTY_STATE": {
         "TITLE": "No WhatsApp campaigns are available",
         "SUBTITLE": "Launch a WhatsApp campaign to reach your customers directly. Send offers or make announcements with ease. Click 'Create campaign' to get started."
@@ -200,10 +201,11 @@
             "BY_LABELS": "Customer labels",
             "ALL": "Send to all customers",
             "PHONE_NUMBERS": "Phone numbers",
-            "PHONE_PLACEHOLDER": "+966510123456\n+971501234567",
-            "PHONE_HELP": "Enter one international phone number per line or separate numbers with commas. Spaces, hyphens, and parentheses are removed automatically.",
+            "PHONE_PLACEHOLDER": "+966510123456\n+966551234567",
+            "PHONE_HELP": "Enter one international phone number per line, up to {count} numbers. Spaces, hyphens, and parentheses are removed automatically.",
             "PHONE_INVALID": "Fix or remove these invalid numbers: {numbers}",
             "PHONE_VALID_COUNT": "{count} valid unique phone numbers",
+            "FIX": "Fix",
             "TARGET_LABELS": "Target contact labels (required)",
             "EXCLUDED_LABELS": "Excluded contact labels (optional)",
             "CONVERSATION_LABELS": "Conversation labels (optional)"
@@ -240,6 +242,7 @@
           "TEST": {
             "TITLE": "Send a test",
             "DESCRIPTION": "Send the selected template and its current variable values to one WhatsApp number.",
+            "CUSTOM_DESCRIPTION": "Send the custom message to this number's eligible conversation within the 24-hour messaging window.",
             "PHONE_LABEL": "Test phone number",
             "PLACEHOLDER": "+14155552671",
             "PHONE_ERROR": "Enter a valid international number in E.164 format.",
@@ -251,7 +254,9 @@
             "AUDIENCE": "Eligible recipients",
             "META_LIMIT": "Meta messaging limit",
             "DESCRIPTION": "Unique customers per rolling 24-hour period; this is not the remaining balance.",
-            "HEALTH_ERROR": "The current Meta messaging limit could not be loaded."
+            "HEALTH_ERROR": "The current Meta messaging limit could not be loaded.",
+            "LIMIT_WARNING": "The eligible recipient count is above this account's Meta messaging limit.",
+            "SPLIT_ADVICE": "Tip: split delivery of this audience across {days} days."
           },
           "BUTTONS": {
             "CREATE": "Create",

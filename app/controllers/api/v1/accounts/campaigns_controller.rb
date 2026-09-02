@@ -20,8 +20,9 @@ class Api::V1::Accounts::CampaignsController < Api::V1::Accounts::BaseController
   end
 
   def audience_count
-    preview_campaign = Current.account.campaigns.new(campaign_params.merge(sender_id: Current.user.id))
-    preview_campaign.validate!
+    attributes = campaign_params.to_h
+    inbox = Current.account.inboxes.find(attributes.delete('inbox_id'))
+    preview_campaign = Current.account.campaigns.new(attributes.merge(inbox: inbox, sender_id: Current.user.id))
     render json: { count: Whatsapp::CampaignAudienceService.new(campaign: preview_campaign).count }
   end
 
@@ -53,7 +54,7 @@ class Api::V1::Accounts::CampaignsController < Api::V1::Accounts::BaseController
   end
 
   def test_params
-    params.require(:campaign).permit(:inbox_id, :phone_number, template_params: {})
+    params.require(:campaign).permit(:inbox_id, :phone_number, :message_type, :message, template_params: {})
   end
 
   def normalize_phone_audience!(attributes)

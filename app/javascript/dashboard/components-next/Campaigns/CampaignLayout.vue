@@ -11,13 +11,17 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  secondaryButtonLabel: {
+    type: String,
+    default: '',
+  },
   closeOnClickOutside: {
     type: Boolean,
     default: true,
   },
 });
 
-const emit = defineEmits(['click', 'close']);
+const emit = defineEmits(['click', 'secondary-click', 'close']);
 
 const handleButtonClick = () => {
   emit('click');
@@ -44,13 +48,23 @@ const handleClickOutside = () => {
             ]"
             class="relative group/campaign-button"
           >
-            <Button
-              :label="buttonLabel"
-              icon="i-lucide-plus"
-              size="sm"
-              class="group-hover/campaign-button:brightness-110"
-              @click="handleButtonClick"
-            />
+            <div class="flex items-center gap-2">
+              <Button
+                v-if="secondaryButtonLabel"
+                :label="secondaryButtonLabel"
+                icon="i-lucide-layout-template"
+                color="slate"
+                size="sm"
+                @click="emit('secondary-click')"
+              />
+              <Button
+                :label="buttonLabel"
+                icon="i-lucide-plus"
+                size="sm"
+                class="group-hover/campaign-button:brightness-110"
+                @click="handleButtonClick"
+              />
+            </div>
             <slot name="action" />
           </div>
         </div>

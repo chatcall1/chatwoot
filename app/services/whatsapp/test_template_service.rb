@@ -3,6 +3,8 @@ class Whatsapp::TestTemplateService
 
   def perform
     validate_inbox!
+    return send_custom_message if custom_message?
+
     process_contact_variables!
     name, namespace, language, parameters = processed_template
     raise ArgumentError, 'Template not found or its parameters are invalid' if name.blank?
@@ -14,6 +16,20 @@ class Whatsapp::TestTemplateService
   end
 
   private
+
+  def custom_message?
+    params['message_type'] == 'custom'
+  end
+
+  def send_custom_message
+    raise ArgumentError, 'Message cannot be blank' if params['message'].blank?
+
+    contact = account.contacts.find_by(phone_number: phone_number)
+    conversation = inbox.conversations.where(contact: contact).order(last_activity_at: :desc).find(&:can_reply?) if contact
+    raise ArgumentError, 'This number has no conversation within the 24-hour messaging window' unless conversation
+
+    Messages::MessageBuilder.new(user, conversation, content: params['message'], message_type: 'outgoing').perform.id
+  end
 
   def inbox
     @inbox ||= account.inboxes.find(params['inbox_id'])

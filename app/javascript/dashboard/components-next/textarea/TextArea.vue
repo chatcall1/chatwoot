@@ -11,6 +11,7 @@ const props = defineProps({
   label: { type: String, default: '' },
   placeholder: { type: String, default: '' },
   maxLength: { type: Number, default: 200 },
+  maxLines: { type: Number, default: 0 },
   id: { type: String, default: '' },
   disabled: { type: Boolean, default: false },
   customTextAreaClass: { type: String, default: '' },
@@ -90,6 +91,14 @@ const toggleSignatureInEditor = signatureEnabled => {
 };
 
 const handleInput = event => {
+  if (
+    props.maxLines > 0 &&
+    event.target.value.split(/\r?\n/).length > props.maxLines
+  ) {
+    event.target.value = props.modelValue;
+    return;
+  }
+
   emit('update:modelValue', event.target.value);
   if (props.autoHeight) {
     nextTick(adjustHeight);

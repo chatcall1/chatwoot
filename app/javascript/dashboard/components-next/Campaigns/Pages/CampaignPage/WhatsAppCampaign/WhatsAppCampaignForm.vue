@@ -10,6 +10,7 @@ import Input from 'dashboard/components-next/input/Input.vue';
 import Button from 'dashboard/components-next/button/Button.vue';
 import ComboBox from 'dashboard/components-next/combobox/ComboBox.vue';
 import TagMultiSelectComboBox from 'dashboard/components-next/combobox/TagMultiSelectComboBox.vue';
+import TextArea from 'dashboard/components-next/textarea/TextArea.vue';
 import WhatsAppTemplateParser from 'dashboard/components-next/whatsapp/WhatsAppTemplateParser.vue';
 import CampaignsAPI from 'dashboard/api/campaigns';
 import ContactAPI from 'dashboard/api/contacts';
@@ -20,6 +21,7 @@ const emit = defineEmits(['submit', 'cancel', 'update:dirty']);
 const { t } = useI18n();
 const store = useStore();
 const CUSTOM_MESSAGE = 'custom';
+const MAX_PHONE_NUMBERS = 100;
 const formState = {
   uiFlags: useMapGetter('campaigns/getUIFlags'),
   labels: useMapGetter('labels/getLabels'),
@@ -69,7 +71,8 @@ const normalizePhoneNumber = value =>
     .replace(/^00/, '+');
 const phoneNumberEntries = computed(() =>
   state.phoneNumbersText
-    .split(/[,\n]+/)
+    .replace(/\s+(?=(?:\+|00)\d)/g, '\n')
+    .split(/[,;\n]+/)
     .map(normalizePhoneNumber)
     .filter(Boolean)
 );
@@ -85,6 +88,21 @@ const isPhoneAudienceValid = () =>
   state.audienceType !== 'phones' ||
   (validPhoneNumbers.value.length > 0 &&
     invalidPhoneNumbers.value.length === 0);
+const phoneNumbersModel = computed({
+  get: () => state.phoneNumbersText,
+  set: value => {
+    const normalizedValue = value
+      .replace(/\s+(?=(?:\+|00)\d)/g, '\n')
+      .split(/([,;\n]+)/)
+      .map(part => (/^[,;\n]+$/.test(part) ? part : normalizePhoneNumber(part)))
+      .join('');
+    const entries = normalizedValue.split(/[,;\n]+/).filter(Boolean);
+    state.phoneNumbersText = entries.slice(0, MAX_PHONE_NUMBERS).join('\n');
+  },
+});
+const fixPhoneNumbers = () => {
+  state.phoneNumbersText = [...new Set(phoneNumberEntries.value)].join('\n');
+};
 const rules = computed(() => ({
   title: { required },
   inboxId: { required },
@@ -133,6 +151,11 @@ const selectedTemplate = computed(
       ?.template || null
 );
 const isCustomMessage = computed(() => state.templateId === CUSTOM_MESSAGE);
+const testDescription = computed(() =>
+  isCustomMessage.value
+    ? t('CAMPAIGN.WHATSAPP.CREATE.FORM.TEST.CUSTOM_DESCRIPTION')
+    : t('CAMPAIGN.WHATSAPP.CREATE.FORM.TEST.DESCRIPTION')
+);
 const hasRequiredTemplateParams = computed(
   () =>
     isCustomMessage.value || templateParserRef.value?.isFormInvalid === false
@@ -160,7 +183,6 @@ const isTestPhoneValid = computed(() => {
 });
 const canSendTest = computed(
   () =>
-    !isCustomMessage.value &&
     !v$.value.$invalid &&
     hasRequiredTemplateParams.value &&
     isTestPhoneValid.value &&
@@ -183,6 +205,28 @@ const messagingLimitDisplay = computed(() => {
 
   return tier.replace(/^TIER_/, '').replace(/K$/, '000');
 });
+const messagingLimit = computed(() => {
+  const tier = healthData.value?.messaging_limit_tier?.replace(/^TIER_/, '');
+  if (!tier || tier === 'UNLIMITED') return null;
+  const match = tier.match(/^(\d+)(K|M)?$/);
+  if (!match) return null;
+  let multiplier = 1;
+  if (match[2] === 'K') multiplier = 1000;
+  if (match[2] === 'M') multiplier = 1000000;
+  return Number(match[1]) * multiplier;
+});
+const exceedsMessagingLimit = computed(
+  () =>
+    !isCustomMessage.value &&
+    audienceCount.value !== null &&
+    messagingLimit.value !== null &&
+    audienceCount.value > messagingLimit.value
+);
+const requiredSendingDays = computed(() =>
+  exceedsMessagingLimit.value
+    ? Math.ceil(audienceCount.value / messagingLimit.value)
+    : 0
+);
 const buildTemplateParams = () => ({
   name: selectedTemplate.value?.name || '',
   namespace: selectedTemplate.value?.namespace || '',
@@ -211,12 +255,6 @@ const prepareCampaignDetails = () => ({
     phone_numbers: validPhoneNumbers.value,
   },
 });
-const handlePhoneNumbersInput = event => {
-  state.phoneNumbersText = event.target.value
-    .split(/([,\n]+)/)
-    .map(part => (/^[,\n]+$/.test(part) ? part : normalizePhoneNumber(part)))
-    .join('');
-};
 const refreshAudienceCount = async () => {
   if (
     !state.inboxId ||
@@ -318,7 +356,9 @@ const sendTestTemplate = async () => {
     await CampaignsAPI.testTemplate({
       inbox_id: state.inboxId,
       phone_number: normalizedTestPhoneNumber.value,
-      template_params: buildTemplateParams(),
+      message_type: isCustomMessage.value ? 'custom' : 'template',
+      message: isCustomMessage.value ? state.customMessage : undefined,
+      template_params: isCustomMessage.value ? {} : buildTemplateParams(),
     });
     state.testPhoneNumber = normalizedTestPhoneNumber.value;
     useAlert(t('CAMPAIGN.WHATSAPP.CREATE.FORM.TEST.SUCCESS'));
@@ -343,6 +383,16 @@ watch(
     healthData.value = null;
     refreshHealth();
   }
+);
+watch(
+  inboxOptions,
+  options => {
+    if (!options.length) return;
+    if (options.some(option => option.value === state.inboxId)) return;
+
+    state.inboxId = options[0].value;
+  },
+  { immediate: true }
 );
 watch(
   state,
@@ -420,11 +470,14 @@ watch(
         :label="t('CAMPAIGN.WHATSAPP.CREATE.FORM.TITLE.LABEL')"
         :placeholder="t('CAMPAIGN.WHATSAPP.CREATE.FORM.TITLE.PLACEHOLDER')"
       />
-      <textarea
+      <TextArea
         v-if="isCustomMessage"
         v-model="state.customMessage"
-        rows="5"
-        class="w-full p-3 text-sm border rounded-lg resize-y bg-n-blue-2 border-n-strong text-n-slate-12"
+        resize
+        auto-height
+        min-height="7rem"
+        max-height="16rem"
+        custom-text-area-wrapper-class="!border-n-strong !bg-n-blue-2"
         :placeholder="
           t('CAMPAIGN.WHATSAPP.CREATE.FORM.CUSTOM_MESSAGE.PLACEHOLDER')
         "
@@ -486,21 +539,41 @@ watch(
         :placeholder="t('CAMPAIGN.WHATSAPP.CREATE.FORM.AUDIENCE.TARGET_LABELS')"
       />
       <div v-if="state.audienceType === 'phones'" class="flex flex-col gap-2">
-        <label class="text-sm font-medium text-n-slate-12">
-          {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.AUDIENCE.PHONE_NUMBERS') }}
-        </label>
-        <textarea
-          :value="state.phoneNumbersText"
+        <div class="flex items-center justify-between gap-2">
+          <label class="text-sm font-medium text-n-slate-12">
+            {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.AUDIENCE.PHONE_NUMBERS') }}
+          </label>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            color="slate"
+            icon="i-lucide-refresh-cw"
+            class="flex-shrink-0"
+            :label="t('CAMPAIGN.WHATSAPP.CREATE.FORM.AUDIENCE.FIX')"
+            @click="fixPhoneNumbers"
+          />
+        </div>
+        <TextArea
+          v-model="phoneNumbersModel"
           dir="ltr"
-          rows="6"
-          class="w-full p-3 font-mono text-sm text-left border rounded-lg resize-y bg-n-blue-2 border-n-strong text-n-slate-12"
+          resize
+          auto-height
+          :max-lines="MAX_PHONE_NUMBERS"
+          min-height="8rem"
+          max-height="18rem"
+          custom-text-area-class="font-mono !text-left"
+          custom-text-area-wrapper-class="!border-n-strong !bg-n-blue-2"
           :placeholder="
             t('CAMPAIGN.WHATSAPP.CREATE.FORM.AUDIENCE.PHONE_PLACEHOLDER')
           "
-          @input="handlePhoneNumbersInput"
         />
         <p class="text-xs text-n-slate-11">
-          {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.AUDIENCE.PHONE_HELP') }}
+          {{
+            t('CAMPAIGN.WHATSAPP.CREATE.FORM.AUDIENCE.PHONE_HELP', {
+              count: MAX_PHONE_NUMBERS,
+            })
+          }}
         </p>
         <p v-if="invalidPhoneNumbers.length" class="text-xs text-n-ruby-9">
           {{
@@ -606,49 +679,55 @@ watch(
       <h3 class="text-base font-semibold text-n-slate-12">
         {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.SECTIONS.SCHEDULE') }}
       </h3>
-      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <button
-          type="button"
-          class="p-4 text-start border rounded-xl"
+      <div role="radiogroup" class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div
+          role="radio"
+          tabindex="0"
+          class="p-4 border-2 rounded-xl cursor-pointer border-n-slate-10"
           :class="
-            state.deliveryType === 'immediate'
-              ? 'border-n-strong bg-n-blue-3'
-              : 'border-n-strong'
+            state.deliveryType === 'immediate' ? 'bg-n-blue-3' : 'bg-n-blue-2'
           "
+          :aria-checked="state.deliveryType === 'immediate'"
           @click="state.deliveryType = 'immediate'"
+          @keydown.enter.space.self.prevent="state.deliveryType = 'immediate'"
         >
-          {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.SCHEDULE.IMMEDIATE') }}
-        </button>
-        <button
-          type="button"
-          class="p-4 text-start border rounded-xl"
+          <p class="font-medium text-start text-n-slate-12">
+            {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.SCHEDULE.IMMEDIATE') }}
+          </p>
+        </div>
+        <div
+          role="radio"
+          tabindex="0"
+          class="p-4 border-2 rounded-xl cursor-pointer border-n-slate-10"
           :class="
-            state.deliveryType === 'scheduled'
-              ? 'border-n-strong bg-n-blue-3'
-              : 'border-n-strong'
+            state.deliveryType === 'scheduled' ? 'bg-n-blue-3' : 'bg-n-blue-2'
           "
+          :aria-checked="state.deliveryType === 'scheduled'"
           @click="state.deliveryType = 'scheduled'"
+          @keydown.enter.space.self.prevent="state.deliveryType = 'scheduled'"
         >
-          {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.SCHEDULE.LATER') }}
-        </button>
+          <p class="font-medium text-start text-n-slate-12">
+            {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.SCHEDULE.LATER') }}
+          </p>
+          <Input
+            v-if="state.deliveryType === 'scheduled'"
+            v-model="state.scheduledAt"
+            class="mt-3"
+            type="datetime-local"
+            :min="currentDateTime"
+            :label="t('CAMPAIGN.WHATSAPP.CREATE.FORM.SCHEDULED_AT.LABEL')"
+          />
+        </div>
       </div>
-      <Input
-        v-if="state.deliveryType === 'scheduled'"
-        v-model="state.scheduledAt"
-        type="datetime-local"
-        :min="currentDateTime"
-        :label="t('CAMPAIGN.WHATSAPP.CREATE.FORM.SCHEDULED_AT.LABEL')"
-      />
     </section>
     <section
-      v-if="!isCustomMessage"
       class="flex flex-col gap-3 p-5 border rounded-xl border-n-strong bg-n-blue-2"
     >
       <h3 class="text-base font-semibold text-n-slate-12">
         {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.TEST.TITLE') }}
       </h3>
       <p class="text-xs text-n-slate-11">
-        {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.TEST.DESCRIPTION') }}
+        {{ testDescription }}
       </p>
       <div class="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
         <Input
@@ -674,6 +753,21 @@ watch(
         />
       </div>
     </section>
+    <div
+      v-if="exceedsMessagingLimit"
+      class="flex flex-col gap-2 p-4 border rounded-xl border-n-strong bg-n-blue-2"
+    >
+      <p class="text-sm font-medium text-n-ruby-9">
+        {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.CAPACITY.LIMIT_WARNING') }}
+      </p>
+      <p class="text-sm text-n-teal-10">
+        {{
+          t('CAMPAIGN.WHATSAPP.CREATE.FORM.CAPACITY.SPLIT_ADVICE', {
+            days: requiredSendingDays,
+          })
+        }}
+      </p>
+    </div>
     <section class="grid grid-cols-1 gap-3 sm:grid-cols-2">
       <div class="p-5 border rounded-xl border-n-strong bg-n-blue-2">
         <p class="text-sm text-n-slate-11">

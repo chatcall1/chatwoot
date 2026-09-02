@@ -23,7 +23,7 @@ class Whatsapp::CampaignAudienceService
 
   def count
     return conversations.count if custom_message?
-    return phone_numbers.count if targeting_by_phones?
+    return contacts.count + unknown_phone_numbers.count if targeting_by_phones? && conversation_label_titles.blank?
 
     contacts.count
   end
@@ -35,13 +35,19 @@ class Whatsapp::CampaignAudienceService
   private
 
   def filtered_contacts
-    scope = campaign.inbox.contacts.where.not(phone_number: [nil, ''])
-    scope = scope.where(phone_number: phone_numbers) if targeting_by_phones?
+    scope = base_contact_scope
     scope = scope.tagged_with(target_label_titles, any: true) if targeting_by_labels? && target_label_titles.present?
     scope = scope.where.not(id: excluded_contacts.select(:id)) if excluded_label_titles.present?
     return scope if conversation_label_titles.blank?
 
     scope.where(id: matching_conversations.select(:contact_id))
+  end
+
+  def base_contact_scope
+    return campaign.account.contacts.where(phone_number: phone_numbers) if targeting_by_phones?
+    return campaign.account.contacts.where.not(phone_number: [nil, '']) if targeting_by_labels?
+
+    campaign.inbox.contacts.where.not(phone_number: [nil, ''])
   end
 
   def excluded_contacts
@@ -62,6 +68,10 @@ class Whatsapp::CampaignAudienceService
 
   def phone_numbers
     Array(campaign.trigger_rules['phone_numbers']).uniq
+  end
+
+  def unknown_phone_numbers
+    phone_numbers - campaign.account.contacts.where(phone_number: phone_numbers).pluck(:phone_number)
   end
 
   def target_label_titles

@@ -50,7 +50,9 @@ const handleAnalytics = campaign => {
     :close-on-click-outside="false"
     :header-title="t('CAMPAIGN.WHATSAPP.HEADER_TITLE')"
     :button-label="t('CAMPAIGN.WHATSAPP.NEW_CAMPAIGN')"
+    :secondary-button-label="t('CAMPAIGN.WHATSAPP.MANAGE_TEMPLATES')"
     @click="toggleWhatsAppCampaignDialog()"
+    @secondary-click="router.push({ name: 'settings_templates' })"
     @close="toggleWhatsAppCampaignDialog(false)"
   >
     <template #action>
