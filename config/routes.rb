@@ -332,9 +332,12 @@ Rails.application.routes.draw do
             get :campaigns, on: :member
             get :agent_bot, on: :member
             get :message_templates, on: :member
+            post :create_message_template, path: 'message_templates', on: :member
             post :set_agent_bot, on: :member
             delete :avatar, on: :member
             post :sync_templates, on: :member
+            get :product_catalogs, on: :member
+            get :whatsapp_flows, on: :member
             put :whatsapp_business_management_token, on: :member
             get :health, on: :member
             post :register_webhook, on: :member

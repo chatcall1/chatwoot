@@ -34,6 +34,12 @@ class Channel::Whatsapp < ApplicationRecord
   PROVIDERS = %w[default whatsapp_cloud].freeze
   before_validation :ensure_webhook_verify_token
 
+  has_many :template_media,
+           class_name: 'WhatsappTemplateMedia',
+           foreign_key: :channel_id,
+           dependent: :destroy,
+           inverse_of: :channel
+
   validates :provider, inclusion: { in: PROVIDERS }
   validates :phone_number, presence: true, uniqueness: true
   validate :validate_provider_config

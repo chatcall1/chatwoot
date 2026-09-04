@@ -45,8 +45,24 @@ class Whatsapp::TemplateProcessorService
     components.concat(process_body_components(processed_params, template))
     components.concat(process_footer_components(processed_params))
     components.concat(process_button_components(processed_params))
+    components.concat(process_flow_button(template))
+    components.concat(process_carousel_components(processed_params, template))
 
     @template_params = components
+  end
+
+  def process_flow_button(template)
+    buttons = template['components']&.find { |component| component['type'] == 'BUTTONS' }&.fetch('buttons', []) || []
+    flow_index = buttons.index { |button| button['type'] == 'FLOW' }
+    return [] if flow_index.nil?
+
+    token = message ? "chatwoot_#{channel.account_id}_#{message.id}" : "chatwoot_#{SecureRandom.uuid}"
+    [{
+      type: 'button',
+      sub_type: 'flow',
+      index: flow_index.to_s,
+      parameters: [{ type: 'action', action: { flow_token: token } }]
+    }]
   end
 
   def process_header_components(processed_params, template)
@@ -126,6 +142,83 @@ class Whatsapp::TemplateProcessorService
     end
 
     button_params.compact
+  end
+
+  def process_carousel_components(processed_params, template)
+    carousel = template['components']&.find { |component| component['type'] == 'CAROUSEL' }
+    return [] if carousel.blank?
+
+    cards = carousel['cards'].filter_map.with_index do |card, card_index|
+      build_carousel_card(processed_params, template, card, card_index)
+    end
+
+    cards.present? ? [{ type: 'carousel', cards: cards }] : []
+  end
+
+  def build_carousel_card(processed_params, template, card, card_index)
+    header = carousel_card_media_header(card)
+    return if header.blank?
+
+    media_url = carousel_media_url(template['name'], card_index, header)
+    media_parameter = parameter_builder.build_media_parameter(media_url, header['format'])
+    components = [{ type: 'header', parameters: [media_parameter] }]
+    components.concat(process_carousel_card_body(processed_params, template, card_index))
+    components.concat(process_carousel_card_buttons(processed_params, card, card_index))
+    { card_index: card_index, components: components }
+  end
+
+  def carousel_card_media_header(card)
+    card['components']&.find do |component|
+      component['type'] == 'HEADER' && %w[IMAGE VIDEO].include?(component['format'])
+    end
+  end
+
+  def carousel_media_url(template_name, card_index, header)
+    stored_media = channel.template_media.find_by(template_name: template_name, card_index: card_index)
+    return stored_media.download_url if stored_media&.file&.attached?
+
+    header.dig('example', 'header_handle', 0).presence || raise(ArgumentError, "Carousel card #{card_index + 1} media is missing")
+  end
+
+  def process_carousel_card_body(processed_params, template, card_index)
+    values = carousel_card_params(processed_params, card_index, 'body')
+    return [] if values.blank?
+
+    values = values.sort_by { |key, _value| key.to_i } unless template['parameter_format'] == 'NAMED'
+    parameters = values.filter_map { |key, value| build_text_parameter(key, value, template) if value.present? }
+    parameters.present? ? [{ type: 'body', parameters: parameters }] : []
+  end
+
+  def process_carousel_card_buttons(processed_params, card, card_index)
+    definitions = carousel_button_definitions(card)
+    values = carousel_card_params(processed_params, card_index, 'buttons') || []
+
+    definitions.filter_map.with_index do |definition, button_index|
+      button = values[button_index] || {}
+      carousel_button_component(definition, button, button_index)
+    end
+  end
+
+  def carousel_button_definitions(card)
+    component = card.fetch('components', []).find { |item| item['type'] == 'BUTTONS' }
+    component&.fetch('buttons', []) || []
+  end
+
+  def carousel_button_component(definition, button, button_index)
+    if definition['type'] == 'QUICK_REPLY'
+      payload = button['parameter'].presence || definition['text']
+      return { type: 'button', sub_type: 'quick_reply', index: button_index, parameters: [{ type: 'payload', payload: payload }] }
+    end
+
+    return unless definition['type'] == 'URL' && definition['url'].to_s.include?('{{')
+    raise ArgumentError, "Carousel button #{button_index + 1} parameter is missing" if button['parameter'].blank?
+
+    { type: 'button', sub_type: 'url', index: button_index, parameters: [parameter_builder.build_button_parameter(button.merge('type' => 'url'))] }
+  end
+
+  def carousel_card_params(processed_params, card_index, component)
+    cards = processed_params.dig('carousel', 'cards') || {}
+    (cards[card_index.to_s] || cards[card_index] || {})[component]
   end
 
   def parameter_builder

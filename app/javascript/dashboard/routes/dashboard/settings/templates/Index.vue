@@ -16,6 +16,7 @@ import BaseSettingsHeader from '../components/BaseSettingsHeader.vue';
 import SettingsLayout from '../SettingsLayout.vue';
 import TemplateCard from './TemplateCard.vue';
 import TemplatePreviewDrawer from './TemplatePreviewDrawer.vue';
+import WhatsAppTemplateBuilderDialog from './WhatsAppTemplateBuilderDialog.vue';
 import {
   formatTemplateDate,
   formatTemplateLanguage,
@@ -50,6 +51,7 @@ const previewPanelRef = ref(null);
 const templateRecordsByInboxId = new Map();
 const lastSyncAttemptsByInboxId = ref({});
 const isSyncing = ref(false);
+const showTemplateBuilder = ref(false);
 const {
   run: runTemplateRequest,
   abort: abortTemplateRequest,
@@ -86,6 +88,9 @@ const whatsappInboxes = computed(() =>
       (inbox.channel_type === INBOX_TYPES.TWILIO &&
         inbox.medium === TWILIO_CHANNEL_MEDIUM.WHATSAPP)
   )
+);
+const whatsappCloudInboxes = computed(() =>
+  whatsappInboxes.value.filter(inbox => inbox.provider === 'whatsapp_cloud')
 );
 
 const inboxOptions = computed(() => [
@@ -404,6 +409,12 @@ onDeactivated(abortTemplateRequest);
         </template>
         <template #actions>
           <Button
+            :label="$t('WHATSAPP_TEMPLATE_MGMT.NEW_TEMPLATE')"
+            icon="i-lucide-plus"
+            size="sm"
+            @click="showTemplateBuilder = true"
+          />
+          <Button
             :label="$t('WHATSAPP_TEMPLATE_MGMT.SYNC_TEMPLATES')"
             icon="i-lucide-refresh-cw"
             color="slate"
@@ -437,5 +448,11 @@ onDeactivated(abortTemplateRequest);
     </template>
 
     <TemplatePreviewDrawer ref="previewPanelRef" :template="selectedTemplate" />
+    <WhatsAppTemplateBuilderDialog
+      v-if="showTemplateBuilder"
+      :inboxes="whatsappCloudInboxes"
+      @close="showTemplateBuilder = false"
+      @submitted="fetchTemplates"
+    />
   </SettingsLayout>
 </template>

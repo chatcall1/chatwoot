@@ -30,6 +30,24 @@ class Whatsapp::FacebookApiClient
     handle_response(response, 'WABA phone numbers fetch failed')
   end
 
+  def fetch_product_catalogs(waba_id)
+    response = HTTParty.get(
+      "#{BASE_URI}/#{@api_version}/#{waba_id}/product_catalogs",
+      query: { fields: 'id,name', access_token: @access_token }
+    )
+
+    handle_response(response, 'WABA product catalogs fetch failed')
+  end
+
+  def fetch_flows(waba_id)
+    response = HTTParty.get(
+      "#{BASE_URI}/#{@api_version}/#{waba_id}/flows",
+      query: { fields: 'id,name,status,categories', limit: 100, access_token: @access_token }
+    )
+
+    handle_response(response, 'WABA Flows fetch failed')
+  end
+
   def debug_token(input_token)
     response = HTTParty.get(
       "#{BASE_URI}/#{@api_version}/debug_token",

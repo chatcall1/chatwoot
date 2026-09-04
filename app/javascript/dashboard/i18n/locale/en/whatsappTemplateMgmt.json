@@ -5,6 +5,7 @@
     "COUNT": "{n} template | {n} templates",
     "KNOW_MORE": "Know more",
     "SYNC_TEMPLATES": "Sync templates",
+    "NEW_TEMPLATE": "Create template",
     "SYNC_SUCCESS": "Template sync started for all WhatsApp inboxes. Updates may take a couple of minutes.",
     "PARTIAL_SYNC_ERROR": "Template sync started for some WhatsApp inboxes, but others could not be synced.",
     "SYNC_ERROR": "Unable to start template sync. Please try again.",
@@ -48,6 +49,189 @@
       "CATEGORY": "Category",
       "LANGUAGE": "Language",
       "INBOXES": "Inboxes"
+    }
+  },
+  "WHATSAPP_TEMPLATE_BUILDER": {
+    "TITLE": "Create WhatsApp template",
+    "STEP_DETAILS": "Set up the template basics",
+    "STEP_BUILDER": "Build your message",
+    "BACK": "Back",
+    "CLOSE": "Close",
+    "CATEGORY_LABEL": "What type of template is this?",
+    "BASIC_SETTINGS": "Basic settings",
+    "INBOX": {
+      "LABEL": "WhatsApp inbox",
+      "PLACEHOLDER": "Select a WhatsApp inbox",
+      "EMPTY": "No WhatsApp Cloud API inbox is available."
+    },
+    "CATEGORIES": {
+      "UTILITY": "Utility",
+      "MARKETING": "Marketing",
+      "AUTHENTICATION": "Authentication"
+    },
+    "CATEGORY_DESCRIPTIONS": {
+      "UTILITY": "Share an update with a customer",
+      "MARKETING": "Promote products or services",
+      "AUTHENTICATION": "Send a verification code"
+    },
+    "NAME": {
+      "LABEL": "Template name",
+      "PLACEHOLDER": "appointment_reminder",
+      "HELPER": "Use lowercase letters, numbers, and underscores only.",
+      "ERROR": "Only a-z, 0-9, and _ are allowed."
+    },
+    "LANGUAGE_LABEL": "Language",
+    "LANGUAGE_PLACEHOLDER": "Select language",
+    "LANGUAGES": { "ENGLISH": "English", "ARABIC": "Arabic" },
+    "CONTINUE": "Continue",
+    "OPTIONAL": "Optional",
+    "FORMATS": {
+      "STANDARD": "Standard marketing template",
+      "CAROUSEL": "Carousel template",
+      "CATALOG": "Catalog template"
+    },
+    "CATALOG": {
+      "REQUIREMENT": "Catalog templates work only when a Meta Commerce Catalog is connected to the WhatsApp Business Account.",
+      "SELECT_LABEL": "Meta Commerce Catalog",
+      "SELECT_PLACEHOLDER": "Select a connected catalog",
+      "FETCH": "Fetch catalogs",
+      "CATALOG_BUTTON_HELPER": "Meta adds the fixed View catalog button. No button fields are required here.",
+      "PRODUCT_CAROUSEL_HELPER": "Meta requires exactly two product cards when the template is created. Up to 10 products are selected later when the approved template is sent.",
+      "BUTTON_TYPE_LABEL": "Product card button",
+      "PRODUCT_TYPES": {
+        "SINGLE": "Single-product message",
+        "SINGLE_DESCRIPTION": "Show one product from the connected catalog.",
+        "MULTI": "Multi-product message",
+        "MULTI_DESCRIPTION": "Show multiple products grouped into sections."
+      },
+      "BUTTONS": {
+        "SPM": "View product",
+        "URL": "Visit website",
+        "URL_TEXT": "Button text",
+        "URL_TEXT_PLACEHOLDER": "Buy now",
+        "URL_VALUE": "Website URL",
+        "URL_PLACEHOLDER": "https://example.com/product/sku",
+        "URL_EXAMPLE": "Dynamic URL example",
+        "SPM_HELPER": "The View product button is fixed by Meta. Product details are loaded from the catalog when the message is sent.",
+        "URL_HELPER": "A URL button requires its label and destination URL."
+      },
+      "PREVIEW": {
+        "PRODUCT": "Product {n}",
+        "PRICE": "Price from Meta Catalog",
+        "PRODUCT_MEDIA": "Product image from catalog",
+        "VIEW_CATALOG": "View catalog",
+        "VIEW_PRODUCT": "View product",
+        "VIEW_ITEMS": "View items"
+      },
+      "FORMATS": {
+        "CATALOG": "Catalog template",
+        "CATALOG_DESCRIPTION": "Open the full connected catalog using Meta's fixed button.",
+        "CAROUSEL": "Catalog carousel",
+        "CAROUSEL_DESCRIPTION": "Create two product-card definitions for a swipeable product carousel.",
+        "PRODUCTS": "Catalog products",
+        "PRODUCTS_DESCRIPTION": "Choose between a single-product or multi-product message."
+      }
+    },
+    "SECTIONS": {
+      "HEADER": "Header",
+      "BODY": "Body",
+      "FOOTER": "Footer",
+      "BUTTONS": "Buttons"
+    },
+    "HEADER": {
+      "TYPE_PLACEHOLDER": "Select header type",
+      "TEXT_LABEL": "Header text",
+      "TEXT_PLACEHOLDER": "Add a short header",
+      "MEDIA_LABEL": "Media URL",
+      "MEDIA_PLACEHOLDER": "Add a media URL",
+      "UPLOAD": "Upload header media",
+      "UPLOAD_HELPER": "Select a supported example file for the template preview.",
+      "TYPES": {
+        "NONE": "No header",
+        "TEXT": "Text",
+        "IMAGE": "Image",
+        "VIDEO": "Video",
+        "DOCUMENT": "Document"
+      }
+    },
+    "BODY": { "PLACEHOLDER": "Write your message..." },
+    "FOOTER": { "LABEL": "Footer text", "PLACEHOLDER": "Add a footer" },
+    "BUTTONS": {
+      "TYPE_PLACEHOLDER": "Select button type",
+      "TEXT_LABEL": "Button text",
+      "TEXT_PLACEHOLDER": "Add button text",
+      "FLOW_LABEL": "Published WhatsApp Flow",
+      "FLOW_PLACEHOLDER": "Select a published Flow",
+      "FETCH_FLOWS": "Fetch Flows",
+      "FLOW_HELPER": "The Flow behavior and entry screen are inherited from its published configuration in Meta.",
+      "TYPES": {
+        "QUICK_REPLY": "Quick reply",
+        "URL": "Call to action",
+        "FLOW": "WhatsApp Flow"
+      }
+    },
+    "CAROUSEL": {
+      "TITLE": "Message cards",
+      "DESCRIPTION": "Add between 2 and 10 cards with consistent media and actions.",
+      "BODY_HELPER": "Required message text shown above the carousel cards.",
+      "COUNT": "{current}/10",
+      "TEXT_COUNT": "{current}/160",
+      "MEDIA": "Media",
+      "CARD_TEXT": "Card text",
+      "CARD": "Card {n}",
+      "ADD_CARD": "Add card",
+      "DELETE_CARD": "Delete card",
+      "DUPLICATE_CARD": "Duplicate card",
+      "PREVIOUS_CARD": "Previous card",
+      "NEXT_CARD": "Next card",
+      "COMPLETE": "Complete",
+      "INCOMPLETE": "Incomplete",
+      "UPLOAD_MEDIA": "Upload card media",
+      "IMAGE_HELPER": "JPG or PNG, up to 5 MB. Used as the template example.",
+      "VIDEO_HELPER": "MP4 or 3GPP, up to 16 MB. Used as the template example.",
+      "CARD_BODY": "Card body",
+      "CARD_BODY_PLACEHOLDER": "Write the card message",
+      "CARD_BODY_PREVIEW": "Your card message will appear here.",
+      "ADD_VARIABLE": "Add variable",
+      "VARIABLE_EXAMPLE": "Variable {n} example",
+      "VARIABLE_EXAMPLE_PLACEHOLDER": "Enter a realistic example",
+      "MEDIA_ERROR": "Select a supported media file within the allowed size.",
+      "ACTIONS": {
+        "TITLE": "Buttons",
+        "DESCRIPTION": "Button types and order apply to every card. You can customize their values per card.",
+        "QUICK_REPLY": "Quick reply",
+        "URL": "Visit website",
+        "PHONE": "Call phone number",
+        "URL_VALUE": "Website URL",
+        "URL_PLACEHOLDER": "https://example.com",
+        "PHONE_VALUE": "Phone number",
+        "PHONE_PLACEHOLDER": "+1234567890",
+        "TEXT_HELPER": "{current}/25 characters",
+        "TEXT_ERROR": "Button text must not exceed 25 characters.",
+        "URL_HELPER": "Enter a complete HTTP or HTTPS URL.",
+        "URL_ERROR": "Enter a valid HTTP or HTTPS URL.",
+        "URL_EXAMPLE": "Dynamic URL example",
+        "URL_EXAMPLE_PLACEHOLDER": "Enter the value that replaces variable 1",
+        "PHONE_HELPER": "Use international E.164 format, including the + and country code.",
+        "PHONE_ERROR": "Enter a valid international phone number, for example +1234567890."
+      }
+    },
+    "SAVE_DRAFT": "Save draft",
+    "SUBMIT": "Submit template",
+    "SUBMIT_SUCCESS": "Template submitted to WhatsApp for review.",
+    "SUBMIT_ERROR": "Unable to submit the template to WhatsApp. Please check the fields and try again.",
+    "PREVIEW": {
+      "TITLE": "Live preview",
+      "DESCRIPTION": "This is how your template will appear in WhatsApp.",
+      "BUSINESS": "Your business",
+      "BUSINESS_SUBTITLE": "Business account",
+      "TODAY": "Today",
+      "BODY": "Your message will appear here as you type.",
+      "MEDIA": "Media header",
+      "TIME": "6:16",
+      "NETWORK": "5G",
+      "AVATAR": "WA",
+      "MESSAGE": "Message"
     }
   }
 }

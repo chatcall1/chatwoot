@@ -66,6 +66,18 @@ class InboxPolicy < ApplicationPolicy
     @account_user.administrator?
   end
 
+  def create_message_template?
+    @account_user.administrator?
+  end
+
+  def product_catalogs?
+    @account_user.administrator?
+  end
+
+  def whatsapp_flows?
+    @account_user.administrator?
+  end
+
   def whatsapp_business_management_token?
     @account_user.administrator?
   end

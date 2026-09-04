@@ -1,47 +1,238 @@
 {
   "WHATSAPP_TEMPLATE_MGMT": {
-    "TITLE": "Templates",
-    "DESCRIPTION": "View the message templates synced from your WhatsApp inboxes. To create or edit a template, manage it with your provider.",
-    "COUNT": "{n} template | {n} templates",
+    "TITLE": "القوالب",
+    "DESCRIPTION": "اعرض قوالب الرسائل التي تمت مزامنتها من صناديق واتساب. لإنشاء قالب أو تعديله، أدره من خلال مزود الخدمة.",
+    "COUNT": "قالب واحد | قالبان | {n} قوالب | {n} قالبًا | {n} قالب",
     "KNOW_MORE": "اعرف المزيد",
-    "NEW_TEMPLATE": "New template",
-    "SEARCH_PLACEHOLDER": "Search by content or name...",
-    "MANAGE_IN_META": "Manage in Meta",
-    "MANAGE_IN_TWILIO": "Manage in Twilio",
-    "LOADING": "Loading WhatsApp templates...",
-    "EMPTY": "No WhatsApp templates found.",
-    "NO_RESULTS": "No templates match your filters.",
-    "FETCH_ERROR": "Unable to load WhatsApp templates. Please try again.",
-    "PARTIAL_FETCH_ERROR": "Some WhatsApp templates could not be loaded. Please try again.",
-    "LAST_SYNC_ATTEMPT": "Last sync attempt on {date}",
+    "NEW_TEMPLATE": "إنشاء قالب",
+    "SYNC_TEMPLATES": "مزامنة القوالب",
+    "SYNC_SUCCESS": "بدأت مزامنة القوالب لجميع صناديق واتساب. قد يستغرق ظهور التحديثات بضع دقائق.",
+    "PARTIAL_SYNC_ERROR": "بدأت مزامنة القوالب لبعض صناديق واتساب، وتعذرت مزامنة الصناديق الأخرى.",
+    "SYNC_ERROR": "تعذر بدء مزامنة القوالب. حاول مرة أخرى.",
+    "SEARCH_PLACEHOLDER": "ابحث حسب المحتوى أو الاسم...",
+    "MANAGE_IN_META": "الإدارة في Meta",
+    "MANAGE_IN_TWILIO": "الإدارة في Twilio",
+    "LOADING": "جارٍ تحميل قوالب واتساب...",
+    "EMPTY": "لم يتم العثور على قوالب واتساب.",
+    "NO_RESULTS": "لا توجد قوالب تطابق عوامل التصفية.",
+    "FETCH_ERROR": "تعذر تحميل قوالب واتساب. حاول مرة أخرى.",
+    "PARTIAL_FETCH_ERROR": "تعذر تحميل بعض قوالب واتساب. حاول مرة أخرى.",
+    "LAST_SYNC_ATTEMPT": "آخر محاولة مزامنة في {date}",
     "MORE_INBOXES": "+{n}",
+    "STATUSES": {
+      "UNSUBMITTED": "لم يُرسل للموافقة على واتساب"
+    },
     "FILTERS": {
       "ALL_INBOXES": "كل البريد",
-      "ALL_LANGUAGES": "All languages"
+      "ALL_LANGUAGES": "كل اللغات",
+      "ALL_TYPES": "كل الأنواع"
     },
     "TYPES": {
       "TEXT": "النص",
-      "IMAGE": "Image",
-      "VIDEO": "Video",
-      "DOCUMENT": "Document",
-      "MEDIA": "Media",
-      "QUICK_REPLY": "Quick reply",
-      "CALL_TO_ACTION": "Call to action",
-      "CATALOG": "Catalog",
-      "COPY_CODE": "Copy code"
+      "IMAGE": "صورة",
+      "VIDEO": "فيديو",
+      "DOCUMENT": "مستند",
+      "MEDIA": "وسائط",
+      "QUICK_REPLY": "رد سريع",
+      "CALL_TO_ACTION": "دعوة لاتخاذ إجراء",
+      "CATALOG": "كتالوج",
+      "COPY_CODE": "نسخ الرمز"
     },
     "PREVIEW": {
-      "TITLE": "Template preview",
-      "DESCRIPTION": "Preview how this template appears in WhatsApp.",
-      "OPEN": "Preview {name}",
-      "CLOSE": "Close preview",
-      "DETAILS": "Template details",
+      "TITLE": "معاينة القالب",
+      "DESCRIPTION": "عاين كيفية ظهور هذا القالب في واتساب.",
+      "OPEN": "معاينة {name}",
+      "CLOSE": "إغلاق المعاينة",
+      "DETAILS": "تفاصيل القالب",
       "STATUS": "الحالة",
-      "TYPE": "Content type",
+      "TYPE": "نوع المحتوى",
       "CATEGORY": "الفئة",
       "LANGUAGE": "اللغة",
       "INBOXES": "قنوات التواصل",
-      "LAST_SYNC_ATTEMPT": "Last sync attempt"
+      "LAST_SYNC_ATTEMPT": "آخر محاولة مزامنة"
+    }
+  },
+  "WHATSAPP_TEMPLATE_BUILDER": {
+    "TITLE": "إنشاء قالب واتساب",
+    "STEP_DETAILS": "إعداد البيانات الأساسية",
+    "STEP_BUILDER": "إنشاء الرسالة",
+    "BACK": "رجوع",
+    "CLOSE": "إغلاق",
+    "CATEGORY_LABEL": "ما نوع القالب؟",
+    "BASIC_SETTINGS": "الإعدادات الأساسية",
+    "INBOX": {
+      "LABEL": "صندوق واتساب",
+      "PLACEHOLDER": "اختر صندوق واتساب",
+      "EMPTY": "لا يوجد صندوق WhatsApp Cloud API متاح."
+    },
+    "CATEGORIES": {
+      "UTILITY": "خدمات",
+      "MARKETING": "تسويقي",
+      "AUTHENTICATION": "مصادقة"
+    },
+    "CATEGORY_DESCRIPTIONS": {
+      "UTILITY": "إطلاع العميل على تحديث",
+      "MARKETING": "الترويج لمنتج أو خدمة",
+      "AUTHENTICATION": "إرسال رمز تحقق"
+    },
+    "NAME": {
+      "LABEL": "اسم القالب",
+      "PLACEHOLDER": "appointment_reminder",
+      "HELPER": "استخدم الأحرف الإنجليزية الصغيرة والأرقام والشرطة السفلية فقط.",
+      "ERROR": "يسمح فقط بالأحرف a-z والأرقام والشرطة السفلية."
+    },
+    "LANGUAGE_LABEL": "اللغة",
+    "LANGUAGE_PLACEHOLDER": "اختر اللغة",
+    "LANGUAGES": { "ENGLISH": "الإنجليزية", "ARABIC": "العربية" },
+    "CONTINUE": "متابعة",
+    "OPTIONAL": "اختياري",
+    "FORMATS": {
+      "STANDARD": "قالب تسويقي رئيسي",
+      "CAROUSEL": "قالب بطاقات",
+      "CATALOG": "قالب الكتالوج"
+    },
+    "CATALOG": {
+      "REQUIREMENT": "تعمل قوالب الكتالوج فقط عند ربط كتالوج تجاري من Meta بحساب WhatsApp Business.",
+      "SELECT_LABEL": "كتالوج Meta التجاري",
+      "SELECT_PLACEHOLDER": "اختر كتالوجًا مرتبطًا",
+      "FETCH": "جلب الكتالوجات",
+      "CATALOG_BUTTON_HELPER": "تضيف Meta زر عرض الكتالوج الثابت. لا توجد حقول للزر مطلوبة هنا.",
+      "PRODUCT_CAROUSEL_HELPER": "تتطلب Meta بطاقتي منتجات بالضبط عند إنشاء القالب. ويمكن اختيار حتى 10 منتجات لاحقًا عند إرسال القالب المعتمد.",
+      "BUTTON_TYPE_LABEL": "زر بطاقة المنتج",
+      "PRODUCT_TYPES": {
+        "SINGLE": "رسالة منتج واحد",
+        "SINGLE_DESCRIPTION": "اعرض منتجًا واحدًا من الكتالوج المرتبط.",
+        "MULTI": "رسالة عدة منتجات",
+        "MULTI_DESCRIPTION": "اعرض عدة منتجات منظمة ضمن أقسام."
+      },
+      "BUTTONS": {
+        "SPM": "عرض المنتج",
+        "URL": "زيارة الموقع الإلكتروني",
+        "URL_TEXT": "نص الزر",
+        "URL_TEXT_PLACEHOLDER": "اشترِ الآن",
+        "URL_VALUE": "رابط الموقع",
+        "URL_PLACEHOLDER": "https://example.com/product/sku",
+        "URL_EXAMPLE": "مثال الرابط الديناميكي",
+        "SPM_HELPER": "زر عرض المنتج ثابت من Meta، وتُحمّل بيانات المنتج من الكتالوج عند إرسال الرسالة.",
+        "URL_HELPER": "يتطلب زر الرابط نص الزر والوجهة URL."
+      },
+      "PREVIEW": {
+        "PRODUCT": "المنتج {n}",
+        "PRICE": "السعر من كتالوج Meta",
+        "PRODUCT_MEDIA": "صورة المنتج من الكتالوج",
+        "VIEW_CATALOG": "عرض الكتالوج",
+        "VIEW_PRODUCT": "عرض المنتج",
+        "VIEW_ITEMS": "عرض المنتجات"
+      },
+      "FORMATS": {
+        "CATALOG": "قالب الكتالوج",
+        "CATALOG_DESCRIPTION": "افتح الكتالوج المرتبط كاملًا باستخدام زر Meta الثابت.",
+        "CAROUSEL": "بطاقات الكتالوج",
+        "CAROUSEL_DESCRIPTION": "أنشئ تعريف بطاقتي منتجات لعرضها في شريط منتجات منزلق.",
+        "PRODUCTS": "منتجات الكتالوج",
+        "PRODUCTS_DESCRIPTION": "اختر بين رسالة منتج واحد أو عدة منتجات."
+      }
+    },
+    "SECTIONS": {
+      "HEADER": "مقدمة الرسالة",
+      "BODY": "الرسالة",
+      "FOOTER": "خاتمة الرسالة",
+      "BUTTONS": "الأزرار"
+    },
+    "HEADER": {
+      "TYPE_PLACEHOLDER": "اختر نوع المقدمة",
+      "TEXT_LABEL": "نص المقدمة",
+      "TEXT_PLACEHOLDER": "أضف مقدمة قصيرة",
+      "MEDIA_LABEL": "رابط الوسائط",
+      "MEDIA_PLACEHOLDER": "أضف رابط الوسائط",
+      "UPLOAD": "ارفع وسائط المقدمة",
+      "UPLOAD_HELPER": "اختر ملف مثال مدعوم لمعاينة القالب.",
+      "TYPES": {
+        "NONE": "بدون مقدمة",
+        "TEXT": "نص",
+        "IMAGE": "صورة",
+        "VIDEO": "فيديو",
+        "DOCUMENT": "مستند"
+      }
+    },
+    "BODY": { "PLACEHOLDER": "اكتب رسالتك..." },
+    "FOOTER": { "LABEL": "نص الخاتمة", "PLACEHOLDER": "أضف خاتمة" },
+    "BUTTONS": {
+      "TYPE_PLACEHOLDER": "اختر نوع الزر",
+      "TEXT_LABEL": "نص الزر",
+      "TEXT_PLACEHOLDER": "أضف نص الزر",
+      "FLOW_LABEL": "تدفق واتساب المنشور",
+      "FLOW_PLACEHOLDER": "اختر تدفقًا منشورًا",
+      "FETCH_FLOWS": "جلب التدفقات",
+      "FLOW_HELPER": "يُستخدم سلوك التدفق وشاشة البداية وفق إعداداته المنشورة في Meta دون تعديل.",
+      "TYPES": {
+        "QUICK_REPLY": "رد سريع",
+        "URL": "إجراء",
+        "FLOW": "تدفق واتساب"
+      }
+    },
+    "CAROUSEL": {
+      "TITLE": "بطاقات الرسالة",
+      "DESCRIPTION": "أضف من بطاقتين إلى 10 بطاقات بوسائط وإجراءات متناسقة.",
+      "BODY_HELPER": "نص مطلوب يظهر أعلى بطاقات الرسالة المنزلقة.",
+      "COUNT": "{current}/10",
+      "TEXT_COUNT": "{current}/160",
+      "MEDIA": "الوسائط",
+      "CARD_TEXT": "نص البطاقة",
+      "CARD": "البطاقة {n}",
+      "ADD_CARD": "إضافة بطاقة",
+      "DELETE_CARD": "حذف البطاقة",
+      "DUPLICATE_CARD": "نسخ البطاقة",
+      "PREVIOUS_CARD": "البطاقة السابقة",
+      "NEXT_CARD": "البطاقة التالية",
+      "COMPLETE": "مكتمل",
+      "INCOMPLETE": "غير مكتمل",
+      "UPLOAD_MEDIA": "رفع وسائط البطاقة",
+      "IMAGE_HELPER": "JPG أو PNG، حتى 5 م.ب. تُستخدم كملف مثال للقالب.",
+      "VIDEO_HELPER": "MP4 أو 3GPP، حتى 16 م.ب. يُستخدم كملف مثال للقالب.",
+      "CARD_BODY": "نص البطاقة",
+      "CARD_BODY_PLACEHOLDER": "اكتب رسالة البطاقة",
+      "CARD_BODY_PREVIEW": "سيظهر نص البطاقة هنا.",
+      "ADD_VARIABLE": "إضافة متغير",
+      "VARIABLE_EXAMPLE": "مثال المتغير {n}",
+      "VARIABLE_EXAMPLE_PLACEHOLDER": "أدخل مثالًا واقعيًا",
+      "MEDIA_ERROR": "اختر ملف وسائط مدعومًا ضمن الحجم المسموح.",
+      "ACTIONS": {
+        "TITLE": "الأزرار",
+        "DESCRIPTION": "تُطبق أنواع الأزرار وترتيبها على جميع البطاقات، ويمكن تخصيص القيم داخل كل بطاقة.",
+        "QUICK_REPLY": "رد سريع",
+        "URL": "زيارة موقع إلكتروني",
+        "PHONE": "الاتصال برقم هاتف",
+        "URL_VALUE": "رابط الموقع",
+        "URL_PLACEHOLDER": "https://example.com",
+        "PHONE_VALUE": "رقم الهاتف",
+        "PHONE_PLACEHOLDER": "+1234567890",
+        "TEXT_HELPER": "{current}/25 حرفًا",
+        "TEXT_ERROR": "يجب ألا يتجاوز نص الزر 25 حرفًا.",
+        "URL_HELPER": "أدخل رابطًا كاملًا يبدأ بـ HTTP أو HTTPS.",
+        "URL_ERROR": "أدخل رابط HTTP أو HTTPS صالحًا.",
+        "URL_EXAMPLE": "مثال الرابط الديناميكي",
+        "URL_EXAMPLE_PLACEHOLDER": "أدخل القيمة التي تستبدل المتغير 1",
+        "PHONE_HELPER": "استخدم الصيغة الدولية E.164 متضمنة + ورمز الدولة.",
+        "PHONE_ERROR": "أدخل رقمًا دوليًا صالحًا، مثل +1234567890."
+      }
+    },
+    "SAVE_DRAFT": "حفظ المسودة",
+    "SUBMIT": "إرسال القالب",
+    "SUBMIT_SUCCESS": "تم إرسال القالب إلى واتساب للمراجعة.",
+    "SUBMIT_ERROR": "تعذر إرسال القالب إلى واتساب. تحقق من الحقول وحاول مرة أخرى.",
+    "PREVIEW": {
+      "TITLE": "معاينة مباشرة",
+      "DESCRIPTION": "هكذا سيظهر القالب للعملاء في واتساب.",
+      "BUSINESS": "نشاطك التجاري",
+      "BUSINESS_SUBTITLE": "حساب أعمال",
+      "TODAY": "اليوم",
+      "BODY": "ستظهر رسالتك هنا أثناء الكتابة.",
+      "MEDIA": "مقدمة وسائط",
+      "TIME": "6:16",
+      "NETWORK": "5G",
+      "AVATAR": "WA",
+      "MESSAGE": "رسالة"
     }
   }
 }
