@@ -41,6 +41,12 @@ class Inboxes extends CacheEnabledApiClient {
     return axios.get(`${this.url}/${inboxId}/whatsapp_flows`);
   }
 
+  getAuthenticationTemplatePreview(inboxId, params) {
+    return axios.get(`${this.url}/${inboxId}/authentication_template_preview`, {
+      params,
+    });
+  }
+
   getMessageTemplates(inboxId, params = {}, config = {}) {
     return axios.get(`${this.url}/${inboxId}/message_templates`, {
       ...config,

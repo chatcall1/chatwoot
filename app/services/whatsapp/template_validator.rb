@@ -1,9 +1,15 @@
 class Whatsapp::TemplateValidator
-  ALLOWED_LANGUAGES = %w[ar en].freeze
+  delegate :variable_names, to: :variable_validator
+
+  ALLOWED_LANGUAGES = %w[ar en_US].freeze
   ALLOWED_MEDIA_TYPES = {
     'IMAGE' => { content_types: %w[image/jpeg image/png], max_size: 5.megabytes },
     'VIDEO' => { content_types: %w[video/mp4 video/3gpp], max_size: 16.megabytes }
   }.freeze
+  ALLOWED_HEADER_MEDIA_TYPES = ALLOWED_MEDIA_TYPES.merge(
+    'DOCUMENT' => { content_types: ['application/pdf'], max_size: 100.megabytes },
+    'GIF' => { content_types: ['video/mp4'], max_size: 3.5.megabytes }
+  ).freeze
   ALLOWED_BUTTON_TYPES = %w[QUICK_REPLY URL PHONE_NUMBER].freeze
   MAX_BODY_LENGTH = 1024
   MAX_CARD_BODY_LENGTH = 160
@@ -11,9 +17,8 @@ class Whatsapp::TemplateValidator
   MAX_CARD_LINE_BREAKS = 2
   MAX_CARDS = 10
   MIN_CARDS = 2
-  PHONE_NUMBER_PATTERN = /\A\+[1-9]\d{6,14}\z/
+  PHONE_NUMBER_PATTERN = /\A[+\d][\d\s().-]{5,19}\z/
   TEMPLATE_NAME_PATTERN = /\A[a-z0-9_]+\z/
-  VARIABLE_PATTERN = /\{\{(\d+)\}\}/
 
   def initialize(payload:, media_files:)
     @payload = payload
@@ -22,6 +27,7 @@ class Whatsapp::TemplateValidator
 
   def validate!
     validate_identity!
+    return Whatsapp::AuthenticationTemplateBuilder.new(@payload).validate! if @payload['category'] == 'AUTHENTICATION'
     return validate_catalog! if @payload['catalog_format'].present?
     return validate_standard! if @payload['template_format'] == 'standard'
 
@@ -36,22 +42,35 @@ class Whatsapp::TemplateValidator
     validate_body!(@payload['body'], max_length: MAX_BODY_LENGTH, required: true, label: 'Message body')
     validate_examples!(@payload['body'], @payload['body_examples'], 'Message body')
     validate_standard_copy!
-    validate_flow_button!
+    validate_standard_buttons!
   end
 
   def validate_standard_copy!
     validate_body!(@payload['footer'], max_length: 60, required: false, label: 'Footer')
-    fail!('Footer cannot contain variables') if @payload['footer'].to_s.match?(VARIABLE_PATTERN)
-    fail!('Flow templates only support no header or a text header') unless %w[none text].include?(@payload['header_type'])
-    validate_body!(@payload['header_text'], max_length: 60, required: true, label: 'Header') if @payload['header_type'] == 'text'
-    fail!('Flow template text headers cannot contain variables yet') if @payload['header_text'].to_s.match?(VARIABLE_PATTERN)
+    fail!('Footer cannot contain variables') if variable_names(@payload['footer'].to_s).any?
+    fail!('Invalid header type') unless %w[none text image video document gif].include?(@payload['header_type'])
+    fail!('GIF headers require the Marketing category') if @payload['header_type'] == 'gif' && @payload['category'] != 'MARKETING'
+    validate_text_header! if @payload['header_type'] == 'text'
+    validate_standard_header_media! if %w[image video document gif].include?(@payload['header_type'])
   end
 
-  def validate_flow_button!
-    button = @payload['button']
-    fail!('Flow button is missing') unless button.is_a?(Hash) && button['type'] == 'FLOW'
-    fail!('Flow button text is invalid') if button['text'].to_s.strip.blank? || button['text'].to_s.strip.length > MAX_BUTTON_TEXT_LENGTH
-    fail!('A published Flow must be selected') if button['flow_id'].to_s.blank?
+  def validate_standard_buttons!
+    Whatsapp::TemplateButtonValidator.new(payload: @payload, variable_validator: variable_validator).validate!
+  end
+
+  def validate_text_header!
+    validate_body!(@payload['header_text'], max_length: 60, required: true, label: 'Header')
+    indexes = variable_names(@payload['header_text'].to_s)
+    fail!('Text header supports one variable') if indexes.length > 1
+    fail!('Text header variable example is required') if indexes.one? && @payload['header_example'].to_s.blank?
+  end
+
+  def validate_standard_header_media!
+    fail!('Header media file is required') unless @media_files.one?
+    rules = ALLOWED_HEADER_MEDIA_TYPES.fetch(@payload['header_type'].upcase)
+    file = @media_files.first
+    fail!('Header media file type is invalid') unless rules[:content_types].include?(file.content_type)
+    fail!('Header media file is too large') if file.size > rules[:max_size]
   end
 
   def validate_catalog!
@@ -60,8 +79,13 @@ class Whatsapp::TemplateValidator
     validate_body!(@payload['body'], max_length: catalog_body_limit, required: true, label: 'Message body')
     validate_examples!(@payload['body'], @payload['body_examples'], 'Message body')
     validate_body!(@payload['footer'], max_length: 60, required: false, label: 'Footer')
-    fail!('Footer cannot contain variables') if @payload['footer'].to_s.match?(VARIABLE_PATTERN)
+    fail!('Footer cannot contain variables') if variable_names(@payload['footer'].to_s).any?
+    validate_mpm_header! if @payload['catalog_format'] == 'products' && @payload['product_template_type'] == 'mpm'
     validate_product_carousel_button! if @payload['catalog_format'] == 'product_carousel'
+  end
+
+  def validate_mpm_header!
+    validate_text_header!
   end
 
   def validate_catalog_types!
@@ -91,9 +115,27 @@ class Whatsapp::TemplateValidator
   private
 
   def validate_identity!
-    fail!('Template name is invalid') unless TEMPLATE_NAME_PATTERN.match?(@payload['name'].to_s)
-    fail!('Template language is invalid') unless ALLOWED_LANGUAGES.include?(@payload['language'])
+    validate_name!
+    validate_language_and_category!
+    fail!('Template parameter format is invalid') unless valid_parameter_format?
+    return if @payload['category'] == 'AUTHENTICATION'
+    return if @payload['template_format'] == 'standard'
+
     fail!('Carousel templates must use the MARKETING category') unless @payload['category'] == 'MARKETING'
+  end
+
+  def validate_name!
+    fail!('Template name is invalid') unless TEMPLATE_NAME_PATTERN.match?(@payload['name'].to_s)
+    fail!('Template name is too long') if @payload['name'].to_s.length > 512
+  end
+
+  def validate_language_and_category!
+    fail!('Template language is invalid') unless ALLOWED_LANGUAGES.include?(@payload['language'])
+    fail!('Template category is invalid') unless %w[MARKETING UTILITY AUTHENTICATION].include?(@payload['category'])
+  end
+
+  def valid_parameter_format?
+    %w[POSITIONAL NAMED].include?(parameter_format)
   end
 
   def validate_cards!
@@ -135,37 +177,11 @@ class Whatsapp::TemplateValidator
   end
 
   def validate_body!(text, max_length:, required:, label:)
-    value = text.to_s
-    fail!("#{label} is required") if required && value.blank?
-    fail!("#{label} is too long") if value.length > max_length
-    validate_variables!(value, label)
-  end
-
-  def validate_variables!(text, label, allow_at_end: false)
-    validate_variable_syntax!(text, label)
-
-    indexes = text.scan(VARIABLE_PATTERN).flatten.map(&:to_i)
-    return if indexes.empty?
-
-    fail!("#{label} variables must be sequential") unless indexes.uniq == (1..indexes.uniq.length).to_a
-    fail!("#{label} cannot start or end with a variable") if invalid_variable_boundary?(text, allow_at_end: allow_at_end)
-    fail!("#{label} cannot contain adjacent variables") if text.match?(/\}\}\s*\{\{/)
-  end
-
-  def validate_variable_syntax!(text, label)
-    fail!("#{label} contains an invalid variable") if text.gsub(VARIABLE_PATTERN, '').match?(/\{\{|\}\}/)
-  end
-
-  def invalid_variable_boundary?(text, allow_at_end:)
-    return true if text.match?(/\A\s*\{\{\d+\}\}/)
-
-    !allow_at_end && text.match?(/\{\{\d+\}\}\s*\z/)
+    variable_validator.validate_text!(text, max_length: max_length, required: required, label: label)
   end
 
   def validate_examples!(text, examples, label)
-    count = text.to_s.scan(VARIABLE_PATTERN).flatten.map(&:to_i).uniq.length
-    valid = examples.is_a?(Array) && examples.length == count && examples.all? { |example| example.to_s.strip.present? }
-    fail!("#{label} requires an example for every variable") unless valid
+    variable_validator.validate_examples!(text, examples, label)
   end
 
   def validate_button!(button, type, card_index)
@@ -178,26 +194,19 @@ class Whatsapp::TemplateValidator
   end
 
   def validate_url_button!(button, card_index)
-    value = button['value'].to_s
-    validate_variables!(value, "Card #{card_index + 1} website URL", allow_at_end: true)
-    validate_dynamic_url!(value, button['example'], card_index)
-    uri = URI.parse(value.gsub(VARIABLE_PATTERN, 'example'))
-    valid = uri.is_a?(URI::HTTP) && uri.host.present? && %w[http https].include?(uri.scheme)
-    fail!("Card #{card_index + 1} website URL is invalid") unless valid
-  rescue URI::InvalidURIError
-    fail!("Card #{card_index + 1} website URL is invalid")
-  end
-
-  def validate_dynamic_url!(value, example, card_index)
-    variables = value.scan(VARIABLE_PATTERN)
-    return if variables.empty?
-
-    fail!("Card #{card_index + 1} website URL variable must appear once at the end") unless variables.one? && value.end_with?('{{1}}')
-    fail!("Card #{card_index + 1} website URL requires a variable example") if example.to_s.strip.blank?
+    variable_validator.validate_url!(button['value'].to_s, button['example'], "Card #{card_index + 1} website URL")
   end
 
   def validate_phone_number!(value, card_index)
-    fail!("Card #{card_index + 1} phone number must use international format") unless PHONE_NUMBER_PATTERN.match?(value.to_s)
+    fail!("Card #{card_index + 1} phone number is invalid") unless PHONE_NUMBER_PATTERN.match?(value.to_s)
+  end
+
+  def parameter_format
+    (@payload['parameter_format'].presence || 'POSITIONAL').to_s.upcase
+  end
+
+  def variable_validator
+    @variable_validator ||= Whatsapp::TemplateVariableValidator.new(@payload)
   end
 
   def fail!(message)

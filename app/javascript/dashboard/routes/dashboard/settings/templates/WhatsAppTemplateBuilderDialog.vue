@@ -1,17 +1,18 @@
 <script setup>
 import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import FileUpload from 'vue-upload-component';
+import { useDebounceFn } from '@vueuse/core';
 
 import InboxesAPI from 'dashboard/api/inboxes';
 import Button from 'dashboard/components-next/button/Button.vue';
-import ComboBox from 'dashboard/components-next/combobox/ComboBox.vue';
 import Dialog from 'dashboard/components-next/dialog/Dialog.vue';
-import Editor from 'dashboard/components-next/Editor/Editor.vue';
-import Icon from 'dashboard/components-next/icon/Icon.vue';
-import Input from 'dashboard/components-next/input/Input.vue';
-import Switch from 'dashboard/components-next/switch/Switch.vue';
 import { useAlert } from 'dashboard/composables';
+import AuthenticationTemplateEditor from './components/AuthenticationTemplateEditor.vue';
+import CatalogTemplateEditor from './components/CatalogTemplateEditor.vue';
+import CarouselTemplateEditor from './components/CarouselTemplateEditor.vue';
+import TemplateBasicsStep from './components/TemplateBasicsStep.vue';
+import WhatsAppTemplatePhonePreview from './components/WhatsAppTemplatePhonePreview.vue';
+import StandardTemplateEditor from './components/StandardTemplateEditor.vue';
 
 const props = defineProps({
   inboxes: { type: Array, default: () => [] },
@@ -29,9 +30,22 @@ const productCarouselUrl = reactive({ text: '', url: '', example: '' });
 const selectedCatalogId = ref('');
 const catalogs = ref([]);
 const isLoadingCatalogs = ref(false);
+const hasFetchedCatalogs = ref(false);
 const flows = ref([]);
 const isLoadingFlows = ref(false);
+const authenticationMetaPreview = ref(null);
+let authenticationPreviewRequestId = 0;
 const activeCardIndex = ref(0);
+let nextAuthenticationAppId = 1;
+const createAuthenticationApp = () => {
+  const app = {
+    id: nextAuthenticationAppId,
+    packageName: '',
+    signatureHash: '',
+  };
+  nextAuthenticationAppId += 1;
+  return app;
+};
 const carouselEditorCardElements = new Map();
 const carouselPreviewCardElements = new Map();
 const isSubmitting = ref(false);
@@ -40,6 +54,23 @@ const generateCarouselCardId = () => {
   const id = nextCarouselCardId;
   nextCarouselCardId += 1;
   return id;
+};
+let nextStandardButtonId = 1;
+const createStandardButton = () => {
+  const button = {
+    id: nextStandardButtonId,
+    type: 'QUICK_REPLY',
+    text: '',
+    value: '',
+    example: '',
+    flowId: '',
+    deepLinkEnabled: false,
+    metaAppId: '',
+    androidDeepLink: '',
+    androidFallbackUrl: '',
+  };
+  nextStandardButtonId += 1;
+  return button;
 };
 const createCarouselCard = () => ({
   id: generateCarouselCardId(),
@@ -65,12 +96,26 @@ const state = reactive({
   headerText: '',
   headerMediaUrl: '',
   headerMediaName: '',
+  headerMediaFile: null,
+  headerExample: '',
+  headerGifEnabled: false,
   body: '',
   bodyExamples: {},
   footer: '',
   buttonText: '',
   buttonType: 'QUICK_REPLY',
   flowId: '',
+  standardButtons: [],
+  authenticationOtpType: 'COPY_CODE',
+  authenticationSecurityRecommendation: true,
+  authenticationExpirationEnabled: true,
+  authenticationCodeExpirationMinutes: 10,
+  authenticationTtlEnabled: false,
+  authenticationTtlSeconds: 60,
+  authenticationCopyCodeText: '',
+  authenticationAutofillText: '',
+  authenticationTermsAccepted: false,
+  authenticationApps: [createAuthenticationApp()],
   carouselMediaType: 'image',
   carouselTextEnabled: true,
   carouselButtonTypes: [],
@@ -82,39 +127,57 @@ const createFormatDraft = () => ({
   headerText: '',
   headerMediaUrl: '',
   headerMediaName: '',
+  headerMediaFile: null,
+  headerExample: '',
+  headerGifEnabled: false,
   body: '',
   bodyExamples: {},
   footer: '',
   buttonText: '',
   buttonType: 'QUICK_REPLY',
   flowId: '',
+  standardButtons: [],
 });
 const formatDrafts = reactive({
   standard: createFormatDraft(),
   carousel: createFormatDraft(),
   catalog: createFormatDraft(),
 });
+const catalogDrafts = reactive({
+  catalog_template: createFormatDraft(),
+  product_carousel: createFormatDraft(),
+  spm: createFormatDraft(),
+  mpm: createFormatDraft(),
+});
+const currentFormatDraft = () => ({
+  headerType: state.headerType,
+  headerText: state.headerText,
+  headerMediaUrl: state.headerMediaUrl,
+  headerMediaName: state.headerMediaName,
+  headerMediaFile: state.headerMediaFile,
+  headerExample: state.headerExample,
+  headerGifEnabled: state.headerGifEnabled,
+  body: state.body,
+  bodyExamples: { ...state.bodyExamples },
+  footer: state.footer,
+  buttonText: state.buttonText,
+  buttonType: state.buttonType,
+  flowId: state.flowId,
+  standardButtons: state.standardButtons.map(button => ({ ...button })),
+});
 const saveFormatDraft = format => {
-  formatDrafts[format] = {
-    headerType: state.headerType,
-    headerText: state.headerText,
-    headerMediaUrl: state.headerMediaUrl,
-    headerMediaName: state.headerMediaName,
-    body: state.body,
-    bodyExamples: { ...state.bodyExamples },
-    footer: state.footer,
-    buttonText: state.buttonText,
-    buttonType: state.buttonType,
-    flowId: state.flowId,
-  };
+  formatDrafts[format] = currentFormatDraft();
 };
-const restoreFormatDraft = format => {
-  const draft = formatDrafts[format];
+const restoreDraft = draft => {
   Object.assign(state, {
     ...draft,
     bodyExamples: { ...draft.bodyExamples },
+    standardButtons: draft.standardButtons.map(button => ({ ...button })),
   });
 };
+const restoreFormatDraft = format => restoreDraft(formatDrafts[format]);
+const catalogDraftKey = (format, productType) =>
+  format === 'products' ? productType : format;
 
 const categories = computed(() => [
   {
@@ -140,7 +203,33 @@ const categories = computed(() => [
 ]);
 const languages = computed(() => [
   { value: 'ar', label: t('WHATSAPP_TEMPLATE_BUILDER.LANGUAGES.ARABIC') },
-  { value: 'en', label: t('WHATSAPP_TEMPLATE_BUILDER.LANGUAGES.ENGLISH') },
+  { value: 'en_US', label: t('WHATSAPP_TEMPLATE_BUILDER.LANGUAGES.ENGLISH') },
+]);
+const authenticationOtpTypes = computed(() => [
+  {
+    value: 'COPY_CODE',
+    label: t('WHATSAPP_TEMPLATE_BUILDER.AUTHENTICATION.TYPES.COPY_CODE'),
+    description: t(
+      'WHATSAPP_TEMPLATE_BUILDER.AUTHENTICATION.TYPES.COPY_CODE_DESCRIPTION'
+    ),
+    icon: 'i-lucide-copy',
+  },
+  {
+    value: 'ONE_TAP',
+    label: t('WHATSAPP_TEMPLATE_BUILDER.AUTHENTICATION.TYPES.ONE_TAP'),
+    description: t(
+      'WHATSAPP_TEMPLATE_BUILDER.AUTHENTICATION.TYPES.ONE_TAP_DESCRIPTION'
+    ),
+    icon: 'i-lucide-smartphone',
+  },
+  {
+    value: 'ZERO_TAP',
+    label: t('WHATSAPP_TEMPLATE_BUILDER.AUTHENTICATION.TYPES.ZERO_TAP'),
+    description: t(
+      'WHATSAPP_TEMPLATE_BUILDER.AUTHENTICATION.TYPES.ZERO_TAP_DESCRIPTION'
+    ),
+    icon: 'i-lucide-zap',
+  },
 ]);
 const inboxOptions = computed(() =>
   props.inboxes.map(inbox => ({ value: String(inbox.id), label: inbox.name }))
@@ -156,7 +245,16 @@ const headerTypes = computed(() => [
   },
 ]);
 const mediaHeaderTypes = computed(() =>
-  headerTypes.value.filter(option => option.value !== 'none')
+  headerTypes.value.filter(option => {
+    if (
+      templateFormat.value === 'catalog' &&
+      catalogFormat.value === 'products' &&
+      productTemplateType.value === 'mpm'
+    ) {
+      return option.value === 'text';
+    }
+    return option.value !== 'none';
+  })
 );
 const templateFormats = computed(() => [
   {
@@ -241,6 +339,7 @@ const flowOptions = computed(() =>
 const fetchCatalogs = async () => {
   if (!state.inboxId) return;
   isLoadingCatalogs.value = true;
+  hasFetchedCatalogs.value = false;
   try {
     const { data } = await InboxesAPI.getProductCatalogs(state.inboxId);
     catalogs.value = data.payload || [];
@@ -251,8 +350,12 @@ const fetchCatalogs = async () => {
     ) {
       selectedCatalogId.value = catalogOptions.value[0]?.value || '';
     }
+  } catch {
+    catalogs.value = [];
+    selectedCatalogId.value = '';
   } finally {
     isLoadingCatalogs.value = false;
+    hasFetchedCatalogs.value = true;
   }
 };
 const fetchFlows = async () => {
@@ -268,6 +371,37 @@ const fetchFlows = async () => {
     isLoadingFlows.value = false;
   }
 };
+const fetchAuthenticationPreview = useDebounceFn(async () => {
+  if (
+    step.value !== 2 ||
+    state.category !== 'AUTHENTICATION' ||
+    !state.inboxId
+  ) {
+    return;
+  }
+
+  authenticationPreviewRequestId += 1;
+  const requestId = authenticationPreviewRequestId;
+  try {
+    const { data } = await InboxesAPI.getAuthenticationTemplatePreview(
+      state.inboxId,
+      {
+        language: state.language,
+        add_security_recommendation: state.authenticationSecurityRecommendation,
+        code_expiration_minutes: state.authenticationExpirationEnabled
+          ? state.authenticationCodeExpirationMinutes
+          : undefined,
+      }
+    );
+    if (requestId === authenticationPreviewRequestId) {
+      authenticationMetaPreview.value = data.payload || null;
+    }
+  } catch {
+    if (requestId === authenticationPreviewRequestId) {
+      authenticationMetaPreview.value = null;
+    }
+  }
+}, 400);
 const buttonTypes = computed(() => [
   {
     value: 'QUICK_REPLY',
@@ -275,10 +409,24 @@ const buttonTypes = computed(() => [
   },
   { value: 'URL', label: t('WHATSAPP_TEMPLATE_BUILDER.BUTTONS.TYPES.URL') },
   {
+    value: 'PHONE_NUMBER',
+    label: t('WHATSAPP_TEMPLATE_BUILDER.BUTTONS.TYPES.PHONE_NUMBER'),
+  },
+  {
     value: 'FLOW',
     label: t('WHATSAPP_TEMPLATE_BUILDER.BUTTONS.TYPES.FLOW'),
   },
+  {
+    value: 'COPY_CODE',
+    label: t('WHATSAPP_TEMPLATE_BUILDER.BUTTONS.TYPES.COPY_CODE'),
+  },
 ]);
+const addStandardButton = () => {
+  if (state.standardButtons.length < 10) {
+    state.standardButtons.push(createStandardButton());
+  }
+};
+const removeStandardButton = index => state.standardButtons.splice(index, 1);
 const carouselActionTypes = computed(() => [
   {
     value: 'QUICK_REPLY',
@@ -315,26 +463,29 @@ const activeCard = computed(() => state.cards[activeCardIndex.value]);
 const selectCarouselCard = index => {
   activeCardIndex.value = index;
 };
-const isValidPhoneNumber = value => /^\+[1-9]\d{6,14}$/.test(value);
-const VARIABLE_PATTERN = /\{\{(\d+)\}\}/g;
+const isValidPhoneNumber = value => /^[+\d][\d\s().-]{5,19}$/.test(value);
+const POSITIONAL_VARIABLE_PATTERN = /\{\{(\d+)\}\}/g;
+const variablePattern = () => POSITIONAL_VARIABLE_PATTERN;
 const isValidTemplateText = (
   value,
   { maxLineBreaks, allowVariableAtEnd = false } = {}
 ) => {
   const text = value.trim();
-  const variableIndexes = [...text.matchAll(VARIABLE_PATTERN)].map(match =>
+  const variableIndexes = [...text.matchAll(variablePattern())].map(match =>
     Number(match[1])
   );
   const uniqueIndexes = [...new Set(variableIndexes)];
   const hasInvalidVariable = /\{\{|\}\}/.test(
-    text.replace(VARIABLE_PATTERN, '')
+    text.replace(variablePattern(), '')
   );
   const hasSequentialVariables = uniqueIndexes.every(
     (index, position) => index === position + 1
   );
+  const boundaryPattern = '\\d+';
   const hasInvalidVariableBoundary =
-    /^\s*\{\{\d+\}\}/.test(text) ||
-    (!allowVariableAtEnd && /\{\{\d+\}\}\s*$/.test(text));
+    new RegExp(`^\\s*\\{\\{${boundaryPattern}\\}\\}`).test(text) ||
+    (!allowVariableAtEnd &&
+      new RegExp(`\\{\\{${boundaryPattern}\\}\\}\\s*$`).test(text));
   const hasAdjacentVariables = /\}\}\s*\{\{/.test(text);
   const hasValidLineBreaks =
     maxLineBreaks === undefined || text.split('\n').length - 1 <= maxLineBreaks;
@@ -349,7 +500,7 @@ const isValidTemplateText = (
 };
 const variableIndexes = value => [
   ...new Set(
-    [...value.matchAll(VARIABLE_PATTERN)].map(match => Number(match[1]))
+    [...value.matchAll(variablePattern())].map(match => Number(match[1]))
   ),
 ];
 const bodyVariableIndexes = computed(() => variableIndexes(state.body));
@@ -358,16 +509,22 @@ const activeCardVariableIndexes = computed(() =>
 );
 const hasCompleteExamples = (indexes, examples) =>
   indexes.every(index => !!examples[index]?.trim());
+const buildExamples = (text, examples) => {
+  const keys = variableIndexes(text);
+  return keys.map(key => examples[key]);
+};
+const emptyExamples = () => [];
 const isValidUrl = value => {
   try {
-    const variables = [...value.matchAll(VARIABLE_PATTERN)];
+    const variables = [...value.matchAll(variablePattern())];
+    const placeholder = variables.length ? `{{${variables[0][1]}}}` : '';
     if (
       variables.length > 1 ||
-      (variables.length === 1 && !value.endsWith('{{1}}'))
+      (variables.length === 1 && !value.endsWith(placeholder))
     ) {
       return false;
     }
-    const url = new URL(value.replace(VARIABLE_PATTERN, 'example'));
+    const url = new URL(value.replace(variablePattern(), 'example'));
     return (
       isValidTemplateText(value, { allowVariableAtEnd: true }) &&
       ['http:', 'https:'].includes(url.protocol) &&
@@ -389,6 +546,14 @@ const isValidButton = (button, type) => {
   if (type === 'PHONE_NUMBER') return isValidPhoneNumber(button.value);
   return true;
 };
+const hasValidQuickReplyGrouping = buttons => {
+  const groups = buttons.reduce((result, button) => {
+    const isQuickReply = button.type === 'QUICK_REPLY';
+    if (result.at(-1) !== isQuickReply) result.push(isQuickReply);
+    return result;
+  }, []);
+  return groups.filter(Boolean).length <= 1;
+};
 const isCardComplete = card =>
   !!card.mediaFile &&
   (!state.carouselTextEnabled ||
@@ -400,7 +565,7 @@ const isCardComplete = card =>
     isValidButton(card.buttons[action], action)
   );
 const nameError = computed(() =>
-  state.name && !/^[a-z0-9_]+$/.test(state.name)
+  state.name && (!/^[a-z0-9_]+$/.test(state.name) || state.name.length > 512)
     ? t('WHATSAPP_TEMPLATE_BUILDER.NAME.ERROR')
     : ''
 );
@@ -436,33 +601,162 @@ const isCatalogValid = computed(
     state.body.length <= catalogBodyMaxLength.value &&
     isValidTemplateText(state.body) &&
     hasCompleteExamples(bodyVariableIndexes.value, state.bodyExamples) &&
+    (catalogFormat.value !== 'products' ||
+      productTemplateType.value !== 'mpm' ||
+      (!!state.headerText.trim() &&
+        (!variableIndexes(state.headerText).length ||
+          !!state.headerExample.trim()))) &&
     (catalogFormat.value !== 'product_carousel' ||
       productCarouselButtonType.value === 'SPM' ||
       (!!productCarouselUrl.text.trim() &&
         productCarouselUrl.text.trim().length <= 25 &&
         isValidUrl(productCarouselUrl.url) &&
-        (!productCarouselUrl.url.includes('{{1}}') ||
+        (!variableIndexes(productCarouselUrl.url).length ||
           !!productCarouselUrl.example.trim())))
 );
+const isAuthenticationAppValid = app =>
+  /^(?:[A-Za-z][A-Za-z0-9_]*\.)+[A-Za-z][A-Za-z0-9_]*$/.test(app.packageName) &&
+  /^[A-Za-z0-9+/=]{11}$/.test(app.signatureHash);
+const isAuthenticationValid = computed(() => {
+  if (state.category !== 'AUTHENTICATION') return false;
+  if (
+    state.authenticationExpirationEnabled &&
+    (!Number.isInteger(Number(state.authenticationCodeExpirationMinutes)) ||
+      Number(state.authenticationCodeExpirationMinutes) < 1 ||
+      Number(state.authenticationCodeExpirationMinutes) > 90)
+  ) {
+    return false;
+  }
+  if (
+    state.authenticationTtlEnabled &&
+    (!Number.isInteger(Number(state.authenticationTtlSeconds)) ||
+      Number(state.authenticationTtlSeconds) < 30 ||
+      Number(state.authenticationTtlSeconds) > 900)
+  ) {
+    return false;
+  }
+  if (
+    ['ONE_TAP', 'ZERO_TAP'].includes(state.authenticationOtpType) &&
+    !state.authenticationApps.every(isAuthenticationAppValid)
+  ) {
+    return false;
+  }
+  return (
+    state.authenticationOtpType !== 'ZERO_TAP' ||
+    state.authenticationTermsAccepted
+  );
+});
 const isStandardValid = computed(
   () =>
-    state.category === 'MARKETING' &&
+    ['MARKETING', 'UTILITY'].includes(state.category) &&
     templateFormat.value === 'standard' &&
-    state.buttonType === 'FLOW' &&
-    !!state.flowId &&
-    !!state.buttonText.trim() &&
-    state.buttonText.trim().length <= 25 &&
-    ['none', 'text'].includes(state.headerType) &&
-    (state.headerType !== 'text' || !!state.headerText.trim()) &&
+    hasValidQuickReplyGrouping(state.standardButtons) &&
+    state.standardButtons.every(button => {
+      if (button.type === 'COPY_CODE') {
+        return !!button.example.trim() && button.example.trim().length <= 20;
+      }
+      if (!button.text.trim() || button.text.trim().length > 25) return false;
+      if (button.type === 'FLOW') return !!button.flowId;
+      if (button.type === 'URL') {
+        return (
+          isValidUrl(button.value) &&
+          (!variableIndexes(button.value).length || !!button.example.trim()) &&
+          (!button.deepLinkEnabled ||
+            (/^\d+$/.test(button.metaAppId) &&
+              /^[a-z][a-z0-9+.-]*:\/\//i.test(button.androidDeepLink) &&
+              isValidUrl(button.androidFallbackUrl)))
+        );
+      }
+      if (button.type === 'PHONE_NUMBER') {
+        return isValidPhoneNumber(button.value);
+      }
+      return true;
+    }) &&
+    (state.headerType !== 'text' ||
+      (!!state.headerText.trim() &&
+        (!variableIndexes(state.headerText).length ||
+          !!state.headerExample.trim()))) &&
+    (!['image', 'video', 'document'].includes(state.headerType) ||
+      !!state.headerMediaFile) &&
     !!state.body.trim() &&
     state.body.length <= 1024 &&
     isValidTemplateText(state.body) &&
     hasCompleteExamples(bodyVariableIndexes.value, state.bodyExamples)
 );
 const isTemplateValid = computed(
-  () => isStandardValid.value || isCarouselValid.value || isCatalogValid.value
+  () =>
+    isAuthenticationValid.value ||
+    isStandardValid.value ||
+    isCarouselValid.value ||
+    isCatalogValid.value
 );
 const direction = computed(() => (state.language === 'ar' ? 'rtl' : 'ltr'));
+const authenticationPreview = computed(() => {
+  const minutes = { minutes: state.authenticationCodeExpirationMinutes };
+  return state.language === 'ar'
+    ? {
+        body: t('WHATSAPP_TEMPLATE_BUILDER.AUTHENTICATION.PREVIEW.ARABIC.BODY'),
+        security: t(
+          'WHATSAPP_TEMPLATE_BUILDER.AUTHENTICATION.PREVIEW.ARABIC.SECURITY'
+        ),
+        expiration: t(
+          'WHATSAPP_TEMPLATE_BUILDER.AUTHENTICATION.PREVIEW.ARABIC.EXPIRATION',
+          minutes
+        ),
+        copy: t('WHATSAPP_TEMPLATE_BUILDER.AUTHENTICATION.PREVIEW.ARABIC.COPY'),
+        autofill: t(
+          'WHATSAPP_TEMPLATE_BUILDER.AUTHENTICATION.PREVIEW.ARABIC.AUTOFILL'
+        ),
+      }
+    : {
+        body: t(
+          'WHATSAPP_TEMPLATE_BUILDER.AUTHENTICATION.PREVIEW.ENGLISH.BODY'
+        ),
+        security: t(
+          'WHATSAPP_TEMPLATE_BUILDER.AUTHENTICATION.PREVIEW.ENGLISH.SECURITY'
+        ),
+        expiration: t(
+          'WHATSAPP_TEMPLATE_BUILDER.AUTHENTICATION.PREVIEW.ENGLISH.EXPIRATION',
+          minutes
+        ),
+        copy: t(
+          'WHATSAPP_TEMPLATE_BUILDER.AUTHENTICATION.PREVIEW.ENGLISH.COPY'
+        ),
+        autofill: t(
+          'WHATSAPP_TEMPLATE_BUILDER.AUTHENTICATION.PREVIEW.ENGLISH.AUTOFILL'
+        ),
+      };
+});
+const authenticationPreviewBody = computed(() => {
+  const code = t('WHATSAPP_TEMPLATE_BUILDER.AUTHENTICATION.PREVIEW.CODE');
+  const metaBody = authenticationMetaPreview.value?.body;
+  if (metaBody) return metaBody.replace(/\*?\{\{1\}\}\*?/, code);
+
+  const security = state.authenticationSecurityRecommendation
+    ? ` ${authenticationPreview.value.security}`
+    : '';
+  return `${code} ${authenticationPreview.value.body}${security}`;
+});
+const authenticationPreviewButton = computed(() => {
+  const metaButton = authenticationMetaPreview.value?.buttons?.[0];
+  if (state.authenticationOtpType === 'COPY_CODE') {
+    return (
+      state.authenticationCopyCodeText ||
+      metaButton?.text ||
+      authenticationPreview.value.copy
+    );
+  }
+  return (
+    state.authenticationAutofillText ||
+    metaButton?.autofill_text ||
+    authenticationPreview.value.autofill
+  );
+});
+const authenticationPreviewFooter = computed(
+  () =>
+    authenticationMetaPreview.value?.footer ||
+    authenticationPreview.value.expiration
+);
 
 const sections = computed(() => [
   {
@@ -488,15 +782,31 @@ const sections = computed(() => [
 ]);
 const visibleSections = computed(() =>
   templateFormat.value === 'catalog'
-    ? sections.value.filter(
-        section => !['header', 'buttons'].includes(section.key)
-      )
+    ? sections.value.filter(section => {
+        if (section.key === 'buttons') return false;
+        if (section.key !== 'header') return true;
+        return (
+          catalogFormat.value === 'products' &&
+          productTemplateType.value === 'mpm'
+        );
+      })
     : sections.value
 );
 
 const open = () => dialogRef.value?.open();
+const releasePreviewUrls = () => {
+  const previewUrls = new Set(
+    [state.headerMediaUrl, ...state.cards.map(card => card.mediaUrl)].filter(
+      Boolean
+    )
+  );
+  previewUrls.forEach(url => URL.revokeObjectURL(url));
+};
 const close = () => {
   dialogRef.value?.close();
+};
+const handleDialogClose = () => {
+  releasePreviewUrls();
   emit('close');
 };
 const continueToBuilder = () => {
@@ -507,17 +817,53 @@ const toggleSection = key => {
 };
 const toggleHeaderType = headerType => {
   state.headerType = state.headerType === headerType ? 'none' : headerType;
+  if (state.headerType !== 'video') state.headerGifEnabled = false;
+};
+const setHeaderGifMode = enabled => {
+  state.headerGifEnabled = enabled;
+  if (state.headerMediaUrl) URL.revokeObjectURL(state.headerMediaUrl);
+  state.headerMediaUrl = '';
+  state.headerMediaName = '';
+  state.headerMediaFile = null;
+};
+const addAuthenticationApp = () => {
+  state.authenticationApps.push(createAuthenticationApp());
+};
+const removeAuthenticationApp = index => {
+  if (state.authenticationApps.length > 1) {
+    state.authenticationApps.splice(index, 1);
+  }
 };
 const mediaAccept = computed(() => {
-  if (state.headerType === 'video') return 'video/mp4,video/3gpp';
+  if (state.headerType === 'video') {
+    if (state.headerGifEnabled) return 'video/mp4';
+    return 'video/mp4,video/3gpp';
+  }
   if (state.headerType === 'document') return 'application/pdf';
   return 'image/jpeg,image/png';
 });
 const handleHeaderFile = file => {
   if (!file?.file) return;
+  const limits = {
+    image: { types: ['image/jpeg', 'image/png'], size: 5 * 1024 * 1024 },
+    video: { types: ['video/mp4', 'video/3gpp'], size: 16 * 1024 * 1024 },
+    gif: { types: ['video/mp4'], size: 3.5 * 1024 * 1024 },
+    document: { types: ['application/pdf'], size: 100 * 1024 * 1024 },
+  };
+  const rules =
+    limits[
+      state.headerType === 'video' && state.headerGifEnabled
+        ? 'gif'
+        : state.headerType
+    ];
+  if (!rules?.types.includes(file.type) || file.size > rules.size) {
+    useAlert(t('WHATSAPP_TEMPLATE_BUILDER.HEADER.MEDIA_ERROR'));
+    return;
+  }
   if (state.headerMediaUrl) URL.revokeObjectURL(state.headerMediaUrl);
   state.headerMediaUrl = URL.createObjectURL(file.file);
   state.headerMediaName = file.name;
+  state.headerMediaFile = file.file;
 };
 const handleCardFile = (file, index) => {
   if (!file?.file) return;
@@ -632,15 +978,19 @@ const setCarouselMediaType = type => {
   state.carouselMediaType = type;
 };
 const addBodyVariable = () => {
-  state.body = `${state.body}${state.body ? ' ' : ''}{{${
-    bodyVariableIndexes.value.length + 1
-  }}}}`;
+  const name = bodyVariableIndexes.value.length + 1;
+  state.body = `${state.body}${state.body ? ' ' : ''}{{${name}}}`;
+};
+const addHeaderVariable = () => {
+  if (variableIndexes(state.headerText).length) return;
+  state.headerText = `${state.headerText}${state.headerText ? ' ' : ''}{{1}}`;
 };
 const addCardVariable = () => {
-  const variables = activeCard.value.body.match(/\{\{\d+\}\}/g) || [];
+  const variables = variableIndexes(activeCard.value.body);
+  const name = variables.length + 1;
   activeCard.value.body = `${activeCard.value.body}${
     activeCard.value.body ? ' ' : ''
-  }{{${variables.length + 1}}}`;
+  }{{${name}}}`;
 };
 const carouselActionError = action => {
   const button = activeCard.value.buttons[action];
@@ -675,6 +1025,7 @@ const submitCarouselTemplate = async () => {
     name: state.name,
     language: state.language,
     category: state.category,
+    parameter_format: 'POSITIONAL',
     body: state.body,
     media_type: state.carouselMediaType.toUpperCase(),
     card_text_enabled: state.carouselTextEnabled,
@@ -682,28 +1033,61 @@ const submitCarouselTemplate = async () => {
     cards: state.cards.map(card => ({
       body: state.carouselTextEnabled ? card.body : '',
       body_examples: state.carouselTextEnabled
-        ? variableIndexes(card.body).map(index => card.bodyExamples[index])
-        : [],
+        ? buildExamples(card.body, card.bodyExamples)
+        : emptyExamples(),
       buttons: card.buttons,
     })),
-    body_examples: bodyVariableIndexes.value.map(
-      index => state.bodyExamples[index]
-    ),
+    body_examples: buildExamples(state.body, state.bodyExamples),
   };
-  if (templateFormat.value === 'standard') {
+  if (state.category === 'AUTHENTICATION') {
+    delete template.parameter_format;
+    delete template.media_type;
+    delete template.card_text_enabled;
+    delete template.button_types;
+    delete template.cards;
+    delete template.body;
+    delete template.body_examples;
+    template.authentication = {
+      otp_type: state.authenticationOtpType,
+      add_security_recommendation: state.authenticationSecurityRecommendation,
+      code_expiration_minutes: state.authenticationExpirationEnabled
+        ? Number(state.authenticationCodeExpirationMinutes)
+        : null,
+      message_send_ttl_seconds: state.authenticationTtlEnabled
+        ? Number(state.authenticationTtlSeconds)
+        : null,
+      copy_code_text: state.authenticationCopyCodeText.trim(),
+      autofill_text: state.authenticationAutofillText.trim(),
+      zero_tap_terms_accepted: state.authenticationTermsAccepted,
+      supported_apps: state.authenticationApps.map(app => ({
+        package_name: app.packageName.trim(),
+        signature_hash: app.signatureHash.trim(),
+      })),
+    };
+  } else if (templateFormat.value === 'standard') {
     delete template.media_type;
     delete template.card_text_enabled;
     delete template.button_types;
     delete template.cards;
     template.template_format = 'standard';
-    template.header_type = state.headerType;
+    template.header_type = state.headerGifEnabled ? 'gif' : state.headerType;
     template.header_text = state.headerText;
+    template.header_example = state.headerExample;
     template.footer = state.footer;
-    template.button = {
-      type: 'FLOW',
-      text: state.buttonText,
-      flow_id: state.flowId,
-    };
+    template.buttons = state.standardButtons.map(button => ({
+      type: button.type,
+      text: button.text.trim(),
+      value: button.value.trim(),
+      example: button.example.trim(),
+      flow_id: button.flowId,
+      app_deep_link: button.deepLinkEnabled
+        ? {
+            meta_app_id: button.metaAppId,
+            android_deep_link: button.androidDeepLink.trim(),
+            android_fallback_playstore_url: button.androidFallbackUrl.trim(),
+          }
+        : null,
+    }));
   } else if (templateFormat.value === 'catalog') {
     delete template.media_type;
     delete template.card_text_enabled;
@@ -714,6 +1098,13 @@ const submitCarouselTemplate = async () => {
     template.product_template_type = productTemplateType.value;
     template.product_carousel_button_type = productCarouselButtonType.value;
     template.product_carousel_button = { ...productCarouselUrl };
+    if (
+      catalogFormat.value === 'products' &&
+      productTemplateType.value === 'mpm'
+    ) {
+      template.header_text = state.headerText;
+      template.header_example = state.headerExample;
+    }
   }
   formData.append('template', JSON.stringify(template));
   if (templateFormat.value === 'carousel') {
@@ -721,10 +1112,23 @@ const submitCarouselTemplate = async () => {
       formData.append(`media_${index}`, card.mediaFile);
     });
   }
+  if (
+    templateFormat.value === 'standard' &&
+    ['image', 'video', 'document'].includes(state.headerType)
+  ) {
+    formData.append('header_media', state.headerMediaFile);
+  }
 
   try {
-    await InboxesAPI.createMessageTemplate(state.inboxId, formData);
-    useAlert(t('WHATSAPP_TEMPLATE_BUILDER.SUBMIT_SUCCESS'));
+    const { data } = await InboxesAPI.createMessageTemplate(
+      state.inboxId,
+      formData
+    );
+    useAlert(
+      data.template?.warning === 'media_storage_failed'
+        ? t('WHATSAPP_TEMPLATE_BUILDER.MEDIA_STORAGE_WARNING')
+        : t('WHATSAPP_TEMPLATE_BUILDER.SUBMIT_SUCCESS')
+    );
     emit('submitted');
     close();
   } catch (error) {
@@ -746,6 +1150,19 @@ watch(templateFormat, (format, previousFormat) => {
   restoreFormatDraft(format);
   selectedSection.value = 'body';
 });
+watch(
+  [catalogFormat, productTemplateType],
+  ([format, productType], [previousFormat, previousProductType]) => {
+    const previousKey = catalogDraftKey(previousFormat, previousProductType);
+    catalogDrafts[previousKey] = currentFormatDraft();
+    const nextKey = catalogDraftKey(format, productType);
+    restoreDraft(catalogDrafts[nextKey]);
+    if (format === 'products' && productType === 'mpm') {
+      state.headerType = 'text';
+    }
+    selectedSection.value = 'body';
+  }
+);
 watch(() => [activeCardIndex.value, state.cards.length], scrollToActiveCard);
 
 onMounted(() => {
@@ -760,6 +1177,21 @@ watch(
     fetchFlows();
   }
 );
+watch(
+  () => [
+    step.value,
+    state.category,
+    state.inboxId,
+    state.language,
+    state.authenticationSecurityRecommendation,
+    state.authenticationExpirationEnabled,
+    state.authenticationCodeExpirationMinutes,
+  ],
+  () => {
+    authenticationMetaPreview.value = null;
+    fetchAuthenticationPreview();
+  }
+);
 defineExpose({ open, close });
 </script>
 
@@ -770,7 +1202,7 @@ defineExpose({ open, close });
     overflow-y-auto
     :show-cancel-button="false"
     :show-confirm-button="false"
-    @close="emit('close')"
+    @close="handleDialogClose"
   >
     <template #default>
       <div
@@ -810,120 +1242,16 @@ defineExpose({ open, close });
           />
         </div>
 
-        <div v-if="step === 1" class="grid w-full max-w-4xl gap-8 mx-auto pt-8">
-          <section class="grid gap-4">
-            <h3 class="text-base font-semibold text-n-slate-12">
-              {{ t('WHATSAPP_TEMPLATE_BUILDER.CATEGORY_LABEL') }}
-            </h3>
-            <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
-              <button
-                v-for="category in categories"
-                :key="category.value"
-                type="button"
-                class="flex items-center gap-3 p-4 text-start border-2 border-solid rounded-xl shadow-sm transition-all bg-n-alpha-3"
-                :class="
-                  state.category === category.value
-                    ? 'border-[#2f9683] shadow-md bg-n-brand/5'
-                    : 'border-[#cbd5e1] hover:border-[#94a3b8] hover:shadow-md'
-                "
-                @click="state.category = category.value"
-              >
-                <span
-                  class="grid rounded-lg size-11 shrink-0 place-items-center"
-                  :class="
-                    state.category === category.value
-                      ? 'bg-n-brand/10 text-n-brand'
-                      : 'bg-n-alpha-2 text-n-slate-11'
-                  "
-                >
-                  <Icon :icon="category.icon" class="size-5" />
-                </span>
-                <span class="flex flex-col min-w-0 gap-1">
-                  <span class="text-sm font-semibold text-n-slate-12">
-                    {{ category.label }}
-                  </span>
-                  <span class="text-xs text-n-slate-10">
-                    {{ category.description }}
-                  </span>
-                </span>
-                <span
-                  class="grid ms-auto border-2 border-solid rounded-full size-5 shrink-0 place-items-center"
-                  :class="
-                    state.category === category.value
-                      ? 'border-n-brand bg-n-brand text-white'
-                      : 'border-n-strong'
-                  "
-                >
-                  <Icon
-                    v-if="state.category === category.value"
-                    icon="i-lucide-check"
-                    class="size-3"
-                  />
-                </span>
-              </button>
-            </div>
-          </section>
-
-          <section class="grid gap-4">
-            <h3 class="text-base font-semibold text-n-slate-12">
-              {{ t('WHATSAPP_TEMPLATE_BUILDER.BASIC_SETTINGS') }}
-            </h3>
-            <div
-              class="grid gap-5 p-5 border shadow-sm md:grid-cols-3 rounded-xl border-n-strong bg-n-alpha-3"
-            >
-              <div class="flex flex-col gap-1">
-                <label class="mb-0.5 text-heading-3 text-n-slate-12">
-                  {{ t('WHATSAPP_TEMPLATE_BUILDER.INBOX.LABEL') }}
-                </label>
-                <ComboBox
-                  v-model="state.inboxId"
-                  :options="inboxOptions"
-                  :placeholder="
-                    t('WHATSAPP_TEMPLATE_BUILDER.INBOX.PLACEHOLDER')
-                  "
-                />
-                <span v-if="!inboxOptions.length" class="text-xs text-n-ruby-9">
-                  {{ t('WHATSAPP_TEMPLATE_BUILDER.INBOX.EMPTY') }}
-                </span>
-              </div>
-              <Input
-                v-model="state.name"
-                :label="t('WHATSAPP_TEMPLATE_BUILDER.NAME.LABEL')"
-                :placeholder="t('WHATSAPP_TEMPLATE_BUILDER.NAME.PLACEHOLDER')"
-                :message="
-                  nameError || t('WHATSAPP_TEMPLATE_BUILDER.NAME.HELPER')
-                "
-                :message-type="nameError ? 'error' : 'info'"
-                @input="
-                  state.name = state.name
-                    .toLowerCase()
-                    .replace(/[^a-z0-9_]/g, '')
-                "
-              />
-              <div class="flex flex-col gap-1">
-                <label class="mb-0.5 text-heading-3 text-n-slate-12">
-                  {{ t('WHATSAPP_TEMPLATE_BUILDER.LANGUAGE_LABEL') }}
-                </label>
-                <ComboBox
-                  v-model="state.language"
-                  :options="languages"
-                  :placeholder="
-                    t('WHATSAPP_TEMPLATE_BUILDER.LANGUAGE_PLACEHOLDER')
-                  "
-                />
-              </div>
-            </div>
-          </section>
-          <div class="flex justify-end">
-            <Button
-              :label="t('WHATSAPP_TEMPLATE_BUILDER.CONTINUE')"
-              icon="i-lucide-arrow-right"
-              trailing-icon
-              :disabled="!canContinue"
-              @click="continueToBuilder"
-            />
-          </div>
-        </div>
+        <TemplateBasicsStep
+          v-if="step === 1"
+          v-model:state="state"
+          :categories="categories"
+          :inbox-options="inboxOptions"
+          :languages="languages"
+          :name-error="nameError"
+          :can-continue="canContinue"
+          @continue="continueToBuilder"
+        />
 
         <div
           v-else
@@ -947,786 +1275,83 @@ defineExpose({ open, close });
                 @click="templateFormat = format.value"
               />
             </div>
-            <template v-if="templateFormat === 'catalog'">
-              <section
-                class="grid gap-3 p-4 border rounded-xl border-n-strong bg-n-alpha-1"
-              >
-                <div
-                  class="flex items-start gap-3 p-3 rounded-lg bg-n-blue-2 text-n-blue-12"
-                >
-                  <Icon icon="i-lucide-info" class="mt-0.5 size-4 shrink-0" />
-                  <p class="text-xs leading-5">
-                    {{ t('WHATSAPP_TEMPLATE_BUILDER.CATALOG.REQUIREMENT') }}
-                  </p>
-                </div>
-                <div class="flex items-end gap-2">
-                  <ComboBox
-                    v-model="selectedCatalogId"
-                    class="flex-1"
-                    :options="catalogOptions"
-                    :label="t('WHATSAPP_TEMPLATE_BUILDER.CATALOG.SELECT_LABEL')"
-                    :placeholder="
-                      t('WHATSAPP_TEMPLATE_BUILDER.CATALOG.SELECT_PLACEHOLDER')
-                    "
-                    :disabled="isLoadingCatalogs"
-                  />
-                  <Button
-                    icon="i-lucide-refresh-cw"
-                    color="slate"
-                    variant="outline"
-                    :is-loading="isLoadingCatalogs"
-                    :aria-label="t('WHATSAPP_TEMPLATE_BUILDER.CATALOG.FETCH')"
-                    @click="fetchCatalogs"
-                  />
-                </div>
-                <div class="grid grid-cols-1 gap-2 md:grid-cols-2">
-                  <button
-                    v-for="format in catalogFormats"
-                    :key="format.value"
-                    type="button"
-                    class="flex items-center gap-3 p-3 text-start border-2 border-solid rounded-xl transition-colors"
-                    :class="
-                      catalogFormat === format.value
-                        ? 'border-n-brand bg-n-brand/5'
-                        : 'border-n-slate-8 hover:border-n-slate-10'
-                    "
-                    @click="catalogFormat = format.value"
-                  >
-                    <span
-                      class="grid rounded-lg size-10 shrink-0 place-items-center bg-n-alpha-2 text-n-brand"
-                    >
-                      <Icon :icon="format.icon" class="size-5" />
-                    </span>
-                    <span class="flex flex-col gap-1">
-                      <span class="text-sm font-semibold text-n-slate-12">{{
-                        format.label
-                      }}</span>
-                      <span class="text-xs text-n-slate-10">{{
-                        format.description
-                      }}</span>
-                    </span>
-                  </button>
-                </div>
-                <div
-                  v-if="catalogFormat === 'catalog_template'"
-                  class="flex items-start gap-3 p-3 border rounded-lg border-n-weak bg-n-alpha-1"
-                >
-                  <Icon
-                    icon="i-lucide-shopping-bag"
-                    class="mt-0.5 size-4 shrink-0 text-n-brand"
-                  />
-                  <p class="text-xs leading-5 text-n-slate-11">
-                    {{
-                      t(
-                        'WHATSAPP_TEMPLATE_BUILDER.CATALOG.CATALOG_BUTTON_HELPER'
-                      )
-                    }}
-                  </p>
-                </div>
-                <div
-                  v-if="catalogFormat === 'product_carousel'"
-                  class="grid gap-3 p-3 border rounded-lg border-n-weak bg-n-alpha-1"
-                >
-                  <p class="text-xs leading-5 text-n-slate-11">
-                    {{
-                      t(
-                        'WHATSAPP_TEMPLATE_BUILDER.CATALOG.PRODUCT_CAROUSEL_HELPER'
-                      )
-                    }}
-                  </p>
-                  <div class="grid grid-cols-2 gap-2">
-                    <button
-                      v-for="buttonType in productCarouselButtonTypes"
-                      :key="buttonType.value"
-                      type="button"
-                      class="p-3 text-sm text-start border-2 border-solid rounded-lg"
-                      :class="
-                        productCarouselButtonType === buttonType.value
-                          ? 'border-n-brand bg-n-brand/5 text-n-brand'
-                          : 'border-n-slate-8 text-n-slate-12 hover:border-n-slate-10'
-                      "
-                      @click="productCarouselButtonType = buttonType.value"
-                    >
-                      {{ buttonType.label }}
-                    </button>
-                  </div>
-                  <div
-                    v-if="productCarouselButtonType === 'URL'"
-                    class="grid gap-3 md:grid-cols-2"
-                  >
-                    <Input
-                      v-model="productCarouselUrl.text"
-                      :label="
-                        t('WHATSAPP_TEMPLATE_BUILDER.CATALOG.BUTTONS.URL_TEXT')
-                      "
-                      :placeholder="
-                        t(
-                          'WHATSAPP_TEMPLATE_BUILDER.CATALOG.BUTTONS.URL_TEXT_PLACEHOLDER'
-                        )
-                      "
-                    />
-                    <Input
-                      v-model="productCarouselUrl.url"
-                      :label="
-                        t('WHATSAPP_TEMPLATE_BUILDER.CATALOG.BUTTONS.URL_VALUE')
-                      "
-                      :placeholder="
-                        t(
-                          'WHATSAPP_TEMPLATE_BUILDER.CATALOG.BUTTONS.URL_PLACEHOLDER'
-                        )
-                      "
-                    />
-                    <Input
-                      v-if="productCarouselUrl.url.includes('{{1}}')"
-                      v-model="productCarouselUrl.example"
-                      :label="
-                        t(
-                          'WHATSAPP_TEMPLATE_BUILDER.CATALOG.BUTTONS.URL_EXAMPLE'
-                        )
-                      "
-                    />
-                  </div>
-                </div>
-                <div
-                  v-if="catalogFormat === 'products'"
-                  class="grid grid-cols-1 gap-2 md:grid-cols-2"
-                >
-                  <button
-                    v-for="type in productTemplateTypes"
-                    :key="type.value"
-                    type="button"
-                    class="flex items-center gap-3 p-3 text-start border-2 border-solid rounded-xl"
-                    :class="
-                      productTemplateType === type.value
-                        ? 'border-n-brand bg-n-brand/5'
-                        : 'border-n-slate-8 hover:border-n-slate-10'
-                    "
-                    @click="productTemplateType = type.value"
-                  >
-                    <Icon :icon="type.icon" class="size-5 text-n-brand" />
-                    <span>
-                      <span class="block text-sm font-semibold text-n-slate-12">
-                        {{ type.label }}
-                      </span>
-                      <span class="block mt-1 text-xs text-n-slate-10">{{
-                        type.description
-                      }}</span>
-                    </span>
-                  </button>
-                </div>
-              </section>
-            </template>
-            <template
+            <AuthenticationTemplateEditor
+              v-if="state.category === 'AUTHENTICATION'"
+              v-model:state="state"
+              :authentication-otp-types="authenticationOtpTypes"
+              @add-app="addAuthenticationApp"
+              @remove-app="removeAuthenticationApp"
+            />
+            <CatalogTemplateEditor
               v-if="
-                templateFormat === 'standard' || templateFormat === 'catalog'
+                templateFormat === 'catalog' && state.category === 'MARKETING'
               "
-            >
-              <div
-                v-for="section in visibleSections"
-                :key="section.key"
-                class="border rounded-xl border-n-strong bg-n-alpha-1"
-              >
-                <button
-                  type="button"
-                  class="flex items-center justify-between w-full gap-3 p-4 text-start"
-                  @click="toggleSection(section.key)"
-                >
-                  <span
-                    class="flex items-center gap-2 text-sm font-medium text-n-slate-12"
-                    ><Icon
-                      :icon="
-                        selectedSection === section.key
-                          ? 'i-lucide-chevron-up'
-                          : 'i-lucide-chevron-down'
-                      "
-                      class="size-4"
-                    />
-                    {{ section.label }}
-                    <span
-                      v-if="section.optional"
-                      class="text-xs font-normal text-n-slate-10"
-                    >
-                      {{ t('WHATSAPP_TEMPLATE_BUILDER.OPTIONAL') }}
-                    </span>
-                  </span>
-                </button>
-                <div v-if="selectedSection === section.key" class="p-4 pt-0">
-                  <template v-if="section.key === 'header'">
-                    <div
-                      class="grid grid-cols-4 gap-1 p-1 rounded-lg bg-n-alpha-2"
-                    >
-                      <Button
-                        v-for="headerType in mediaHeaderTypes"
-                        :key="headerType.value"
-                        :label="headerType.label"
-                        :variant="
-                          state.headerType === headerType.value
-                            ? 'solid'
-                            : 'ghost'
-                        "
-                        :color="
-                          state.headerType === headerType.value
-                            ? 'teal'
-                            : 'slate'
-                        "
-                        size="sm"
-                        class="justify-center"
-                        @click="toggleHeaderType(headerType.value)"
-                      />
-                    </div>
-                    <Input
-                      v-if="state.headerType === 'text'"
-                      v-model="state.headerText"
-                      class="mt-3"
-                      :label="t('WHATSAPP_TEMPLATE_BUILDER.HEADER.TEXT_LABEL')"
-                      :placeholder="
-                        t('WHATSAPP_TEMPLATE_BUILDER.HEADER.TEXT_PLACEHOLDER')
-                      "
-                    />
-                    <FileUpload
-                      v-else-if="
-                        ['image', 'video', 'document'].includes(
-                          state.headerType
-                        )
-                      "
-                      input-id="whatsappTemplateHeaderMedia"
-                      :accept="mediaAccept"
-                      :multiple="false"
-                      :drop-directory="false"
-                      class="block mt-3"
-                      @input-file="handleHeaderFile"
-                    >
-                      <div
-                        class="flex items-center justify-between gap-4 p-4 border border-dashed cursor-pointer rounded-xl border-n-strong bg-n-alpha-1 hover:border-n-brand"
-                      >
-                        <span class="flex flex-col gap-1">
-                          <span class="text-sm font-medium text-n-slate-12">
-                            {{ t('WHATSAPP_TEMPLATE_BUILDER.HEADER.UPLOAD') }}
-                          </span>
-                          <span class="text-xs text-n-slate-10">
-                            {{
-                              state.headerMediaName ||
-                              t(
-                                'WHATSAPP_TEMPLATE_BUILDER.HEADER.UPLOAD_HELPER'
-                              )
-                            }}
-                          </span>
-                        </span>
-                        <span
-                          class="grid border rounded-lg size-10 shrink-0 place-items-center border-n-strong bg-n-alpha-3"
-                        >
-                          <Icon icon="i-lucide-upload" class="size-5" />
-                        </span>
-                      </div>
-                    </FileUpload>
-                  </template>
-                  <Editor
-                    v-else-if="section.key === 'body'"
-                    v-model="state.body"
-                    :placeholder="
-                      t('WHATSAPP_TEMPLATE_BUILDER.BODY.PLACEHOLDER')
-                    "
-                    :max-length="
-                      templateFormat === 'catalog' ? catalogBodyMaxLength : 1024
-                    "
-                    channel-type="Context::Plain"
-                  />
-                  <Input
-                    v-else-if="section.key === 'footer'"
-                    v-model="state.footer"
-                    :maxlength="60"
-                    :label="t('WHATSAPP_TEMPLATE_BUILDER.FOOTER.LABEL')"
-                    :placeholder="
-                      t('WHATSAPP_TEMPLATE_BUILDER.FOOTER.PLACEHOLDER')
-                    "
-                  />
-                  <div v-else class="grid gap-3">
-                    <ComboBox
-                      v-model="state.buttonType"
-                      :options="buttonTypes"
-                      :placeholder="
-                        t('WHATSAPP_TEMPLATE_BUILDER.BUTTONS.TYPE_PLACEHOLDER')
-                      "
-                    /><Input
-                      v-model="state.buttonText"
-                      :label="t('WHATSAPP_TEMPLATE_BUILDER.BUTTONS.TEXT_LABEL')"
-                      :placeholder="
-                        t('WHATSAPP_TEMPLATE_BUILDER.BUTTONS.TEXT_PLACEHOLDER')
-                      "
-                    />
-                    <div v-if="state.buttonType === 'FLOW'" class="grid gap-2">
-                      <p class="text-sm font-medium text-n-slate-12">
-                        {{ t('WHATSAPP_TEMPLATE_BUILDER.BUTTONS.FLOW_LABEL') }}
-                      </p>
-                      <div class="flex items-end gap-2">
-                        <ComboBox
-                          v-model="state.flowId"
-                          class="grow"
-                          :options="flowOptions"
-                          :placeholder="
-                            t(
-                              'WHATSAPP_TEMPLATE_BUILDER.BUTTONS.FLOW_PLACEHOLDER'
-                            )
-                          "
-                        />
-                        <Button
-                          :label="
-                            t('WHATSAPP_TEMPLATE_BUILDER.BUTTONS.FETCH_FLOWS')
-                          "
-                          icon="i-lucide-refresh-cw"
-                          color="slate"
-                          variant="outline"
-                          :is-loading="isLoadingFlows"
-                          @click="fetchFlows"
-                        />
-                      </div>
-                      <p class="text-xs text-n-slate-10">
-                        {{ t('WHATSAPP_TEMPLATE_BUILDER.BUTTONS.FLOW_HELPER') }}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </template>
-            <template v-else>
-              <div
-                class="grid gap-3 p-4 border-2 rounded-xl border-n-slate-8 bg-n-alpha-1"
-              >
-                <div class="flex items-center justify-between gap-3">
-                  <span>
-                    <h3 class="text-sm font-semibold text-n-slate-12">
-                      {{ t('WHATSAPP_TEMPLATE_BUILDER.SECTIONS.BODY') }}
-                    </h3>
-                    <p class="mt-1 text-xs text-n-slate-10">
-                      {{ t('WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.BODY_HELPER') }}
-                    </p>
-                  </span>
-                  <Button
-                    :label="
-                      t('WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.ADD_VARIABLE')
-                    "
-                    icon="i-lucide-braces"
-                    color="teal"
-                    variant="ghost"
-                    size="sm"
-                    @click="addBodyVariable"
-                  />
-                </div>
-                <Editor
-                  v-model="state.body"
-                  :placeholder="t('WHATSAPP_TEMPLATE_BUILDER.BODY.PLACEHOLDER')"
-                  :max-length="1024"
-                  channel-type="Context::Plain"
-                />
-                <div
-                  v-if="bodyVariableIndexes.length"
-                  class="grid gap-3 sm:grid-cols-2"
-                >
-                  <Input
-                    v-for="index in bodyVariableIndexes"
-                    :key="index"
-                    v-model="state.bodyExamples[index]"
-                    :label="
-                      t('WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.VARIABLE_EXAMPLE', {
-                        n: index,
-                      })
-                    "
-                    :placeholder="
-                      t(
-                        'WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.VARIABLE_EXAMPLE_PLACEHOLDER'
-                      )
-                    "
-                  />
-                </div>
-              </div>
-              <div
-                class="flex flex-col gap-5 p-4 border rounded-xl border-n-strong bg-n-alpha-1"
-              >
-                <div class="flex items-center justify-between gap-3">
-                  <div>
-                    <h3 class="text-sm font-semibold text-n-slate-12">
-                      {{ t('WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.TITLE') }}
-                    </h3>
-                    <p class="mt-1 text-xs text-n-slate-10">
-                      {{ t('WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.DESCRIPTION') }}
-                    </p>
-                  </div>
-                  <span class="text-xs text-n-slate-10">
-                    {{
-                      t('WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.COUNT', {
-                        current: state.cards.length,
-                      })
-                    }}
-                  </span>
-                </div>
-                <div
-                  class="flex flex-wrap items-center justify-between gap-3 p-3 rounded-lg bg-n-alpha-2"
-                >
-                  <div class="flex items-center gap-2">
-                    <span class="text-xs font-medium text-n-slate-11">
-                      {{ t('WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.MEDIA') }}
-                    </span>
-                    <Button
-                      :label="t('WHATSAPP_TEMPLATE_BUILDER.HEADER.TYPES.IMAGE')"
-                      icon="i-lucide-image"
-                      size="sm"
-                      :variant="
-                        state.carouselMediaType === 'image' ? 'solid' : 'ghost'
-                      "
-                      :color="
-                        state.carouselMediaType === 'image' ? 'teal' : 'slate'
-                      "
-                      @click="setCarouselMediaType('image')"
-                    />
-                    <Button
-                      :label="t('WHATSAPP_TEMPLATE_BUILDER.HEADER.TYPES.VIDEO')"
-                      icon="i-lucide-video"
-                      size="sm"
-                      :variant="
-                        state.carouselMediaType === 'video' ? 'solid' : 'ghost'
-                      "
-                      :color="
-                        state.carouselMediaType === 'video' ? 'teal' : 'slate'
-                      "
-                      @click="setCarouselMediaType('video')"
-                    />
-                  </div>
-                  <label
-                    class="flex items-center gap-2 text-xs font-medium cursor-pointer text-n-slate-11"
-                  >
-                    <Switch v-model="state.carouselTextEnabled" />
-                    {{ t('WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.CARD_TEXT') }}
-                  </label>
-                </div>
-                <div class="flex gap-3 pb-2 overflow-x-auto">
-                  <button
-                    v-for="(card, index) in state.cards"
-                    :key="card.id"
-                    :ref="
-                      element => setCarouselEditorCardElement(card.id, element)
-                    "
-                    type="button"
-                    class="w-36 overflow-hidden text-start border-2 rounded-xl shrink-0 bg-n-alpha-3 transition-colors"
-                    :class="
-                      activeCardIndex === index
-                        ? 'border-[#00a884] shadow-sm'
-                        : 'border-[#cbd5e1] hover:border-[#94a3b8]'
-                    "
-                    @click="selectCarouselCard(index)"
-                  >
-                    <div class="grid h-20 place-items-center bg-n-alpha-2">
-                      <img
-                        v-if="
-                          card.mediaUrl &&
-                          card.mediaMimeType.startsWith('image/')
-                        "
-                        :src="card.mediaUrl"
-                        class="object-cover w-full h-full"
-                      />
-                      <video
-                        v-else-if="card.mediaUrl"
-                        :src="card.mediaUrl"
-                        class="object-cover w-full h-full"
-                        muted
-                      />
-                      <Icon
-                        v-else
-                        icon="i-lucide-image"
-                        class="size-6 text-n-slate-10"
-                      />
-                    </div>
-                    <p class="p-2 text-xs font-medium text-n-slate-12">
-                      {{
-                        t('WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.CARD', {
-                          n: index + 1,
-                        })
-                      }}
-                    </p>
-                    <p class="px-2 pb-2 text-[0.65rem] text-n-slate-10">
-                      {{
-                        isCardComplete(card)
-                          ? t('WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.COMPLETE')
-                          : t('WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.INCOMPLETE')
-                      }}
-                    </p>
-                  </button>
-                  <button
-                    v-if="state.cards.length < 10"
-                    type="button"
-                    class="grid w-28 border border-dashed rounded-xl shrink-0 min-h-28 place-items-center border-n-strong text-n-slate-10 hover:border-n-brand hover:text-n-brand"
-                    @click="addCard"
-                  >
-                    <span class="flex flex-col items-center gap-2 text-xs">
-                      <Icon icon="i-lucide-plus" class="size-5" />
-                      {{ t('WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.ADD_CARD') }}
-                    </span>
-                  </button>
-                </div>
-                <div
-                  class="flex items-center gap-1 py-2 border-t border-n-weak"
-                >
-                  <Button
-                    icon="i-lucide-trash-2"
-                    color="slate"
-                    variant="ghost"
-                    size="sm"
-                    :disabled="state.cards.length <= 2"
-                    :aria-label="
-                      t('WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.DELETE_CARD')
-                    "
-                    @click="deleteCard"
-                  />
-                  <Button
-                    icon="i-lucide-copy"
-                    color="slate"
-                    variant="ghost"
-                    size="sm"
-                    :disabled="state.cards.length >= 10"
-                    :aria-label="
-                      t('WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.DUPLICATE_CARD')
-                    "
-                    @click="duplicateCard"
-                  />
-                  <Button
-                    icon="i-lucide-chevron-left"
-                    color="slate"
-                    variant="ghost"
-                    size="sm"
-                    :disabled="activeCardIndex === 0"
-                    :aria-label="
-                      t('WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.PREVIOUS_CARD')
-                    "
-                    @click="navigateCard(-1)"
-                  />
-                  <Button
-                    icon="i-lucide-chevron-right"
-                    color="slate"
-                    variant="ghost"
-                    size="sm"
-                    :disabled="activeCardIndex === state.cards.length - 1"
-                    :aria-label="
-                      t('WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.NEXT_CARD')
-                    "
-                    @click="navigateCard(1)"
-                  />
-                </div>
-                <div class="grid gap-4 pt-4 border-t border-n-weak">
-                  <h4 class="text-sm font-semibold text-n-slate-12">
-                    {{
-                      t('WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.CARD', {
-                        n: activeCardIndex + 1,
-                      })
-                    }}
-                  </h4>
-                  <p class="-mt-3 text-xs text-n-slate-10">
-                    {{
-                      isCardComplete(activeCard)
-                        ? t('WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.COMPLETE')
-                        : t('WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.INCOMPLETE')
-                    }}
-                  </p>
-                  <FileUpload
-                    :input-id="`whatsappCarouselCard${activeCardIndex}`"
-                    :accept="carouselMediaAccept"
-                    :size="
-                      (state.carouselMediaType === 'video' ? 16 : 5) *
-                      1024 *
-                      1024
-                    "
-                    :multiple="false"
-                    :drop-directory="false"
-                    @input-file="file => handleCardFile(file, activeCardIndex)"
-                  >
-                    <div
-                      class="flex items-center justify-between p-4 border border-dashed cursor-pointer rounded-xl border-n-strong hover:border-n-brand"
-                    >
-                      <span class="text-sm text-n-slate-12">
-                        {{
-                          state.cards[activeCardIndex].mediaName ||
-                          t('WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.UPLOAD_MEDIA')
-                        }}
-                      </span>
-                      <Icon icon="i-lucide-upload" class="size-5" />
-                    </div>
-                  </FileUpload>
-                  <p class="-mt-3 text-xs text-n-slate-10">
-                    {{
-                      state.carouselMediaType === 'video'
-                        ? t('WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.VIDEO_HELPER')
-                        : t('WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.IMAGE_HELPER')
-                    }}
-                  </p>
-                  <div v-if="state.carouselTextEnabled" class="grid gap-2">
-                    <div class="flex items-center justify-between gap-2">
-                      <span class="text-sm font-medium text-n-slate-12">
-                        {{ t('WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.CARD_BODY') }}
-                      </span>
-                      <span class="flex items-center gap-3">
-                        <Button
-                          :label="
-                            t('WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.ADD_VARIABLE')
-                          "
-                          icon="i-lucide-braces"
-                          color="teal"
-                          variant="ghost"
-                          size="sm"
-                          @click="addCardVariable"
-                        />
-                        <span class="text-xs text-n-slate-10">
-                          {{
-                            t('WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.TEXT_COUNT', {
-                              current: activeCard.body.length,
-                            })
-                          }}
-                        </span>
-                      </span>
-                    </div>
-                    <Editor
-                      v-model="activeCard.body"
-                      :placeholder="
-                        t(
-                          'WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.CARD_BODY_PLACEHOLDER'
-                        )
-                      "
-                      :max-length="160"
-                      channel-type="Context::Plain"
-                    />
-                    <div
-                      v-if="activeCardVariableIndexes.length"
-                      class="grid gap-3 sm:grid-cols-2"
-                    >
-                      <Input
-                        v-for="index in activeCardVariableIndexes"
-                        :key="index"
-                        v-model="activeCard.bodyExamples[index]"
-                        :label="
-                          t(
-                            'WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.VARIABLE_EXAMPLE',
-                            { n: index }
-                          )
-                        "
-                        :placeholder="
-                          t(
-                            'WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.VARIABLE_EXAMPLE_PLACEHOLDER'
-                          )
-                        "
-                      />
-                    </div>
-                  </div>
-                  <div class="grid gap-3 pt-4 border-t border-n-weak">
-                    <div>
-                      <h4 class="text-sm font-semibold text-n-slate-12">
-                        {{
-                          t('WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.ACTIONS.TITLE')
-                        }}
-                      </h4>
-                      <p class="mt-1 text-xs text-n-slate-10">
-                        {{
-                          t(
-                            'WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.ACTIONS.DESCRIPTION'
-                          )
-                        }}
-                      </p>
-                    </div>
-                    <div class="grid gap-2 sm:grid-cols-3">
-                      <Button
-                        v-for="action in carouselActionTypes"
-                        :key="action.value"
-                        :label="action.label"
-                        :icon="action.icon"
-                        size="sm"
-                        :variant="
-                          state.carouselButtonTypes.includes(action.value)
-                            ? 'solid'
-                            : 'outline'
-                        "
-                        :color="
-                          state.carouselButtonTypes.includes(action.value)
-                            ? 'teal'
-                            : 'slate'
-                        "
-                        :disabled="
-                          state.carouselButtonTypes.length >= 2 &&
-                          !state.carouselButtonTypes.includes(action.value)
-                        "
-                        @click="toggleCarouselAction(action.value)"
-                      />
-                    </div>
-                    <div
-                      v-for="action in state.carouselButtonTypes"
-                      :key="action"
-                      class="grid gap-3 p-3 border rounded-lg border-n-strong sm:grid-cols-2"
-                    >
-                      <Input
-                        v-model="activeCard.buttons[action].text"
-                        :label="carouselActionByValue[action].label"
-                        :placeholder="
-                          t(
-                            'WHATSAPP_TEMPLATE_BUILDER.BUTTONS.TEXT_PLACEHOLDER'
-                          )
-                        "
-                        maxlength="25"
-                        :message="
-                          activeCard.buttons[action].text.length
-                            ? t(
-                                'WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.ACTIONS.TEXT_HELPER',
-                                {
-                                  current:
-                                    activeCard.buttons[action].text.length,
-                                }
-                              )
-                            : ''
-                        "
-                      />
-                      <Input
-                        v-if="action !== 'QUICK_REPLY'"
-                        v-model="activeCard.buttons[action].value"
-                        :type="action === 'PHONE_NUMBER' ? 'tel' : 'url'"
-                        :label="carouselActionByValue[action].valueLabel"
-                        :placeholder="
-                          carouselActionByValue[action].valuePlaceholder
-                        "
-                        :message="
-                          carouselActionError(action) ||
-                          (action === 'PHONE_NUMBER'
-                            ? t(
-                                'WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.ACTIONS.PHONE_HELPER'
-                              )
-                            : t(
-                                'WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.ACTIONS.URL_HELPER'
-                              ))
-                        "
-                        :message-type="
-                          carouselActionError(action) ? 'error' : 'info'
-                        "
-                        dir="ltr"
-                        @input="
-                          action === 'PHONE_NUMBER' &&
-                            normalizePhoneNumber($event)
-                        "
-                      />
-                      <Input
-                        v-if="
-                          action === 'URL' &&
-                          variableIndexes(activeCard.buttons.URL.value).length
-                        "
-                        v-model="activeCard.buttons.URL.example"
-                        :label="
-                          t(
-                            'WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.ACTIONS.URL_EXAMPLE'
-                          )
-                        "
-                        :placeholder="
-                          t(
-                            'WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.ACTIONS.URL_EXAMPLE_PLACEHOLDER'
-                          )
-                        "
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </template>
+              v-model:selected-catalog-id="selectedCatalogId"
+              v-model:catalog-format="catalogFormat"
+              v-model:product-template-type="productTemplateType"
+              v-model:product-carousel-button-type="productCarouselButtonType"
+              v-model:product-carousel-url="productCarouselUrl"
+              :catalog-options="catalogOptions"
+              :catalog-formats="catalogFormats"
+              :product-carousel-button-types="productCarouselButtonTypes"
+              :product-template-types="productTemplateTypes"
+              :is-loading-catalogs="isLoadingCatalogs"
+              :has-fetched-catalogs="hasFetchedCatalogs"
+              :variable-indexes="variableIndexes"
+              @fetch-catalogs="fetchCatalogs"
+            />
+            <StandardTemplateEditor
+              v-if="
+                state.category !== 'AUTHENTICATION' &&
+                ['standard', 'catalog'].includes(templateFormat)
+              "
+              v-model:state="state"
+              :visible-sections="visibleSections"
+              :selected-section="selectedSection"
+              :media-header-types="mediaHeaderTypes"
+              :media-accept="mediaAccept"
+              :template-format="templateFormat"
+              :catalog-body-max-length="catalogBodyMaxLength"
+              :body-variable-indexes="bodyVariableIndexes"
+              :button-types="buttonTypes"
+              :flow-options="flowOptions"
+              :is-loading-flows="isLoadingFlows"
+              :variable-indexes="variableIndexes"
+              @toggle-section="toggleSection"
+              @toggle-header-type="toggleHeaderType"
+              @add-header-variable="addHeaderVariable"
+              @handle-header-file="handleHeaderFile"
+              @set-header-gif-mode="setHeaderGifMode"
+              @add-body-variable="addBodyVariable"
+              @remove-button="removeStandardButton"
+              @fetch-flows="fetchFlows"
+              @add-button="addStandardButton"
+            />
+            <CarouselTemplateEditor
+              v-else-if="state.category !== 'AUTHENTICATION'"
+              v-model:state="state"
+              :body-variable-indexes="bodyVariableIndexes"
+              :active-card-variable-indexes="activeCardVariableIndexes"
+              :active-card-index="activeCardIndex"
+              :carousel-media-accept="carouselMediaAccept"
+              :carousel-action-types="carouselActionTypes"
+              :carousel-action-by-value="carouselActionByValue"
+              :is-card-complete="isCardComplete"
+              :carousel-action-error="carouselActionError"
+              :variable-indexes="variableIndexes"
+              @add-body-variable="addBodyVariable"
+              @set-media-type="setCarouselMediaType"
+              @set-card-element="setCarouselEditorCardElement"
+              @select-card="selectCarouselCard"
+              @add-card="addCard"
+              @delete-card="deleteCard"
+              @duplicate-card="duplicateCard"
+              @navigate-card="navigateCard"
+              @handle-card-file="handleCardFile"
+              @add-card-variable="addCardVariable"
+              @toggle-action="toggleCarouselAction"
+              @normalize-phone-number="normalizePhoneNumber"
+            />
             <div class="flex flex-wrap items-center justify-end gap-3 pt-3">
               <Button
                 :label="t('WHATSAPP_TEMPLATE_BUILDER.SAVE_DRAFT')"
@@ -1743,405 +1368,23 @@ defineExpose({ open, close });
             </div>
           </div>
 
-          <div
-            class="flex flex-col items-center gap-3 order-1 lg:order-2 lg:sticky lg:top-0"
-          >
-            <p class="text-sm font-medium text-n-slate-12">
-              {{ t('WHATSAPP_TEMPLATE_BUILDER.PREVIEW.TITLE') }}
-            </p>
-            <p class="-mt-2 text-xs text-center text-n-slate-10">
-              {{ t('WHATSAPP_TEMPLATE_BUILDER.PREVIEW.DESCRIPTION') }}
-            </p>
-            <div
-              class="relative w-[20rem] h-[39rem] p-[0.45rem] border-[0.2rem] border-[#d6d8da] rounded-[2.8rem] bg-[#f7f7f7] shadow-[0_1.5rem_3rem_rgba(31,41,55,0.18)]"
-            >
-              <div
-                class="absolute z-20 w-24 h-5 -translate-x-1/2 bg-[#f7f7f7] rounded-b-2xl top-1 left-1/2"
-              />
-              <div
-                class="flex flex-col h-full overflow-hidden rounded-[2.25rem] bg-[#efeae2]"
-                :dir="direction"
-              >
-                <div
-                  class="flex items-center justify-between h-7 px-5 text-[0.65rem] font-semibold text-[#111827] bg-[#f7f9fa]"
-                >
-                  <span>{{ t('WHATSAPP_TEMPLATE_BUILDER.PREVIEW.TIME') }}</span>
-                  <span class="flex items-center gap-1" dir="ltr">
-                    <Icon icon="i-lucide-signal" class="size-3" />
-                    <span>{{
-                      t('WHATSAPP_TEMPLATE_BUILDER.PREVIEW.NETWORK')
-                    }}</span>
-                    <Icon icon="i-lucide-battery-full" class="size-3.5" />
-                  </span>
-                </div>
-                <div
-                  class="flex items-center gap-2 px-3 py-2.5 border-b border-[#dde2e5] bg-[#f7f9fa] text-[#111827]"
-                >
-                  <Icon
-                    icon="i-lucide-chevron-left"
-                    class="size-5 text-[#55747d]"
-                  />
-                  <span
-                    class="grid rounded-full size-10 shrink-0 place-items-center bg-[#dff5f2] text-xs font-semibold text-[#08776d] ring-1 ring-[#b7e2dc]"
-                  >
-                    {{ t('WHATSAPP_TEMPLATE_BUILDER.PREVIEW.AVATAR') }}
-                  </span>
-                  <span class="flex flex-col min-w-0 grow">
-                    <span class="text-sm font-semibold truncate">
-                      {{ t('WHATSAPP_TEMPLATE_BUILDER.PREVIEW.BUSINESS') }}
-                    </span>
-                    <span class="text-[0.6rem] text-[#667781]">
-                      {{
-                        t('WHATSAPP_TEMPLATE_BUILDER.PREVIEW.BUSINESS_SUBTITLE')
-                      }}
-                    </span>
-                  </span>
-                  <Icon icon="i-lucide-store" class="size-5 text-[#55747d]" />
-                  <Icon
-                    icon="i-lucide-more-vertical"
-                    class="size-5 text-[#55747d]"
-                  />
-                </div>
-                <div
-                  class="flex flex-col flex-1 gap-3 p-3 bg-[#efeae2] bg-[radial-gradient(circle_at_20%_20%,rgba(120,103,82,0.08)_1px,transparent_1px)] bg-[size:1rem_1rem]"
-                >
-                  <div
-                    class="self-center px-2.5 py-1 text-[0.6rem] rounded-md shadow-sm bg-white/90 text-[#667781]"
-                  >
-                    {{ t('WHATSAPP_TEMPLATE_BUILDER.PREVIEW.TODAY') }}
-                  </div>
-                  <div
-                    v-if="
-                      templateFormat === 'catalog' &&
-                      catalogFormat === 'product_carousel'
-                    "
-                    class="flex flex-col gap-2 overflow-hidden"
-                  >
-                    <div
-                      class="self-start max-w-[92%] p-3 text-xs bg-white shadow-sm rounded-xl rounded-ss-sm text-[#111827]"
-                    >
-                      {{
-                        state.body ||
-                        t('WHATSAPP_TEMPLATE_BUILDER.PREVIEW.BODY')
-                      }}
-                    </div>
-                    <div class="flex gap-2 overflow-hidden">
-                      <div
-                        v-for="index in 2"
-                        :key="index"
-                        class="w-44 overflow-hidden text-start bg-white border border-[#c9d1d5] shrink-0 rounded-xl shadow-sm"
-                      >
-                        <div
-                          class="grid h-24 place-items-center bg-[#e9edef] text-[#8696a0]"
-                        >
-                          <Icon icon="i-lucide-package" class="size-7" />
-                        </div>
-                        <div class="p-3 text-xs text-[#111827]">
-                          <p class="font-medium">
-                            {{
-                              t(
-                                'WHATSAPP_TEMPLATE_BUILDER.CATALOG.PREVIEW.PRODUCT',
-                                { n: index }
-                              )
-                            }}
-                          </p>
-                          <p class="mt-1 text-[0.65rem] text-[#667781]">
-                            {{
-                              t(
-                                'WHATSAPP_TEMPLATE_BUILDER.CATALOG.PREVIEW.PRICE'
-                              )
-                            }}
-                          </p>
-                        </div>
-                        <div
-                          class="px-3 py-2 border-t border-[#e9edef] text-center text-xs font-medium text-[#00a884]"
-                        >
-                          {{
-                            productCarouselButtonType === 'SPM'
-                              ? t(
-                                  'WHATSAPP_TEMPLATE_BUILDER.CATALOG.PREVIEW.VIEW_PRODUCT'
-                                )
-                              : productCarouselUrl.text ||
-                                t(
-                                  'WHATSAPP_TEMPLATE_BUILDER.CATALOG.BUTTONS.URL_TEXT_PLACEHOLDER'
-                                )
-                          }}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div
-                    v-else-if="templateFormat === 'catalog'"
-                    class="self-start max-w-[92%] overflow-hidden rounded-xl rounded-ss-sm bg-white shadow-sm text-xs text-[#111827]"
-                  >
-                    <div
-                      v-if="
-                        catalogFormat === 'catalog_template' ||
-                        productTemplateType === 'spm'
-                      "
-                      class="grid h-28 place-items-center bg-[#e9edef] text-[#8696a0]"
-                    >
-                      <span class="flex flex-col items-center gap-2">
-                        <Icon icon="i-lucide-package" class="size-7" />
-                        {{
-                          t(
-                            'WHATSAPP_TEMPLATE_BUILDER.CATALOG.PREVIEW.PRODUCT_MEDIA'
-                          )
-                        }}
-                      </span>
-                    </div>
-                    <div class="p-3">
-                      <p>
-                        {{
-                          state.body ||
-                          t('WHATSAPP_TEMPLATE_BUILDER.PREVIEW.BODY')
-                        }}
-                      </p>
-                      <p
-                        v-if="state.footer"
-                        class="mt-2 text-[0.65rem] text-[#667781]"
-                      >
-                        {{ state.footer }}
-                      </p>
-                      <span
-                        class="block mt-2 text-[0.58rem] text-end text-[#8696a0]"
-                      >
-                        {{ t('WHATSAPP_TEMPLATE_BUILDER.PREVIEW.TIME') }}
-                      </span>
-                    </div>
-                    <div
-                      class="px-3 py-2.5 border-t border-[#e9edef] text-center font-medium text-[#00a884]"
-                    >
-                      {{
-                        catalogFormat === 'catalog_template'
-                          ? t(
-                              'WHATSAPP_TEMPLATE_BUILDER.CATALOG.PREVIEW.VIEW_CATALOG'
-                            )
-                          : productTemplateType === 'mpm'
-                            ? t(
-                                'WHATSAPP_TEMPLATE_BUILDER.CATALOG.PREVIEW.VIEW_ITEMS'
-                              )
-                            : t(
-                                'WHATSAPP_TEMPLATE_BUILDER.CATALOG.PREVIEW.VIEW_PRODUCT'
-                              )
-                      }}
-                    </div>
-                  </div>
-                  <div
-                    v-else-if="templateFormat === 'carousel'"
-                    class="flex flex-col gap-2 overflow-hidden"
-                  >
-                    <div
-                      class="self-start max-w-[92%] p-3 text-xs bg-white shadow-sm rounded-xl rounded-ss-sm text-[#111827]"
-                    >
-                      {{
-                        state.body ||
-                        t('WHATSAPP_TEMPLATE_BUILDER.PREVIEW.BODY')
-                      }}
-                    </div>
-                    <div class="relative">
-                      <div
-                        class="overflow-hidden scroll-smooth"
-                        :dir="direction"
-                      >
-                        <div class="flex gap-2">
-                          <button
-                            v-for="(card, index) in state.cards"
-                            :key="card.id"
-                            :ref="
-                              element =>
-                                setCarouselPreviewCardElement(card.id, element)
-                            "
-                            type="button"
-                            class="w-44 overflow-hidden text-start bg-white border-2 shrink-0 rounded-xl shadow-sm transition-colors"
-                            :class="
-                              index === activeCardIndex
-                                ? 'border-[#00a884] shadow-md'
-                                : 'border-[#c9d1d5]'
-                            "
-                            :dir="direction"
-                            @click="selectCarouselCard(index)"
-                          >
-                            <div
-                              class="grid h-28 place-items-center bg-[#e9edef] text-[#8696a0]"
-                            >
-                              <img
-                                v-if="
-                                  card.mediaUrl &&
-                                  card.mediaMimeType.startsWith('image/')
-                                "
-                                :src="card.mediaUrl"
-                                class="object-cover w-full h-full"
-                              />
-                              <video
-                                v-else-if="card.mediaUrl"
-                                :src="card.mediaUrl"
-                                class="object-cover w-full h-full"
-                                muted
-                              />
-                              <Icon
-                                v-else
-                                :icon="
-                                  state.carouselMediaType === 'video'
-                                    ? 'i-lucide-video'
-                                    : 'i-lucide-image'
-                                "
-                                class="size-7"
-                              />
-                            </div>
-                            <div
-                              v-if="state.carouselTextEnabled"
-                              class="p-3 text-xs text-[#111827]"
-                            >
-                              <p>
-                                {{
-                                  card.body ||
-                                  t(
-                                    'WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.CARD_BODY_PREVIEW'
-                                  )
-                                }}
-                              </p>
-                              <span
-                                class="block mt-2 text-[0.58rem] text-end text-[#8696a0]"
-                              >
-                                {{
-                                  t('WHATSAPP_TEMPLATE_BUILDER.PREVIEW.TIME')
-                                }}
-                              </span>
-                            </div>
-                            <div
-                              v-for="action in state.carouselButtonTypes"
-                              :key="action"
-                              class="px-3 py-2 border-t border-[#e9edef] text-center text-xs font-medium text-[#00a884]"
-                            >
-                              {{
-                                card.buttons[action].text ||
-                                carouselActionByValue[action].label
-                              }}
-                            </div>
-                          </button>
-                        </div>
-                      </div>
-                      <Button
-                        v-if="activeCardIndex > 0"
-                        :icon="
-                          direction === 'rtl'
-                            ? 'i-lucide-chevron-right'
-                            : 'i-lucide-chevron-left'
-                        "
-                        color="slate"
-                        size="sm"
-                        class="absolute z-10 -translate-y-1/2 rounded-full shadow-md top-1/2 start-1"
-                        :aria-label="
-                          t('WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.PREVIOUS_CARD')
-                        "
-                        @click="navigateCard(-1)"
-                      />
-                      <Button
-                        v-if="activeCardIndex < state.cards.length - 1"
-                        :icon="
-                          direction === 'rtl'
-                            ? 'i-lucide-chevron-left'
-                            : 'i-lucide-chevron-right'
-                        "
-                        color="slate"
-                        size="sm"
-                        class="absolute z-10 -translate-y-1/2 rounded-full shadow-md top-1/2 end-1"
-                        :aria-label="
-                          t('WHATSAPP_TEMPLATE_BUILDER.CAROUSEL.NEXT_CARD')
-                        "
-                        @click="navigateCard(1)"
-                      />
-                    </div>
-                  </div>
-                  <div
-                    v-else
-                    class="self-start max-w-[92%] overflow-hidden rounded-xl rounded-ss-sm bg-white shadow-sm text-xs text-[#111827]"
-                  >
-                    <div
-                      v-if="
-                        ['image', 'video', 'document'].includes(
-                          state.headerType
-                        )
-                      "
-                      class="flex items-center justify-center h-28 bg-[#e9edef] text-[#8696a0]"
-                    >
-                      <img
-                        v-if="
-                          state.headerType === 'image' && state.headerMediaUrl
-                        "
-                        :src="state.headerMediaUrl"
-                        class="object-cover w-full h-full"
-                      />
-                      <span v-else class="flex flex-col items-center gap-2">
-                        <Icon
-                          :icon="
-                            state.headerType === 'video'
-                              ? 'i-lucide-video'
-                              : state.headerType === 'document'
-                                ? 'i-lucide-file-text'
-                                : 'i-lucide-image'
-                          "
-                          class="size-6"
-                        />
-                        {{
-                          state.headerMediaName ||
-                          t('WHATSAPP_TEMPLATE_BUILDER.PREVIEW.MEDIA')
-                        }}
-                      </span>
-                    </div>
-                    <div class="p-3">
-                      <p
-                        v-if="state.headerType === 'text' && state.headerText"
-                        class="mb-2 text-sm font-semibold"
-                      >
-                        {{ state.headerText }}
-                      </p>
-                      <p class="leading-5 whitespace-pre-wrap">
-                        {{
-                          state.body ||
-                          t('WHATSAPP_TEMPLATE_BUILDER.PREVIEW.BODY')
-                        }}
-                      </p>
-                      <p
-                        v-if="state.footer"
-                        class="mt-2 text-[0.65rem] text-[#667781]"
-                      >
-                        {{ state.footer }}
-                      </p>
-                      <span
-                        class="block mt-1 text-[0.58rem] text-end text-[#8696a0]"
-                      >
-                        {{ t('WHATSAPP_TEMPLATE_BUILDER.PREVIEW.TIME') }}
-                      </span>
-                    </div>
-                    <div
-                      v-if="state.buttonText"
-                      class="px-3 py-2.5 border-t border-[#e9edef] text-center font-medium text-[#00a884]"
-                    >
-                      {{ state.buttonText }}
-                    </div>
-                  </div>
-                </div>
-                <div
-                  class="flex items-center gap-2 px-3 py-2.5 border-t border-[#dde2e5] bg-[#f7f9fa] text-[#8696a0]"
-                >
-                  <Icon icon="i-lucide-plus" class="size-5" />
-                  <div
-                    class="flex items-center flex-1 gap-2 px-3 py-2 rounded-full bg-[#eef1f3]"
-                  >
-                    <Icon icon="i-lucide-smile" class="size-4" />
-                    <span class="text-[0.65rem] grow">
-                      {{ t('WHATSAPP_TEMPLATE_BUILDER.PREVIEW.MESSAGE') }}
-                    </span>
-                    <Icon icon="i-lucide-paperclip" class="size-4" />
-                    <Icon icon="i-lucide-camera" class="size-4" />
-                  </div>
-                  <Icon icon="i-lucide-mic" class="size-5" />
-                </div>
-              </div>
-            </div>
-          </div>
+          <WhatsAppTemplatePhonePreview
+            :state="state"
+            :direction="direction"
+            :authentication-preview-body="authenticationPreviewBody"
+            :authentication-preview-footer="authenticationPreviewFooter"
+            :authentication-preview-button="authenticationPreviewButton"
+            :template-format="templateFormat"
+            :catalog-format="catalogFormat"
+            :product-template-type="productTemplateType"
+            :product-carousel-button-type="productCarouselButtonType"
+            :product-carousel-url="productCarouselUrl"
+            :active-card-index="activeCardIndex"
+            :carousel-action-by-value="carouselActionByValue"
+            @select-card="selectCarouselCard"
+            @navigate-card="navigateCard"
+            @set-card-element="setCarouselPreviewCardElement"
+          />
         </div>
       </div>
     </template>

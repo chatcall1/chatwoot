@@ -78,6 +78,10 @@ class InboxPolicy < ApplicationPolicy
     @account_user.administrator?
   end
 
+  def authentication_template_preview?
+    @account_user.administrator?
+  end
+
   def whatsapp_business_management_token?
     @account_user.administrator?
   end

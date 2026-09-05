@@ -5,7 +5,8 @@ describe Whatsapp::TemplateProcessorService do
     described_class.new(channel: channel, template_params: template_params).call.last
   end
 
-  let(:channel) { instance_double(Channel::Whatsapp, message_templates: [template]) }
+  let(:template_media) { instance_double(ActiveRecord::Associations::CollectionProxy, find_by: nil) }
+  let(:channel) { instance_double(Channel::Whatsapp, message_templates: [template], template_media: template_media) }
   let(:template_params) do
     {
       'name' => template['name'],

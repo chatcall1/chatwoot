@@ -39,7 +39,7 @@ class Whatsapp::TemplateParameterConverterService
     return false unless processed_params.is_a?(Hash)
 
     # Enhanced format has component-based structure
-    component_keys = %w[body header footer buttons]
+    component_keys = %w[body header footer buttons catalog product carousel]
     has_component_structure = processed_params.keys.any? { |k| component_keys.include?(k) }
 
     # Additional validation for enhanced format

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_08_14_000000) do
+ActiveRecord::Schema[7.2].define(version: 2026_09_03_212000) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -1728,6 +1728,17 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_14_000000) do
     t.index ["account_id", "url"], name: "index_webhooks_on_account_id_and_url", unique: true
   end
 
+  create_table "whatsapp_template_media", force: :cascade do |t|
+    t.bigint "channel_id", null: false
+    t.string "template_name", null: false
+    t.integer "card_index", null: false
+    t.string "media_type", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["channel_id", "template_name", "card_index"], name: "index_whatsapp_template_media_on_template_card", unique: true
+    t.index ["channel_id"], name: "index_whatsapp_template_media_on_channel_id"
+  end
+
   create_table "working_hours", force: :cascade do |t|
     t.bigint "inbox_id"
     t.bigint "account_id"
@@ -1771,6 +1782,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_14_000000) do
   add_foreign_key "internal_chat_reactions", "internal_chat_messages"
   add_foreign_key "internal_chat_reactions", "users", on_delete: :cascade
   add_foreign_key "user_sessions", "users"
+  add_foreign_key "whatsapp_template_media", "channel_whatsapp", column: "channel_id"
   # no candidate create_trigger statement could be found, creating an adapter-specific one
   execute(<<-SQL)
 CREATE OR REPLACE FUNCTION public.accounts_after_insert_row_tr()

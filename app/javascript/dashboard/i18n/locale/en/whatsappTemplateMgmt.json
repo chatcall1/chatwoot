@@ -76,7 +76,7 @@
     },
     "NAME": {
       "LABEL": "Template name",
-      "PLACEHOLDER": "appointment_reminder",
+      "PLACEHOLDER": "weekend_offer",
       "HELPER": "Use lowercase letters, numbers, and underscores only.",
       "ERROR": "Only a-z, 0-9, and _ are allowed."
     },
@@ -95,6 +95,7 @@
       "SELECT_LABEL": "Meta Commerce Catalog",
       "SELECT_PLACEHOLDER": "Select a connected catalog",
       "FETCH": "Fetch catalogs",
+      "EMPTY": "No connected catalog",
       "CATALOG_BUTTON_HELPER": "Meta adds the fixed View catalog button. No button fields are required here.",
       "PRODUCT_CAROUSEL_HELPER": "Meta requires exactly two product cards when the template is created. Up to 10 products are selected later when the approved template is sent.",
       "BUTTON_TYPE_LABEL": "Product card button",
@@ -142,10 +143,14 @@
       "TYPE_PLACEHOLDER": "Select header type",
       "TEXT_LABEL": "Header text",
       "TEXT_PLACEHOLDER": "Add a short header",
+      "ADD_VARIABLE": "Add variable",
+      "EXAMPLE_LABEL": "Header variable example",
+      "EXAMPLE_PLACEHOLDER": "Enter a realistic value for variable 1",
       "MEDIA_LABEL": "Media URL",
       "MEDIA_PLACEHOLDER": "Add a media URL",
       "UPLOAD": "Upload header media",
       "UPLOAD_HELPER": "Select a supported example file for the template preview.",
+      "MEDIA_ERROR": "Select a supported file within the allowed size for this header type.",
       "TYPES": {
         "NONE": "No header",
         "TEXT": "Text",
@@ -154,12 +159,22 @@
         "DOCUMENT": "Document"
       }
     },
-    "BODY": { "PLACEHOLDER": "Write your message..." },
+    "BODY": {
+      "PLACEHOLDER": "Write your message...",
+      "CHARACTER_COUNT": "{current} / {max}"
+    },
     "FOOTER": { "LABEL": "Footer text", "PLACEHOLDER": "Add a footer" },
     "BUTTONS": {
       "TYPE_PLACEHOLDER": "Select button type",
       "TEXT_LABEL": "Button text",
       "TEXT_PLACEHOLDER": "Add button text",
+      "ADD": "Add button",
+      "URL_LABEL": "Website URL",
+      "URL_PLACEHOLDER": "https://example.com",
+      "URL_EXAMPLE_LABEL": "URL variable example",
+      "URL_EXAMPLE_PLACEHOLDER": "Enter the value replacing variable 1",
+      "PHONE_LABEL": "Phone number",
+      "PHONE_PLACEHOLDER": "+15551234567",
       "FLOW_LABEL": "Published WhatsApp Flow",
       "FLOW_PLACEHOLDER": "Select a published Flow",
       "FETCH_FLOWS": "Fetch Flows",
@@ -167,7 +182,65 @@
       "TYPES": {
         "QUICK_REPLY": "Quick reply",
         "URL": "Call to action",
-        "FLOW": "WhatsApp Flow"
+        "PHONE_NUMBER": "Call phone number",
+        "FLOW": "WhatsApp Flow",
+        "COPY_CODE": "Copy code"
+      },
+      "COPY_CODE_LABEL": "Example code",
+      "COPY_CODE_PLACEHOLDER": "SAVE20"
+    },
+    "MARKETING_API": {
+      "DEEP_LINK": "Android app deep link",
+      "DEEP_LINK_HELPER": "Open content in your Android app, with the website URL used on other devices.",
+      "META_APP_ID": "Meta app ID",
+      "ANDROID_DEEP_LINK": "Android deep link URI",
+      "ANDROID_FALLBACK_URL": "Android fallback URL",
+      "GIF_MODE": "Use as animated GIF",
+      "GIF_MODE_HELPER": "Upload an MP4 file up to 3.5 MB. This format requires Marketing Messages API."
+    },
+    "AUTHENTICATION": {
+      "PRESET_HELPER": "Meta generates the verification message from fixed, localized text. Media, links, emojis, and custom message text are not supported.",
+      "DELIVERY_TYPE": "Code delivery experience",
+      "TYPES": {
+        "COPY_CODE": "Copy code",
+        "COPY_CODE_DESCRIPTION": "Let the user copy the verification code.",
+        "ONE_TAP": "One-tap autofill",
+        "ONE_TAP_DESCRIPTION": "Open the Android app and fill the code.",
+        "ZERO_TAP": "Zero-tap",
+        "ZERO_TAP_DESCRIPTION": "Deliver the code to the Android app automatically."
+      },
+      "SECURITY": "Security recommendation",
+      "SECURITY_HELPER": "Add Meta's localized warning not to share the code.",
+      "EXPIRATION": "Show code expiration",
+      "EXPIRATION_MINUTES": "Expiration in minutes (1–90)",
+      "TTL": "Custom delivery time-to-live",
+      "TTL_SECONDS": "Time-to-live in seconds (30–900)",
+      "COPY_TEXT": "Copy code fallback text (optional)",
+      "AUTOFILL_TEXT": "Autofill text (optional)",
+      "LOCALIZED_DEFAULT": "Use Meta's localized default",
+      "APPS": "Supported Android apps",
+      "APPS_HELPER": "One-tap and zero-tap require an Android package name and its 11-character signing key hash.",
+      "ADD_APP": "Add app",
+      "REMOVE_APP": "Remove app",
+      "PACKAGE_NAME": "Android package name",
+      "SIGNATURE_HASH": "App signing key hash",
+      "ZERO_TAP_TERMS": "I accept the Zero-tap terms and confirm that customers expect the verification code to be filled automatically.",
+      "PREVIEW": {
+        "ARABIC": {
+          "BODY": "هو رمز التحقق الخاص بك.",
+          "SECURITY": "حرصًا على أمانك، لا تشارك هذا الرمز.",
+          "EXPIRATION": "تنتهي صلاحية هذا الرمز خلال {minutes} دقيقة.",
+          "COPY": "نسخ الرمز",
+          "AUTOFILL": "ملء تلقائي"
+        },
+        "ENGLISH": {
+          "BODY": "is your verification code.",
+          "SECURITY": "For your security, do not share this code.",
+          "EXPIRATION": "This code expires in {minutes} minutes.",
+          "COPY": "Copy code",
+          "AUTOFILL": "Autofill"
+        },
+        "CODE": "123456"
       }
     },
     "CAROUSEL": {
@@ -219,6 +292,7 @@
     "SAVE_DRAFT": "Save draft",
     "SUBMIT": "Submit template",
     "SUBMIT_SUCCESS": "Template submitted to WhatsApp for review.",
+    "MEDIA_STORAGE_WARNING": "Meta accepted the template, but its media could not be saved locally. Do not submit it again; ask an administrator to check storage.",
     "SUBMIT_ERROR": "Unable to submit the template to WhatsApp. Please check the fields and try again.",
     "PREVIEW": {
       "TITLE": "Live preview",

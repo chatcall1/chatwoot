@@ -39,10 +39,24 @@
       "EXPIRY_MINUTES": "Enter expiry minutes",
       "BUTTON_PARAMETERS": "Button Parameters",
       "BUTTON_LABEL": "Button {index}",
-      "COUPON_CODE": "Enter coupon code (max 15 chars)",
+      "COUPON_CODE": "Enter coupon code (max 20 chars)",
       "MEDIA_URL_LABEL": "Enter {type} URL",
       "DOCUMENT_NAME_PLACEHOLDER": "Enter document filename (e.g., Invoice_2025.pdf)",
-      "BUTTON_PARAMETER": "Enter button parameter"
+      "BUTTON_PARAMETER": "Enter button parameter",
+      "CATALOG_THUMBNAIL": "Catalog thumbnail",
+      "OPTIONAL_PRODUCT_ID": "Product retailer ID (optional)",
+      "PRODUCT_ID": "Catalog product",
+      "PRODUCT_ID_PLACEHOLDER": "Product retailer ID (Content ID)",
+      "PRODUCTS": "Catalog products and sections",
+      "THUMBNAIL_PRODUCT_ID": "Thumbnail product retailer ID",
+      "SECTION_TITLE": "Section title (up to 24 characters)",
+      "ADD_SECTION": "Add section",
+      "REMOVE_SECTION": "Remove section",
+      "ADD_PRODUCT": "Add product",
+      "REMOVE_PRODUCT": "Remove product",
+      "CAROUSEL_PRODUCTS": "Product carousel cards",
+      "CARD_PRODUCT_ID": "Product retailer ID for card {number}",
+      "ADD_PRODUCT_CARD": "Add product card"
     }
   }
 }

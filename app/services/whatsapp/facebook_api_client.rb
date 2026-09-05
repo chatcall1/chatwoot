@@ -5,7 +5,7 @@ class Whatsapp::FacebookApiClient
 
   def initialize(access_token = nil)
     @access_token = access_token
-    @api_version = GlobalConfigService.load('WHATSAPP_API_VERSION', 'v22.0')
+    @api_version = Whatsapp::ApiVersion.current
   end
 
   def exchange_code_for_token(code)
@@ -46,6 +46,20 @@ class Whatsapp::FacebookApiClient
     )
 
     handle_response(response, 'WABA Flows fetch failed')
+  end
+
+  def fetch_authentication_template_preview(waba_id, language:, add_security_recommendation:, code_expiration_minutes: nil)
+    query = {
+      category: 'AUTHENTICATION',
+      languages: language,
+      add_security_recommendation: add_security_recommendation,
+      button_types: 'OTP',
+      access_token: @access_token
+    }
+    query[:code_expiration_minutes] = code_expiration_minutes if code_expiration_minutes.present?
+    response = HTTParty.get("#{BASE_URI}/#{@api_version}/#{waba_id}/message_template_previews", query: query)
+
+    handle_response(response, 'Authentication template preview fetch failed')
   end
 
   def debug_token(input_token)

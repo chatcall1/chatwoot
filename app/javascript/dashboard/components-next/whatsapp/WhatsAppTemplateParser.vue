@@ -14,6 +14,7 @@ import { requiredIf } from '@vuelidate/validators';
 import { useI18n } from 'vue-i18n';
 
 import { isWhatsAppComplete } from '@chatwoot/utils';
+import Button from 'dashboard/components-next/button/Button.vue';
 import Input from 'dashboard/components-next/input/Input.vue';
 import {
   buildTemplateParameters,
@@ -98,6 +99,33 @@ const hasTextHeaderVariables = computed(() => {
 const hasVariables = computed(
   () => hasBodyVariables.value || hasTextHeaderVariables.value
 );
+const buttonsComponent = computed(() =>
+  findComponentByType(props.template, COMPONENT_TYPES.BUTTONS)
+);
+const commerceButtonType = computed(
+  () =>
+    buttonsComponent.value?.buttons?.find(button =>
+      ['CATALOG', 'SPM', 'MPM'].includes(button.type)
+    )?.type
+);
+const productCarouselComponent = computed(() =>
+  props.template.components?.find(component => {
+    if (component.type !== 'CAROUSEL') return false;
+    return component.cards?.[0]?.components?.some(
+      item => item.type === 'HEADER' && item.format === 'PRODUCT'
+    );
+  })
+);
+const hasCommerceParameters = computed(
+  () => !!commerceButtonType.value || !!productCarouselComponent.value
+);
+const productCarouselHasDynamicUrl = computed(() =>
+  productCarouselComponent.value?.cards?.[0]?.components
+    ?.find(component => component.type === 'BUTTONS')
+    ?.buttons?.some(
+      button => button.type === 'URL' && button.url?.includes('{{')
+    )
+);
 
 const renderedHeader = computed(() => {
   return renderTemplatePreview(
@@ -112,11 +140,6 @@ const renderedTemplate = computed(() => {
     processedParams.value.body || {}
   );
 });
-
-// Completeness validation is shared with the mobile app via @chatwoot/utils.
-const isFormInvalid = computed(
-  () => !isWhatsAppComplete(props.template, processedParams.value)
-);
 
 const v$ = useVuelidate(
   {
@@ -133,6 +156,104 @@ const initializeTemplateParameters = () => {
     props.template,
     hasMediaHeader.value
   );
+  if (commerceButtonType.value === 'CATALOG') {
+    processedParams.value.catalog = { thumbnail_product_retailer_id: '' };
+  } else if (commerceButtonType.value === 'SPM') {
+    processedParams.value.product = { product_retailer_id: '' };
+  } else if (commerceButtonType.value === 'MPM') {
+    processedParams.value.catalog = {
+      thumbnail_product_retailer_id: '',
+      sections: [{ title: '', product_retailer_ids: [''] }],
+    };
+  } else if (productCarouselComponent.value) {
+    processedParams.value.carousel = {
+      cards: productCarouselComponent.value.cards.map(() => ({
+        product_retailer_id: '',
+        url_parameter: '',
+      })),
+    };
+  }
+};
+
+const hasCompleteCommerceParameters = computed(() => {
+  if (commerceButtonType.value === 'SPM') {
+    return !!processedParams.value.product?.product_retailer_id?.trim();
+  }
+  if (commerceButtonType.value === 'MPM') {
+    const catalog = processedParams.value.catalog;
+    const sections = catalog?.sections || [];
+    const productCount = sections.reduce(
+      (count, section) =>
+        count + section.product_retailer_ids.filter(id => id.trim()).length,
+      0
+    );
+    return (
+      !!catalog?.thumbnail_product_retailer_id?.trim() &&
+      sections.length >= 1 &&
+      sections.length <= 10 &&
+      productCount >= 1 &&
+      productCount <= 30 &&
+      sections.every(
+        section =>
+          !!section.title.trim() &&
+          section.title.length <= 24 &&
+          section.product_retailer_ids.some(id => id.trim())
+      )
+    );
+  }
+  if (productCarouselComponent.value) {
+    const cards = processedParams.value.carousel?.cards || [];
+    return (
+      cards.length >= 2 &&
+      cards.length <= 10 &&
+      cards.every(
+        card =>
+          !!card.product_retailer_id.trim() &&
+          (!productCarouselHasDynamicUrl.value || !!card.url_parameter.trim())
+      )
+    );
+  }
+  return true;
+});
+
+// Completeness validation is shared with the mobile app via @chatwoot/utils.
+const isFormInvalid = computed(
+  () =>
+    !isWhatsAppComplete(props.template, processedParams.value) ||
+    !hasCompleteCommerceParameters.value
+);
+
+const addProductSection = () => {
+  if (processedParams.value.catalog.sections.length >= 10) return;
+  processedParams.value.catalog.sections.push({
+    title: '',
+    product_retailer_ids: [''],
+  });
+};
+const removeProductSection = index => {
+  if (processedParams.value.catalog.sections.length === 1) return;
+  processedParams.value.catalog.sections.splice(index, 1);
+};
+const addSectionProduct = section => {
+  const count = processedParams.value.catalog.sections.reduce(
+    (total, item) => total + item.product_retailer_ids.length,
+    0
+  );
+  if (count < 30) section.product_retailer_ids.push('');
+};
+const removeSectionProduct = (section, index) => {
+  if (section.product_retailer_ids.length === 1) return;
+  section.product_retailer_ids.splice(index, 1);
+};
+const addProductCard = () => {
+  const cards = processedParams.value.carousel.cards;
+  if (cards.length >= 10) return;
+  cards.push({ product_retailer_id: '', url_parameter: '' });
+};
+const removeProductCard = index => {
+  const cards = processedParams.value.carousel.cards;
+  if (cards.length <= 2) return;
+  cards.splice(index, 1);
 };
 
 const updateMediaUrl = value => {
@@ -147,7 +268,7 @@ const updateMediaName = value => {
 
 const sendMessage = () => {
   v$.value.$touch();
-  if (v$.value.$invalid) return;
+  if (isFormInvalid.value) return;
 
   const { name, category, language, namespace } = props.template;
 
@@ -236,7 +357,7 @@ defineExpose({
       </div>
     </div>
 
-    <div v-if="hasVariables || hasMediaHeader">
+    <div v-if="hasVariables || hasMediaHeader || hasCommerceParameters">
       <div v-if="hasMediaHeader" class="mb-4">
         <p class="mb-2.5 text-sm font-semibold">
           {{
@@ -335,8 +456,149 @@ defineExpose({
           />
         </div>
       </div>
+      <div v-if="commerceButtonType === 'CATALOG'" class="mb-4">
+        <p class="mb-2.5 text-sm font-semibold">
+          {{ t('WHATSAPP_TEMPLATES.PARSER.CATALOG_THUMBNAIL') }}
+        </p>
+        <Input
+          v-model="processedParams.catalog.thumbnail_product_retailer_id"
+          type="text"
+          :placeholder="t('WHATSAPP_TEMPLATES.PARSER.OPTIONAL_PRODUCT_ID')"
+        />
+      </div>
+      <div v-if="commerceButtonType === 'SPM'" class="mb-4">
+        <p class="mb-2.5 text-sm font-semibold">
+          {{ t('WHATSAPP_TEMPLATES.PARSER.PRODUCT_ID') }}
+        </p>
+        <Input
+          v-model="processedParams.product.product_retailer_id"
+          type="text"
+          :placeholder="t('WHATSAPP_TEMPLATES.PARSER.PRODUCT_ID_PLACEHOLDER')"
+        />
+      </div>
+      <div v-if="commerceButtonType === 'MPM'" class="grid gap-3 mb-4">
+        <p class="text-sm font-semibold">
+          {{ t('WHATSAPP_TEMPLATES.PARSER.PRODUCTS') }}
+        </p>
+        <Input
+          v-model="processedParams.catalog.thumbnail_product_retailer_id"
+          type="text"
+          :placeholder="t('WHATSAPP_TEMPLATES.PARSER.THUMBNAIL_PRODUCT_ID')"
+        />
+        <div
+          v-for="(section, sectionIndex) in processedParams.catalog.sections"
+          :key="`section-${sectionIndex}`"
+          class="grid gap-2 p-3 border rounded-lg border-n-strong"
+        >
+          <div class="flex items-center gap-2">
+            <Input
+              v-model="section.title"
+              type="text"
+              maxlength="24"
+              class="flex-1"
+              :placeholder="t('WHATSAPP_TEMPLATES.PARSER.SECTION_TITLE')"
+            />
+            <Button
+              icon="i-lucide-trash-2"
+              color="slate"
+              variant="ghost"
+              size="sm"
+              :disabled="processedParams.catalog.sections.length === 1"
+              :aria-label="t('WHATSAPP_TEMPLATES.PARSER.REMOVE_SECTION')"
+              @click="removeProductSection(sectionIndex)"
+            />
+          </div>
+          <div
+            v-for="(productId, productIndex) in section.product_retailer_ids"
+            :key="`section-${sectionIndex}-product-${productIndex}`"
+            class="flex items-center gap-2"
+          >
+            <Input
+              v-model="section.product_retailer_ids[productIndex]"
+              type="text"
+              class="flex-1"
+              :placeholder="
+                t('WHATSAPP_TEMPLATES.PARSER.PRODUCT_ID_PLACEHOLDER')
+              "
+            />
+            <Button
+              icon="i-lucide-x"
+              color="slate"
+              variant="ghost"
+              size="sm"
+              :disabled="section.product_retailer_ids.length === 1"
+              :aria-label="t('WHATSAPP_TEMPLATES.PARSER.REMOVE_PRODUCT')"
+              @click="removeSectionProduct(section, productIndex)"
+            />
+          </div>
+          <Button
+            :label="t('WHATSAPP_TEMPLATES.PARSER.ADD_PRODUCT')"
+            icon="i-lucide-plus"
+            color="slate"
+            variant="outline"
+            size="sm"
+            @click="addSectionProduct(section)"
+          />
+        </div>
+        <Button
+          :label="t('WHATSAPP_TEMPLATES.PARSER.ADD_SECTION')"
+          icon="i-lucide-plus"
+          color="slate"
+          variant="outline"
+          size="sm"
+          :disabled="processedParams.catalog.sections.length >= 10"
+          @click="addProductSection"
+        />
+      </div>
+      <div v-if="productCarouselComponent" class="grid gap-3 mb-4">
+        <p class="text-sm font-semibold">
+          {{ t('WHATSAPP_TEMPLATES.PARSER.CAROUSEL_PRODUCTS') }}
+        </p>
+        <div
+          v-for="(card, cardIndex) in processedParams.carousel.cards"
+          :key="`product-card-${cardIndex}`"
+          class="grid gap-2 p-3 border rounded-lg border-n-strong"
+        >
+          <div class="flex items-center gap-2">
+            <Input
+              v-model="card.product_retailer_id"
+              type="text"
+              class="flex-1"
+              :placeholder="
+                t('WHATSAPP_TEMPLATES.PARSER.CARD_PRODUCT_ID', {
+                  number: cardIndex + 1,
+                })
+              "
+            />
+            <Button
+              icon="i-lucide-trash-2"
+              color="slate"
+              variant="ghost"
+              size="sm"
+              :disabled="processedParams.carousel.cards.length <= 2"
+              :aria-label="t('WHATSAPP_TEMPLATES.PARSER.REMOVE_PRODUCT')"
+              @click="removeProductCard(cardIndex)"
+            />
+          </div>
+          <Input
+            v-if="productCarouselHasDynamicUrl"
+            v-model="card.url_parameter"
+            type="text"
+            :placeholder="t('WHATSAPP_TEMPLATES.PARSER.BUTTON_PARAMETER')"
+          />
+        </div>
+        <Button
+          :label="t('WHATSAPP_TEMPLATES.PARSER.ADD_PRODUCT_CARD')"
+          icon="i-lucide-plus"
+          color="slate"
+          variant="outline"
+          size="sm"
+          :disabled="processedParams.carousel.cards.length >= 10"
+          @click="addProductCard"
+        />
+      </div>
       <p
-        v-if="v$.$dirty && v$.$invalid"
+        v-if="v$.$dirty && isFormInvalid"
         class="p-2.5 text-center rounded-md bg-n-ruby-9/20 text-n-ruby-9"
       >
         {{ $t('WHATSAPP_TEMPLATES.PARSER.FORM_ERROR_MESSAGE') }}
@@ -348,7 +610,7 @@ defineExpose({
       :send-message="sendMessage"
       :reset-template="resetTemplate"
       :go-back="goBack"
-      :is-valid="!v$.$invalid"
+      :is-valid="!isFormInvalid"
       :disabled="isFormInvalid"
     />
   </div>

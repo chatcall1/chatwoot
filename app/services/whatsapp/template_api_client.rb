@@ -67,7 +67,7 @@ class Whatsapp::TemplateApiClient
   end
 
   def api_version
-    @api_version ||= GlobalConfigService.load('WHATSAPP_API_VERSION', 'v22.0')
+    @api_version ||= Whatsapp::ApiVersion.current
   end
 
   def api_base_path

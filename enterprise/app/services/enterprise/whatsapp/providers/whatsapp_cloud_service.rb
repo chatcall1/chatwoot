@@ -1,8 +1,5 @@
 module Enterprise::Whatsapp::Providers::WhatsappCloudService
-  # Calls API + the call_permission_request interactive message both require Graph
-  # API v17+; OSS phone_id_path is locked at v13.0 for legacy /messages compatibility.
-  # Use the configured global version (defaulting to v22.0) for call-flow endpoints.
-  WHATSAPP_CALLING_API_VERSION_FALLBACK = 'v22.0'.freeze
+  # Calling and message endpoints use the same globally configured Graph API version.
 
   def pre_accept_call(call_id, sdp_answer)
     call_api('pre_accept_call', call_action_body(call_id, 'pre_accept', sdp_answer))
@@ -60,7 +57,7 @@ module Enterprise::Whatsapp::Providers::WhatsappCloudService
 
   def calls_phone_id_path
     base = ENV.fetch('WHATSAPP_CLOUD_BASE_URL', 'https://graph.facebook.com')
-    version = GlobalConfigService.load('WHATSAPP_API_VERSION', WHATSAPP_CALLING_API_VERSION_FALLBACK)
+    version = GlobalConfigService.load('WHATSAPP_API_VERSION', nil).presence || raise('WHATSAPP_API_VERSION is not configured')
     "#{base}/#{version}/#{whatsapp_channel.provider_config['phone_number_id']}"
   end
 

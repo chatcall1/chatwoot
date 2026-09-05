@@ -44,32 +44,40 @@ class Whatsapp::TemplateProcessorService
     components.concat(process_header_components(processed_params, template))
     components.concat(process_body_components(processed_params, template))
     components.concat(process_footer_components(processed_params))
-    components.concat(process_button_components(processed_params))
-    components.concat(process_flow_button(template))
-    components.concat(process_carousel_components(processed_params, template))
+    components.concat(
+      Whatsapp::TemplateButtonParameterProcessor.new(
+        channel: channel, template: template, processed_params: processed_params, message: message
+      ).call
+    )
+    catalog_processor = Whatsapp::CatalogTemplateProcessorService.new(channel: channel, template: template, processed_params: processed_params)
+    components.concat(catalog_processor.call)
+    components.concat(process_carousel_components(processed_params, template)) unless catalog_processor.product_carousel?
 
     @template_params = components
   end
 
-  def process_flow_button(template)
-    buttons = template['components']&.find { |component| component['type'] == 'BUTTONS' }&.fetch('buttons', []) || []
-    flow_index = buttons.index { |button| button['type'] == 'FLOW' }
-    return [] if flow_index.nil?
-
-    token = message ? "chatwoot_#{channel.account_id}_#{message.id}" : "chatwoot_#{SecureRandom.uuid}"
-    [{
-      type: 'button',
-      sub_type: 'flow',
-      index: flow_index.to_s,
-      parameters: [{ type: 'action', action: { flow_token: token } }]
-    }]
-  end
-
   def process_header_components(processed_params, template)
+    stored_media_params = stored_template_header_params(template)
+    return stored_media_params if stored_media_params.present?
     return [] if processed_params['header'].blank?
 
     header_params = build_header_params(processed_params['header'], template)
     header_params.present? ? [{ type: 'header', parameters: header_params }] : []
+  end
+
+  def stored_template_header_params(template)
+    header = template['components']&.find { |component| component['type'] == 'HEADER' }
+    return [] unless media_header?(header)
+
+    stored_media = channel.template_media.find_by(template_name: template['name'], card_index: 0)
+    return [] unless stored_media&.file&.attached?
+
+    parameter = parameter_builder.build_media_parameter(stored_media.download_url, header['format'])
+    [{ type: 'header', parameters: [parameter] }]
+  end
+
+  def media_header?(header)
+    %w[IMAGE VIDEO DOCUMENT GIF].include?(header&.dig('format'))
   end
 
   def build_header_params(header_data, template)
@@ -123,25 +131,6 @@ class Whatsapp::TemplateProcessorService
     end
 
     footer_params.present? ? [{ type: 'footer', parameters: footer_params }] : []
-  end
-
-  def process_button_components(processed_params)
-    return [] if processed_params['buttons'].blank?
-
-    button_params = processed_params['buttons'].filter_map.with_index do |button, index|
-      next if button.blank?
-
-      if button['type'] == 'url' || button['parameter'].present?
-        {
-          type: 'button',
-          sub_type: button['type'] || 'url',
-          index: index,
-          parameters: [parameter_builder.build_button_parameter(button)]
-        }
-      end
-    end
-
-    button_params.compact
   end
 
   def process_carousel_components(processed_params, template)

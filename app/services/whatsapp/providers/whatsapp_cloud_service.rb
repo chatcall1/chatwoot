@@ -24,7 +24,7 @@ class Whatsapp::Providers::WhatsappCloudService < Whatsapp::Providers::BaseServi
     }
 
     response = HTTParty.post(
-      "#{phone_id_path}/messages",
+      template_messages_path,
       headers: api_headers,
       body: request_body.to_json
     )
@@ -33,32 +33,11 @@ class Whatsapp::Providers::WhatsappCloudService < Whatsapp::Providers::BaseServi
   end
 
   def sync_templates
-    # ensuring that channels with wrong provider config wouldn't keep trying to sync templates
-    whatsapp_channel.mark_message_templates_updated
-    return if (templates = fetch_whatsapp_templates).blank?
-
-    # update_columns skips touch, so bump the cache key ourselves; only if templates changed
-    whatsapp_channel.account.update_cache_key('inbox') if templates != whatsapp_channel.message_templates
-    # rubocop:disable Rails/SkipsModelValidations
-    whatsapp_channel.update_columns(message_templates: templates, message_templates_last_updated: Time.current)
-    # rubocop:enable Rails/SkipsModelValidations
+    template_sync_service.sync
   end
 
   def fetch_whatsapp_templates(after: nil)
-    options = { headers: { 'Authorization' => "Bearer #{whatsapp_channel.template_access_token}" } }
-    options[:query] = { after: after } if after.present?
-    response = HTTParty.get("#{business_account_path}/message_templates", options)
-    unless response.success?
-      Rails.logger.warn "[WHATSAPP] Template sync failed for account #{whatsapp_channel.account_id} " \
-                        "inbox #{whatsapp_channel.inbox&.id}: #{response.code} #{error_message(response)}"
-      return []
-    end
-
-    next_cursor = response.dig('paging', 'cursors', 'after')
-
-    return response['data'] + fetch_whatsapp_templates(after: next_cursor) if next_cursor.present?
-
-    response['data']
+    template_sync_service.fetch(after: after)
   end
 
   def validate_provider_config?
@@ -93,10 +72,18 @@ class Whatsapp::Providers::WhatsappCloudService < Whatsapp::Providers::BaseServi
   end
 
   def media_url(media_id)
-    "#{api_base_path}/v13.0/#{media_id}"
+    "#{api_base_path}/#{whatsapp_api_version}/#{media_id}"
   end
 
   private
+
+  def template_messages_path
+    "#{phone_id_path}/messages"
+  end
+
+  def template_sync_service
+    @template_sync_service ||= Whatsapp::TemplateSyncService.new(whatsapp_channel)
+  end
 
   # Only saves dropping the embedded_signup source marker are transfer attempts; creation/rotation failures are setup errors. Returns false.
   def log_transfer_failure(check, response)
@@ -117,12 +104,16 @@ class Whatsapp::Providers::WhatsappCloudService < Whatsapp::Providers::BaseServi
   end
 
   # TODO: See if we can unify the API versions and for both paths and make it consistent with out facebook app API versions
-  def phone_id_path(version = 'v13.0')
-    "#{api_base_path}/#{version}/#{whatsapp_channel.provider_config['phone_number_id']}"
+  def phone_id_path
+    "#{api_base_path}/#{whatsapp_api_version}/#{whatsapp_channel.provider_config['phone_number_id']}"
   end
 
   def business_account_path
-    "#{api_base_path}/v14.0/#{whatsapp_channel.provider_config['business_account_id']}"
+    "#{api_base_path}/#{whatsapp_api_version}/#{whatsapp_channel.provider_config['business_account_id']}"
+  end
+
+  def whatsapp_api_version
+    Whatsapp::ApiVersion.current
   end
 
   def send_text_message(phone_number, message)
@@ -147,7 +138,7 @@ class Whatsapp::Providers::WhatsappCloudService < Whatsapp::Providers::BaseServi
     type = %w[image audio video].include?(attachment.file_type) ? attachment.file_type : 'document'
     type_content = build_attachment_content(type, attachment, message)
     response = HTTParty.post(
-      "#{phone_id_path('v24.0')}/messages",
+      "#{phone_id_path}/messages",
       headers: api_headers,
       body: {
         :messaging_product => 'whatsapp',

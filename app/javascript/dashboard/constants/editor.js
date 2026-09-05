@@ -163,6 +163,11 @@ export const FORMATTING = {
     nodes: [],
     menu: [],
   },
+  'Context::WhatsappTemplate': {
+    marks: ['strong', 'em', 'strike', 'code'],
+    nodes: [],
+    menu: ['strong', 'em', 'strike', 'code'],
+  },
   'Context::NoToolbar': {
     marks: ['strong', 'em', 'link'],
     nodes: ['bulletList', 'orderedList'],

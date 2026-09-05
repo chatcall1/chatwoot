@@ -338,6 +338,7 @@ Rails.application.routes.draw do
             post :sync_templates, on: :member
             get :product_catalogs, on: :member
             get :whatsapp_flows, on: :member
+            get :authentication_template_preview, on: :member
             put :whatsapp_business_management_token, on: :member
             get :health, on: :member
             post :register_webhook, on: :member

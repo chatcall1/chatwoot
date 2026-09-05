@@ -77,7 +77,7 @@
     },
     "NAME": {
       "LABEL": "اسم القالب",
-      "PLACEHOLDER": "appointment_reminder",
+      "PLACEHOLDER": "weekend_offer",
       "HELPER": "استخدم الأحرف الإنجليزية الصغيرة والأرقام والشرطة السفلية فقط.",
       "ERROR": "يسمح فقط بالأحرف a-z والأرقام والشرطة السفلية."
     },
@@ -96,6 +96,7 @@
       "SELECT_LABEL": "كتالوج Meta التجاري",
       "SELECT_PLACEHOLDER": "اختر كتالوجًا مرتبطًا",
       "FETCH": "جلب الكتالوجات",
+      "EMPTY": "لا يوجد كتالوج مرتبط",
       "CATALOG_BUTTON_HELPER": "تضيف Meta زر عرض الكتالوج الثابت. لا توجد حقول للزر مطلوبة هنا.",
       "PRODUCT_CAROUSEL_HELPER": "تتطلب Meta بطاقتي منتجات بالضبط عند إنشاء القالب. ويمكن اختيار حتى 10 منتجات لاحقًا عند إرسال القالب المعتمد.",
       "BUTTON_TYPE_LABEL": "زر بطاقة المنتج",
@@ -143,10 +144,14 @@
       "TYPE_PLACEHOLDER": "اختر نوع المقدمة",
       "TEXT_LABEL": "نص المقدمة",
       "TEXT_PLACEHOLDER": "أضف مقدمة قصيرة",
+      "ADD_VARIABLE": "إضافة متغير",
+      "EXAMPLE_LABEL": "مثال متغير المقدمة",
+      "EXAMPLE_PLACEHOLDER": "أدخل قيمة واقعية للمتغير 1",
       "MEDIA_LABEL": "رابط الوسائط",
       "MEDIA_PLACEHOLDER": "أضف رابط الوسائط",
       "UPLOAD": "ارفع وسائط المقدمة",
       "UPLOAD_HELPER": "اختر ملف مثال مدعوم لمعاينة القالب.",
+      "MEDIA_ERROR": "اختر ملفًا مدعومًا ضمن الحجم المسموح لنوع المقدمة المحدد.",
       "TYPES": {
         "NONE": "بدون مقدمة",
         "TEXT": "نص",
@@ -155,12 +160,22 @@
         "DOCUMENT": "مستند"
       }
     },
-    "BODY": { "PLACEHOLDER": "اكتب رسالتك..." },
+    "BODY": {
+      "PLACEHOLDER": "اكتب رسالتك...",
+      "CHARACTER_COUNT": "{current} / {max}"
+    },
     "FOOTER": { "LABEL": "نص الخاتمة", "PLACEHOLDER": "أضف خاتمة" },
     "BUTTONS": {
       "TYPE_PLACEHOLDER": "اختر نوع الزر",
       "TEXT_LABEL": "نص الزر",
       "TEXT_PLACEHOLDER": "أضف نص الزر",
+      "ADD": "إضافة زر",
+      "URL_LABEL": "رابط الموقع الإلكتروني",
+      "URL_PLACEHOLDER": "https://example.com",
+      "URL_EXAMPLE_LABEL": "مثال متغير الرابط",
+      "URL_EXAMPLE_PLACEHOLDER": "أدخل القيمة التي تستبدل المتغير 1",
+      "PHONE_LABEL": "رقم الهاتف",
+      "PHONE_PLACEHOLDER": "+966500000000",
       "FLOW_LABEL": "تدفق واتساب المنشور",
       "FLOW_PLACEHOLDER": "اختر تدفقًا منشورًا",
       "FETCH_FLOWS": "جلب التدفقات",
@@ -168,7 +183,65 @@
       "TYPES": {
         "QUICK_REPLY": "رد سريع",
         "URL": "إجراء",
-        "FLOW": "تدفق واتساب"
+        "PHONE_NUMBER": "الاتصال برقم هاتف",
+        "FLOW": "تدفق واتساب",
+        "COPY_CODE": "نسخ الرمز"
+      },
+      "COPY_CODE_LABEL": "مثال الرمز",
+      "COPY_CODE_PLACEHOLDER": "SAVE20"
+    },
+    "MARKETING_API": {
+      "DEEP_LINK": "رابط عميق لتطبيق Android",
+      "DEEP_LINK_HELPER": "يفتح المحتوى داخل تطبيق Android، ويُستخدم رابط الموقع على الأجهزة الأخرى.",
+      "META_APP_ID": "معرّف تطبيق Meta",
+      "ANDROID_DEEP_LINK": "رابط Android العميق",
+      "ANDROID_FALLBACK_URL": "رابط Android الاحتياطي",
+      "GIF_MODE": "استخدامه كصورة GIF متحركة",
+      "GIF_MODE_HELPER": "ارفع ملف MP4 بحجم لا يتجاوز 3.5 ميجابايت. يتطلب هذا التنسيق Marketing Messages API."
+    },
+    "AUTHENTICATION": {
+      "PRESET_HELPER": "تنشئ Meta رسالة التحقق من نص ثابت ومترجم تلقائيًا. لا تدعم قوالب المصادقة الوسائط أو الروابط أو الرموز التعبيرية أو نص رسالة مخصصًا.",
+      "DELIVERY_TYPE": "طريقة تسليم الرمز",
+      "TYPES": {
+        "COPY_CODE": "نسخ الرمز",
+        "COPY_CODE_DESCRIPTION": "السماح للمستخدم بنسخ رمز التحقق.",
+        "ONE_TAP": "ملء بنقرة واحدة",
+        "ONE_TAP_DESCRIPTION": "فتح تطبيق Android وملء الرمز.",
+        "ZERO_TAP": "ملء تلقائي دون نقرة",
+        "ZERO_TAP_DESCRIPTION": "تسليم الرمز إلى تطبيق Android تلقائيًا."
+      },
+      "SECURITY": "توصية الأمان",
+      "SECURITY_HELPER": "إضافة تحذير Meta المترجم بعدم مشاركة الرمز.",
+      "EXPIRATION": "إظهار انتهاء صلاحية الرمز",
+      "EXPIRATION_MINUTES": "مدة الصلاحية بالدقائق (1–90)",
+      "TTL": "تخصيص مهلة محاولة التسليم",
+      "TTL_SECONDS": "مهلة التسليم بالثواني (30–900)",
+      "COPY_TEXT": "نص نسخ الرمز الاحتياطي (اختياري)",
+      "AUTOFILL_TEXT": "نص الملء التلقائي (اختياري)",
+      "LOCALIZED_DEFAULT": "استخدام النص الافتراضي المترجم من Meta",
+      "APPS": "تطبيقات Android المدعومة",
+      "APPS_HELPER": "يتطلب الملء بنقرة واحدة والملء دون نقرة اسم حزمة Android وبصمة مفتاح توقيع من 11 حرفًا.",
+      "ADD_APP": "إضافة تطبيق",
+      "REMOVE_APP": "إزالة التطبيق",
+      "PACKAGE_NAME": "اسم حزمة Android",
+      "SIGNATURE_HASH": "بصمة مفتاح توقيع التطبيق",
+      "ZERO_TAP_TERMS": "أوافق على شروط Zero-tap وأؤكد أن العملاء يتوقعون تعبئة رمز التحقق تلقائيًا.",
+      "PREVIEW": {
+        "ARABIC": {
+          "BODY": "هو رمز التحقق الخاص بك.",
+          "SECURITY": "حرصًا على أمانك، لا تشارك هذا الرمز.",
+          "EXPIRATION": "تنتهي صلاحية هذا الرمز خلال {minutes} دقيقة.",
+          "COPY": "نسخ الرمز",
+          "AUTOFILL": "ملء تلقائي"
+        },
+        "ENGLISH": {
+          "BODY": "is your verification code.",
+          "SECURITY": "For your security, do not share this code.",
+          "EXPIRATION": "This code expires in {minutes} minutes.",
+          "COPY": "Copy code",
+          "AUTOFILL": "Autofill"
+        },
+        "CODE": "123456"
       }
     },
     "CAROUSEL": {
@@ -220,6 +293,7 @@
     "SAVE_DRAFT": "حفظ المسودة",
     "SUBMIT": "إرسال القالب",
     "SUBMIT_SUCCESS": "تم إرسال القالب إلى واتساب للمراجعة.",
+    "MEDIA_STORAGE_WARNING": "قبلت Meta القالب، لكن تعذر حفظ وسائطه محليًا. لا ترسل القالب مرة أخرى، واطلب من المسؤول فحص التخزين.",
     "SUBMIT_ERROR": "تعذر إرسال القالب إلى واتساب. تحقق من الحقول وحاول مرة أخرى.",
     "PREVIEW": {
       "TITLE": "معاينة مباشرة",

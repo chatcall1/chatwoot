@@ -17,7 +17,7 @@ class Whatsapp::PopulateTemplateParametersService
     when 'copy_code'
       coupon_code = button['parameter'].to_s.strip
       raise ArgumentError, 'Coupon code cannot be empty' if coupon_code.blank?
-      raise ArgumentError, 'Coupon code cannot exceed 15 characters' if coupon_code.length > 15
+      raise ArgumentError, 'Coupon code cannot exceed 20 characters' if coupon_code.length > 20
 
       {
         type: 'coupon_code',
@@ -94,7 +94,7 @@ class Whatsapp::PopulateTemplateParametersService
     case media_type
     when 'image'
       build_image_parameter(sanitized_url)
-    when 'video'
+    when 'video', 'gif'
       build_video_parameter(sanitized_url)
     when 'document'
       build_document_parameter(sanitized_url, media_name)
