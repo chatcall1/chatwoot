@@ -1,229 +1,83 @@
 <script setup>
-import { computed, nextTick, ref } from 'vue';
+import { computed, ref } from 'vue';
 import { Background } from '@vue-flow/background';
 import { Controls } from '@vue-flow/controls';
-import {
-  ConnectionMode,
-  MarkerType,
-  VueFlow,
-  useVueFlow,
-} from '@vue-flow/core';
+import { ConnectionMode, VueFlow } from '@vue-flow/core';
 import FlowEdge from '../components/edges/FlowEdge.vue';
 import InteractiveButtonNode from '../components/nodes/InteractiveButtonNode.vue';
 import InteractiveListNode from '../components/nodes/InteractiveListNode.vue';
 import InteractiveNode from '../components/nodes/InteractiveNode.vue';
 import MessageNode from '../components/nodes/MessageNode.vue';
 import TriggerNode from '../components/nodes/TriggerNode.vue';
+import ConditionNode from '../components/nodes/ConditionNode.vue';
+import MetaMessageNode from '../components/nodes/MetaMessageNode.vue';
 import NodeSettingsPanel from '../components/NodeSettingsPanel.vue';
+import ExecutionHistoryDialog from '../components/ExecutionHistoryDialog.vue';
+import ConnectionNodeMenu from '../components/ConnectionNodeMenu.vue';
 import PlatformBadge from '../components/PlatformBadge.vue';
 import InlineInput from 'dashboard/components-next/inline-input/InlineInput.vue';
 import { ACTION_NODE_OPTIONS, NODE_TYPES } from '../domain/constants';
-import {
-  createActionNode,
-  createInteractiveChildNode,
-} from '../domain/flowFactory';
-import { flowRepository } from '../repositories/flowRepository';
-import { generateId } from '../utils/id';
-import { cloneJson } from '../utils/json';
+import { useFlowEditor } from '../composables/useFlowEditor';
 
 const props = defineProps({ flow: { type: Object, required: true } });
 const emit = defineEmits(['close']);
 
-const draft = ref(cloneJson(props.flow));
-const nodes = ref(draft.value.graph.nodes);
-const edges = ref(draft.value.graph.edges);
-const selectedNodeId = ref(null);
-const settingsNodeId = ref(null);
-const saveState = ref('saved');
-const connectionOrigin = ref(null);
-const connectionCompleted = ref(false);
-const { fitView, screenToFlowCoordinate } = useVueFlow();
-
-const selectedNode = computed(() =>
-  nodes.value.find(node => node.id === selectedNodeId.value)
-);
-const settingsNode = computed(() =>
-  nodes.value.find(node => node.id === settingsNodeId.value)
-);
+const {
+  draft,
+  nodes,
+  edges,
+  selectedNode,
+  settingsNode,
+  settingsNodeId,
+  saveState,
+  publishState,
+  errorMessage,
+  edgeDefaults,
+  connectionMenu,
+  addNode,
+  addDroppedNode,
+  addConnectedNode,
+  closeConnectionMenu,
+  connect,
+  startConnection,
+  endConnection,
+  selectNode,
+  configureNode,
+  clearSelection,
+  updateSelectedNode,
+  duplicateSelected,
+  duplicateNode,
+  deleteSelected,
+  deleteNode,
+  deleteEdge,
+  markDirty,
+  save,
+  publish,
+  unpublish,
+  close,
+  fitCanvas,
+} = useFlowEditor(props.flow, emit);
+const showExecutionHistory = ref(false);
 const availableNodeOptions = computed(() =>
   ACTION_NODE_OPTIONS.filter(
     option =>
       !option.platform || draft.value.platforms.includes(option.platform)
   )
 );
-
-const edgeDefaults = {
-  type: 'flow',
-  markerEnd: MarkerType.ArrowClosed,
+const dragMime = 'application/x-flow-node';
+const startNodeDrag = (event, type) => {
+  event.dataTransfer.setData(dragMime, type);
+  event.dataTransfer.effectAllowed = 'copy';
 };
+const dropNode = event => {
+  const type = event.dataTransfer.getData(dragMime);
+  if (!availableNodeOptions.value.some(option => option.type === type)) return;
 
-const addNode = type => {
-  const node = createActionNode(type, nodes.value.length);
-  node.position = screenToFlowCoordinate({
-    x: window.innerWidth / 2,
-    y: window.innerHeight / 2,
-  });
-  nodes.value.push(node);
-  selectedNodeId.value = node.id;
-  settingsNodeId.value = null;
-  saveState.value = 'dirty';
+  addDroppedNode(type, { x: event.clientX, y: event.clientY });
 };
-
-const connect = connection => {
-  const sourceNode = nodes.value.find(node => node.id === connection.source);
-  if (
-    sourceNode?.type === NODE_TYPES.INTERACTIVE &&
-    ['buttons', 'list'].includes(connection.sourceHandle)
-  ) {
-    return;
-  }
-  if (
-    sourceNode?.type === NODE_TYPES.INTERACTIVE &&
-    connection.sourceHandle === 'next' &&
-    edges.value.some(
-      edge => edge.source === connection.source && edge.sourceHandle === 'next'
-    )
-  ) {
-    return;
-  }
-  const duplicate = edges.value.some(
-    edge =>
-      edge.source === connection.source && edge.target === connection.target
-  );
-  if (duplicate || connection.source === connection.target) return;
-  connectionCompleted.value = true;
-  edges.value.push({
-    ...connection,
-    ...edgeDefaults,
-    id: `edge-${generateId()}`,
-  });
-  saveState.value = 'dirty';
-};
-
-const startConnection = params => {
-  connectionOrigin.value = params;
-  connectionCompleted.value = false;
-};
-
-const connectionEndPosition = event => {
-  const point = event?.changedTouches?.[0] || event;
-  if (!point || typeof point.clientX !== 'number') return null;
-  return screenToFlowCoordinate({ x: point.clientX, y: point.clientY });
-};
-
-const endConnection = event => {
-  const origin = connectionOrigin.value;
-  connectionOrigin.value = null;
-  if (connectionCompleted.value || !origin?.nodeId) return;
-
-  const parent = nodes.value.find(node => node.id === origin.nodeId);
-  if (parent?.type !== NODE_TYPES.INTERACTIVE) return;
-
-  const position = connectionEndPosition(event);
-  if (!position) return;
-
-  const childEdges = edges.value.filter(
-    edge => edge.source === parent.id && edge.sourceHandle === origin.handleId
-  );
-
-  let childType;
-  if (origin.handleId === 'buttons' && childEdges.length < 3) {
-    childType = NODE_TYPES.INTERACTIVE_BUTTON;
-  } else if (origin.handleId === 'list' && childEdges.length === 0) {
-    childType = NODE_TYPES.INTERACTIVE_LIST;
-  } else {
-    return;
-  }
-
-  const child = createInteractiveChildNode(
-    childType,
-    position,
-    childEdges.length
-  );
-  nodes.value.push(child);
-  edges.value.push({
-    id: `edge-${generateId()}`,
-    source: parent.id,
-    sourceHandle: origin.handleId,
-    target: child.id,
-    targetHandle: null,
-    ...edgeDefaults,
-  });
-  selectedNodeId.value = child.id;
-  saveState.value = 'dirty';
-};
-
-const selectNode = event => {
-  selectedNodeId.value = event.node.id;
-};
-
-const configureNode = event => {
-  selectedNodeId.value = event.node.id;
-  settingsNodeId.value = event.node.id;
-};
-
-const updateSelectedNode = data => {
-  const node = settingsNode.value;
-  if (!node) return;
-  node.data = data;
-  saveState.value = 'dirty';
-};
-
-const duplicateSelected = () => {
-  const node = selectedNode.value;
-  if (!node || node.type === NODE_TYPES.TRIGGER) return;
-  const copy = cloneJson(node);
-  copy.id = generateId();
-  copy.position = { x: node.position.x + 40, y: node.position.y + 40 };
-  copy.selected = false;
-  nodes.value.push(copy);
-  selectedNodeId.value = copy.id;
-  saveState.value = 'dirty';
-};
-
-const deleteSelected = () => {
-  const node = selectedNode.value;
-  if (!node || node.type === NODE_TYPES.TRIGGER) return;
-  const dependentIds = new Set();
-  if (node.type === NODE_TYPES.INTERACTIVE) {
-    edges.value.forEach(edge => {
-      if (
-        edge.source === node.id &&
-        ['buttons', 'list'].includes(edge.sourceHandle)
-      ) {
-        dependentIds.add(edge.target);
-      }
-    });
-  }
-  dependentIds.add(node.id);
-  nodes.value = nodes.value.filter(item => !dependentIds.has(item.id));
-  edges.value = edges.value.filter(
-    edge => !dependentIds.has(edge.source) && !dependentIds.has(edge.target)
-  );
-  selectedNodeId.value = null;
-  settingsNodeId.value = null;
-  saveState.value = 'dirty';
-};
-
-const save = () => {
-  draft.value.graph = {
-    nodes: nodes.value.map(
-      ({ dimensions, selected, dragging, ...node }) => node
-    ),
-    edges: edges.value.map(({ selected, ...edge }) => edge),
-  };
-  draft.value = flowRepository.save(draft.value);
-  saveState.value = 'saved';
-};
-
-const close = () => {
-  if (saveState.value === 'dirty') save();
-  emit('close');
-};
-
-const fitCanvas = async () => {
-  await nextTick();
-  fitView({ padding: 0.25, duration: 300 });
+const clearCanvasSelection = () => {
+  clearSelection();
+  closeConnectionMenu();
 };
 </script>
 
@@ -247,7 +101,7 @@ const fitCanvas = async () => {
             v-model="draft.name"
             custom-input-class="truncate font-medium"
             maxlength="80"
-            @input="saveState = 'dirty'"
+            @input="markDirty"
           />
           <p class="font-mono text-[10px] text-n-slate-9">
             {{ draft.reference }}
@@ -284,12 +138,46 @@ const fitCanvas = async () => {
           <span class="i-lucide-save size-4" />
           {{ $t('FLOW_BUILDER.EDITOR.SAVE') }}
         </button>
+        <button class="flow-btn" type="button" @click="publish">
+          <span class="i-lucide-send size-4" />
+          {{
+            publishState === 'published'
+              ? $t('FLOW_BUILDER.EDITOR.REPUBLISH')
+              : $t('FLOW_BUILDER.EDITOR.PUBLISH')
+          }}
+        </button>
+        <button
+          v-if="publishState === 'published'"
+          class="flow-btn"
+          type="button"
+          draggable="true"
+          @click="unpublish"
+        >
+          <span class="i-lucide-circle-pause size-4" />
+          {{ $t('FLOW_BUILDER.EDITOR.DISABLE') }}
+        </button>
+        <button
+          class="flow-icon-btn"
+          type="button"
+          :disabled="!draft.id"
+          :aria-label="$t('FLOW_BUILDER.EDITOR.EXECUTIONS')"
+          @click="showExecutionHistory = true"
+        >
+          <span class="i-lucide-history size-4" />
+        </button>
       </div>
     </header>
 
-    <div class="flex min-h-0 flex-1">
+    <div
+      v-if="errorMessage"
+      class="border-b border-red-900 bg-red-950/40 px-4 py-2 text-sm text-red-300"
+    >
+      {{ errorMessage }}
+    </div>
+
+    <div class="relative flex min-h-0 flex-1">
       <aside
-        class="flex w-20 shrink-0 flex-col items-center border-l border-n-weak bg-n-background py-4 lg:w-56 lg:items-stretch lg:px-3"
+        class="absolute bottom-3 left-3 top-3 z-20 flex w-16 flex-col items-center overflow-y-auto rounded-xl border border-n-weak bg-n-background/95 px-2 py-3 shadow-xl backdrop-blur lg:w-48 lg:items-stretch"
       >
         <p
           class="mb-3 hidden px-2 text-[10px] font-semibold uppercase tracking-wider text-n-slate-9 lg:block"
@@ -300,8 +188,10 @@ const fitCanvas = async () => {
           v-for="option in availableNodeOptions"
           :key="option.type"
           type="button"
+          draggable="true"
           class="mb-2 flex items-center justify-center gap-3 rounded-xl p-3 text-n-slate-11 transition hover:bg-n-alpha-2 hover:text-n-slate-12 lg:justify-start"
           :title="option.label"
+          @dragstart="startNodeDrag($event, option.type)"
           @click="addNode(option.type)"
         >
           <span class="size-5 shrink-0" :class="[option.icon]" />
@@ -336,7 +226,12 @@ const fitCanvas = async () => {
         </div>
       </aside>
 
-      <section class="relative min-w-0 flex-1 bg-black" dir="ltr">
+      <section
+        class="relative min-w-0 flex-1 bg-black"
+        dir="ltr"
+        @dragover.prevent
+        @drop.prevent="dropNode"
+      >
         <VueFlow
           v-model:nodes="nodes"
           v-model:edges="edges"
@@ -352,43 +247,151 @@ const fitCanvas = async () => {
           @connect-end="endConnection"
           @node-click="selectNode"
           @node-double-click="configureNode"
-          @pane-click="
-            selectedNodeId = null;
-            settingsNodeId = null;
-          "
-          @node-drag-stop="saveState = 'dirty'"
+          @pane-click="clearCanvasSelection"
+          @node-drag-stop="markDirty"
         >
           <Background pattern-color="#27272a" :gap="24" :size="1" />
-          <Controls position="bottom-left" />
+          <Controls position="bottom-right" />
           <template #node-trigger="nodeProps">
             <TriggerNode v-bind="nodeProps" />
           </template>
           <template #node-text="nodeProps">
-            <MessageNode v-bind="nodeProps" node-type="text" />
+            <MessageNode
+              v-bind="nodeProps"
+              node-type="text"
+              @duplicate="duplicateNode(nodeProps.id)"
+              @delete="deleteNode(nodeProps.id)"
+            />
           </template>
           <template #node-image="nodeProps">
-            <MessageNode v-bind="nodeProps" node-type="image" />
+            <MessageNode
+              v-bind="nodeProps"
+              node-type="image"
+              @duplicate="duplicateNode(nodeProps.id)"
+              @delete="deleteNode(nodeProps.id)"
+            />
           </template>
           <template #node-video="nodeProps">
-            <MessageNode v-bind="nodeProps" node-type="video" />
+            <MessageNode
+              v-bind="nodeProps"
+              node-type="video"
+              @duplicate="duplicateNode(nodeProps.id)"
+              @delete="deleteNode(nodeProps.id)"
+            />
           </template>
           <template #node-document="nodeProps">
-            <MessageNode v-bind="nodeProps" node-type="document" />
+            <MessageNode
+              v-bind="nodeProps"
+              node-type="document"
+              @duplicate="duplicateNode(nodeProps.id)"
+              @delete="deleteNode(nodeProps.id)"
+            />
+          </template>
+          <template #node-audio="nodeProps">
+            <MessageNode
+              v-bind="nodeProps"
+              node-type="audio"
+              @duplicate="duplicateNode(nodeProps.id)"
+              @delete="deleteNode(nodeProps.id)"
+            />
           </template>
           <template #node-interactive="nodeProps">
-            <InteractiveNode v-bind="nodeProps" />
+            <InteractiveNode
+              v-bind="nodeProps"
+              @duplicate="duplicateNode(nodeProps.id)"
+              @delete="deleteNode(nodeProps.id)"
+            />
           </template>
           <template #node-interactive_button="nodeProps">
-            <InteractiveButtonNode v-bind="nodeProps" />
+            <InteractiveButtonNode
+              v-bind="nodeProps"
+              @duplicate="duplicateNode(nodeProps.id)"
+              @delete="deleteNode(nodeProps.id)"
+            />
           </template>
           <template #node-interactive_list="nodeProps">
-            <InteractiveListNode v-bind="nodeProps" />
+            <InteractiveListNode
+              v-bind="nodeProps"
+              @duplicate="duplicateNode(nodeProps.id)"
+              @delete="deleteNode(nodeProps.id)"
+            />
+          </template>
+          <template #node-condition="nodeProps">
+            <ConditionNode
+              v-bind="nodeProps"
+              @duplicate="duplicateNode(nodeProps.id)"
+              @delete="deleteNode(nodeProps.id)"
+            />
+          </template>
+          <template #node-location="nodeProps">
+            <MetaMessageNode
+              v-bind="nodeProps"
+              node-type="location"
+              @duplicate="duplicateNode(nodeProps.id)"
+              @delete="deleteNode(nodeProps.id)"
+            />
+          </template>
+          <template #node-location_request="nodeProps">
+            <MetaMessageNode
+              v-bind="nodeProps"
+              node-type="location_request"
+              @duplicate="duplicateNode(nodeProps.id)"
+              @delete="deleteNode(nodeProps.id)"
+            />
+          </template>
+          <template #node-contact="nodeProps">
+            <MetaMessageNode
+              v-bind="nodeProps"
+              node-type="contact"
+              @duplicate="duplicateNode(nodeProps.id)"
+              @delete="deleteNode(nodeProps.id)"
+            />
+          </template>
+          <template #node-sticker="nodeProps">
+            <MetaMessageNode
+              v-bind="nodeProps"
+              node-type="sticker"
+              @duplicate="duplicateNode(nodeProps.id)"
+              @delete="deleteNode(nodeProps.id)"
+            />
+          </template>
+          <template #node-reaction="nodeProps">
+            <MetaMessageNode
+              v-bind="nodeProps"
+              node-type="reaction"
+              @duplicate="duplicateNode(nodeProps.id)"
+              @delete="deleteNode(nodeProps.id)"
+            />
+          </template>
+          <template #node-cta_url="nodeProps">
+            <MetaMessageNode
+              v-bind="nodeProps"
+              node-type="cta_url"
+              @duplicate="duplicateNode(nodeProps.id)"
+              @delete="deleteNode(nodeProps.id)"
+            />
+          </template>
+          <template #node-carousel="nodeProps">
+            <MetaMessageNode
+              v-bind="nodeProps"
+              node-type="carousel"
+              @duplicate="duplicateNode(nodeProps.id)"
+              @delete="deleteNode(nodeProps.id)"
+            />
           </template>
           <template #edge-flow="edgeProps">
-            <FlowEdge v-bind="edgeProps" />
+            <FlowEdge v-bind="edgeProps" @delete="deleteEdge" />
           </template>
         </VueFlow>
       </section>
+
+      <ConnectionNodeMenu
+        v-if="connectionMenu"
+        :menu="connectionMenu"
+        :options="availableNodeOptions"
+        @select="addConnectedNode"
+        @close="closeConnectionMenu"
+      />
 
       <NodeSettingsPanel
         :node="settingsNode"
@@ -396,5 +399,12 @@ const fitCanvas = async () => {
         @close="settingsNodeId = null"
       />
     </div>
+
+    <ExecutionHistoryDialog
+      v-if="draft.id"
+      :open="showExecutionHistory"
+      :flow-id="draft.id"
+      @close="showExecutionHistory = false"
+    />
   </div>
 </template>

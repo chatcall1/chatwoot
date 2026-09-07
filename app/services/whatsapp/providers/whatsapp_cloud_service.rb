@@ -2,7 +2,9 @@ class Whatsapp::Providers::WhatsappCloudService < Whatsapp::Providers::BaseServi
   def send_message(phone_number, message)
     @message = message
 
-    if message.attachments.present?
+    if message.content_attributes['bot_flow_whatsapp_node'].present?
+      send_bot_flow_message(phone_number, message)
+    elsif message.attachments.present?
       send_attachment_message(phone_number, message)
     elsif message.content_type == 'input_select'
       send_interactive_text_message(phone_number, message)
@@ -10,6 +12,10 @@ class Whatsapp::Providers::WhatsappCloudService < Whatsapp::Providers::BaseServi
       send_text_message(phone_number, message)
     end
   end
+
+  def send_bot_flow_message(phone_number, message) = perform_bot_flow_request(message, "#{phone_id_path}/messages", bot_flow_recipient(phone_number))
+
+  def bot_flow_recipient(phone_number) = { messaging_product: 'whatsapp', **recipient_params(phone_number) }
 
   def send_template(phone_number, template_info, message)
     template_body = template_body_parameters(template_info)

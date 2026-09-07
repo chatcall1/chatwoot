@@ -1,60 +1,66 @@
-import { generateId } from '../utils/id';
+import BotFlowsAPI from 'dashboard/api/botFlows';
 import { cloneJson } from '../utils/json';
 
-const accountId = () =>
-  window.location.pathname.match(/\/accounts\/(\d+)/)?.[1] || 'unknown';
-const storageKey = () => `chatwoot.flow-builder.v1.account.${accountId()}`;
-
-const read = () => {
-  try {
-    const value = JSON.parse(localStorage.getItem(storageKey()) || '[]');
-    return Array.isArray(value) ? value : [];
-  } catch {
-    return [];
-  }
-};
-
-const write = flows =>
-  localStorage.setItem(storageKey(), JSON.stringify(flows));
+const payloadFor = flow => ({
+  bot_flow: {
+    name: flow.name,
+    inbox_id: flow.inboxIds[0],
+    lock_version: flow.lockVersion,
+    draft_definition: cloneJson(flow.graph),
+  },
+});
 
 export const flowRepository = {
-  list() {
-    return read().sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  async list() {
+    const { data } = await BotFlowsAPI.get();
+    return data;
   },
 
-  save(flow) {
-    const flows = read();
-    const index = flows.findIndex(item => item.id === flow.id);
-    const record = cloneJson({
-      ...flow,
-      updatedAt: new Date().toISOString(),
-    });
-    if (index === -1) flows.push(record);
-    else flows[index] = record;
-    write(flows);
-    return record;
+  async save(flow) {
+    const response = flow.id
+      ? await BotFlowsAPI.update(flow.id, payloadFor(flow))
+      : await BotFlowsAPI.create(payloadFor(flow));
+    return response.data;
   },
 
-  remove(id) {
-    write(read().filter(flow => flow.id !== id));
+  async remove(id) {
+    await BotFlowsAPI.delete(id);
   },
 
-  import(rawFlow) {
-    const requiredKeys = ['id', 'reference', 'name', 'platforms', 'graph'];
-    if (!rawFlow || requiredKeys.some(key => !(key in rawFlow))) {
+  async import(rawFlow) {
+    if (
+      !rawFlow?.name ||
+      !Array.isArray(rawFlow.inboxIds) ||
+      !Array.isArray(rawFlow.graph?.nodes) ||
+      !Array.isArray(rawFlow.graph?.edges)
+    ) {
       throw new Error('ملف JSON لا يحتوي على بنية بوت صالحة.');
     }
-    if (
-      !Array.isArray(rawFlow.graph.nodes) ||
-      !Array.isArray(rawFlow.graph.edges)
-    ) {
-      throw new Error('بيانات العقد والروابط غير صالحة.');
-    }
-    const imported = cloneJson(rawFlow);
-    imported.id = generateId();
-    imported.reference = `BOT-${generateId().slice(0, 8).toUpperCase()}`;
-    imported.status = 'draft';
-    imported.createdAt = new Date().toISOString();
-    return this.save(imported);
+
+    return this.save({
+      ...cloneJson(rawFlow),
+      id: null,
+      reference: null,
+      status: 'draft',
+    });
+  },
+
+  async publish(id) {
+    const { data } = await BotFlowsAPI.publish(id);
+    return data;
+  },
+
+  async unpublish(id) {
+    const { data } = await BotFlowsAPI.unpublish(id);
+    return data;
+  },
+
+  async executions(id) {
+    const { data } = await BotFlowsAPI.executions(id);
+    return data;
+  },
+
+  async retryDelivery(id, deliveryId) {
+    await BotFlowsAPI.retryDelivery(id, deliveryId);
   },
 };

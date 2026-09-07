@@ -41,6 +41,12 @@ class Whatsapp::Providers::BaseService
     end
   end
 
+  def perform_bot_flow_request(message, url, recipient)
+    payload = BotFlows::WhatsappPayloadBuilder.new(message).call
+    response = HTTParty.post(url, headers: api_headers, body: payload.merge(**recipient).to_json)
+    process_response(response, message)
+  end
+
   def handle_error(response, message)
     Rails.logger.error response.body
     return if message.blank?
@@ -81,6 +87,8 @@ class Whatsapp::Providers::BaseService
     rows = []
     items.each do |item|
       row = { 'id' => item['value'], 'title' => item['title'] }
+      description = @interactive_details&.dig('descriptions', item['value'])
+      row['description'] = description if description.present?
       rows << row
     end
     rows
@@ -97,7 +105,9 @@ class Whatsapp::Providers::BaseService
   end
 
   def create_payload_based_on_items(message)
-    if message.content_attributes['items'].length <= 3
+    @interactive_details = message.content_attributes['bot_flow_interactive'].to_h
+    explicit_type = message.content_attributes['bot_flow_interactive_type']
+    if explicit_type == 'buttons' || (explicit_type.blank? && message.content_attributes['items'].length <= 3)
       create_button_payload(message)
     else
       create_list_payload(message)
@@ -107,15 +117,45 @@ class Whatsapp::Providers::BaseService
   def create_button_payload(message)
     buttons = create_buttons(message.content_attributes['items'])
     json_hash = { 'buttons' => buttons }
-    create_payload('button', message.outgoing_content, JSON.generate(json_hash))
+    decorate_interactive_payload(create_payload('button', message.outgoing_content, JSON.generate(json_hash)))
   end
 
   def create_list_payload(message)
-    rows = create_rows(message.content_attributes['items'])
-    section1 = { 'rows' => rows }
-    sections = [section1]
-    json_hash = { :button => I18n.t('conversations.messages.whatsapp.list_button_label'), 'sections' => sections }
-    create_payload('list', message.outgoing_content, JSON.generate(json_hash))
+    sections = create_list_sections(message.content_attributes['items'])
+    button_text = @interactive_details['button_text'].presence || I18n.t('conversations.messages.whatsapp.list_button_label')
+    json_hash = { :button => button_text, 'sections' => sections }
+    decorate_interactive_payload(create_payload('list', message.outgoing_content, JSON.generate(json_hash)))
+  end
+
+  def create_list_sections(items)
+    configured = @interactive_details['sections']
+    return [{ 'rows' => create_rows(items) }] if configured.blank?
+
+    configured.map do |section|
+      section_items = items.select { |item| section['row_ids'].include?(item['value']) }
+      { 'title' => section['title'], 'rows' => create_rows(section_items) }
+    end
+  end
+
+  def decorate_interactive_payload(payload)
+    header_type = @interactive_details['header_type']
+    if header_type == 'text' && @interactive_details['header_text'].present?
+      payload[:header] = { type: 'text', text: @interactive_details['header_text'] }
+    elsif %w[image video document].include?(header_type) && interactive_header_url.present?
+      media = { link: interactive_header_url }
+      media[:filename] = @interactive_details['header_filename'] if header_type == 'document'
+      payload[:header] = { 'type' => header_type, header_type => media }
+    end
+    payload[:footer] = { text: @interactive_details['footer'] } if @interactive_details['footer'].present?
+    payload
+  end
+
+  def interactive_header_url
+    signed_id = @interactive_details['header_blob_signed_id']
+    return if signed_id.blank?
+
+    ActiveStorage::Current.url_options = Rails.application.routes.default_url_options if ActiveStorage::Current.url_options.blank?
+    ActiveStorage::Blob.find_signed(signed_id)&.url
   end
 end
 

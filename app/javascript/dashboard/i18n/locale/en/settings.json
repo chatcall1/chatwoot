@@ -1099,6 +1099,7 @@
       "REFERENCE": "Unique ID",
       "NAME": "Bot name",
       "CHANNELS": "Channels",
+      "STATUS": "Status",
       "UPDATED": "Last updated",
       "ACTIONS": "Actions"
     },
@@ -1112,29 +1113,63 @@
       "CANCEL": "Cancel",
       "CLOSE": "Close",
       "CREATE_TITLE": "Create a new bot",
-      "CREATE_DESCRIPTION": "Select the real inboxes where this bot will operate.",
+      "CREATE_DESCRIPTION": "Select a channel.",
       "CREATE_CONFIRM": "Create and open editor",
       "NAME": "Bot name",
       "NAME_PLACEHOLDER": "e.g. Customer support bot",
       "INBOXES": "Bot inboxes",
       "NO_INBOXES": "This account has no WhatsApp, Instagram, or Messenger inboxes.",
+      "TEMPLATES": "Choose a ready-made template",
+      "REPLACE_WELCOME_WARNING": "This channel already has a welcome message. The selected template will replace its current draft; the published version will remain unchanged until you publish the edits.",
       "TRIGGER_TYPE": "Starting trigger",
       "DELETE_TITLE": "Delete bot?",
-      "DELETE_DESCRIPTION": "“{name}” will be permanently removed from this browser.",
+      "DELETE_DESCRIPTION": "“{name}” will be permanently removed from this account.",
       "DELETE_CONFIRM": "Delete bot"
+    },
+    "TEMPLATES": {
+      "welcome_buttons": {
+        "TITLE": "Welcome with buttons",
+        "DESCRIPTION": "A welcome message with an image and three completed button branches."
+      },
+      "welcome_list": {
+        "TITLE": "Welcome list",
+        "DESCRIPTION": "A welcome list with a text header and eight completed choices."
+      },
+      "exact_hours": {
+        "TITLE": "Business hours",
+        "DESCRIPTION": "Replies to exact matches for working hours."
+      },
+      "exact_prices": {
+        "TITLE": "Prices and plans",
+        "DESCRIPTION": "Replies to exact price and plan enquiries."
+      },
+      "exact_order": {
+        "TITLE": "Order tracking",
+        "DESCRIPTION": "Requests an order number for matching tracking enquiries."
+      },
+      "exact_support": {
+        "TITLE": "Support request",
+        "DESCRIPTION": "Handles exact matches for support enquiries."
+      }
     },
     "EDITOR": {
       "BACK": "Back to bots",
-      "SAVED": "Saved locally",
+      "SAVED": "Saved",
       "UNSAVED": "Unsaved changes",
+      "DRAFT_SAVED_ON_EXIT": "Changes were saved as a draft before leaving.",
       "FIT": "Fit view",
       "SAVE": "Save",
+      "PUBLISH": "Publish",
+      "REPUBLISH": "Publish changes",
+      "DISABLE": "Disable",
+      "EXECUTIONS": "Execution history",
       "MESSAGE_NODES": "Message nodes",
       "DUPLICATE_NODE": "Duplicate node",
       "DELETE_NODE": "Delete node"
     },
     "SETTINGS": {
       "TITLE": "Node settings",
+      "DONE": "Done",
       "CLOSE": "Close settings",
       "TRIGGER_NAME": "Trigger name",
       "TRIGGER_TYPE": "Trigger type",
@@ -1145,7 +1180,12 @@
       "CONTENT": "Message content",
       "MEDIA_URL": "Public HTTPS file URL",
       "FILE_NAME": "File name",
-      "CAPTION": "Optional caption"
+      "CAPTION": "Optional caption",
+      "MEDIA_FILE": "Media file",
+      "SELECT_FILE": "Select a file",
+      "MAX_FILE_SIZE": "Maximum size: {size}",
+      "REMOVE_FILE": "Remove file",
+      "VOICE_MESSAGE": "Send as a voice message"
     },
     "NODE": {
       "TRIGGER": "Trigger",

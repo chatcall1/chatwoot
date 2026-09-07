@@ -65,6 +65,7 @@ const handleChange = () => {
     <div class="flex flex-col gap-2 items-start">
       <div class="flex items-center justify-between w-full gap-3">
         <div class="flex items-center gap-2">
+          <slot name="icon" />
           <h3 class="text-heading-3 text-n-slate-12">
             {{ label }}
           </h3>

@@ -1,13 +1,19 @@
 class Whatsapp::Providers::Whatsapp360DialogService < Whatsapp::Providers::BaseService
   def send_message(phone_number, message)
     @message = message
-    if message.attachments.present?
+    if message.content_attributes['bot_flow_whatsapp_node'].present?
+      send_bot_flow_message(phone_number, message)
+    elsif message.attachments.present?
       send_attachment_message(phone_number, message)
     elsif message.content_type == 'input_select'
       send_interactive_text_message(phone_number, message)
     else
       send_text_message(phone_number, message)
     end
+  end
+
+  def send_bot_flow_message(phone_number, message)
+    perform_bot_flow_request(message, "#{api_base_path}/messages", to: phone_number)
   end
 
   def send_template(phone_number, template_info, message)

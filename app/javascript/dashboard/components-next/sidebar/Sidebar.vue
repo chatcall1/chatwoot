@@ -623,7 +623,7 @@ const menuItems = computed(() => {
           {
             name: 'Flows',
             label: t('SIDEBAR.FLOWS'),
-            icon: 'i-lucide-workflow',
+            icon: 'i-lucide-git-branch-plus',
             to: accountScopedRoute('flows_index'),
             activeOn: ['flows_index'],
           },

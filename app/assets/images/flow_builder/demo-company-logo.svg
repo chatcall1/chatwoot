@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="320" viewBox="0 0 640 320">
+  <rect width="640" height="320" rx="36" fill="#172033"/>
+  <circle cx="150" cy="160" r="82" fill="#2F80ED"/>
+  <path d="M105 188 150 94l45 94h-29l-16-35-16 35z" fill="#fff"/>
+  <text x="260" y="148" fill="#fff" font-family="Arial, sans-serif" font-size="52" font-weight="700">AFAQ</text>
+  <text x="260" y="198" fill="#B8C4D9" font-family="Arial, sans-serif" font-size="25">Business Services</text>
+</svg>

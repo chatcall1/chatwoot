@@ -1112,29 +1112,63 @@
       "CANCEL": "إلغاء",
       "CLOSE": "إغلاق",
       "CREATE_TITLE": "إنشاء بوت جديد",
-      "CREATE_DESCRIPTION": "اختر قنوات Chatwoot الفعلية التي سيعمل عليها البوت.",
+      "CREATE_DESCRIPTION": "اختر القناة.",
       "CREATE_CONFIRM": "إنشاء وفتح المحرر",
       "NAME": "اسم البوت",
       "NAME_PLACEHOLDER": "مثال: بوت دعم العملاء",
       "INBOXES": "قنوات البوت",
       "NO_INBOXES": "لا توجد قنوات واتساب أو إنستغرام أو ماسنجر في هذا الحساب.",
+      "TEMPLATES": "اختر قالبًا جاهزًا",
+      "REPLACE_WELCOME_WARNING": "توجد رسالة ترحيب لهذه القناة. سيستبدل القالب المختار مسودتها الحالية، ولن تتغير النسخة المنشورة حتى تنشر التعديلات.",
       "TRIGGER_TYPE": "نوع نقطة البداية",
       "DELETE_TITLE": "حذف البوت؟",
-      "DELETE_DESCRIPTION": "سيُحذف «{name}» نهائيًا من هذا المتصفح.",
+      "DELETE_DESCRIPTION": "سيُحذف «{name}» نهائيًا من هذا الحساب.",
       "DELETE_CONFIRM": "حذف البوت"
+    },
+    "TEMPLATES": {
+      "welcome_buttons": {
+        "TITLE": "ترحيب مع أزرار",
+        "DESCRIPTION": "رسالة ترحيب بصورة وثلاثة أزرار مكتملة الفروع."
+      },
+      "welcome_list": {
+        "TITLE": "ترحيب بقائمة",
+        "DESCRIPTION": "قائمة ترحيبية بهيدر نصي وثمانية خيارات مكتملة."
+      },
+      "exact_hours": {
+        "TITLE": "ساعات العمل",
+        "DESCRIPTION": "يرد عند تطابق كلمات الدوام وساعات العمل."
+      },
+      "exact_prices": {
+        "TITLE": "الأسعار والباقات",
+        "DESCRIPTION": "يرد على الاستفسارات المطابقة للأسعار والباقات."
+      },
+      "exact_order": {
+        "TITLE": "متابعة الطلب",
+        "DESCRIPTION": "يطلب رقم الطلب عند تطابق كلمات المتابعة."
+      },
+      "exact_support": {
+        "TITLE": "طلب الدعم",
+        "DESCRIPTION": "يستقبل طلبات الدعم وخدمة العملاء."
+      }
     },
     "EDITOR": {
       "BACK": "العودة إلى قائمة البوتات",
-      "SAVED": "محفوظ محليًا",
+      "SAVED": "محفوظ",
       "UNSAVED": "تغييرات غير محفوظة",
+      "DRAFT_SAVED_ON_EXIT": "حُفظت التغييرات كمسودة قبل الخروج.",
       "FIT": "ملاءمة",
       "SAVE": "حفظ",
+      "PUBLISH": "نشر",
+      "REPUBLISH": "نشر التغييرات",
+      "DISABLE": "تعطيل",
+      "EXECUTIONS": "سجل التنفيذ",
       "MESSAGE_NODES": "عقد الرسائل",
       "DUPLICATE_NODE": "نسخ العقدة",
       "DELETE_NODE": "حذف العقدة"
     },
     "SETTINGS": {
       "TITLE": "إعدادات العقدة",
+      "DONE": "تم",
       "CLOSE": "إغلاق الإعدادات",
       "TRIGGER_NAME": "اسم نقطة البداية",
       "TRIGGER_TYPE": "نوع التشغيل",
@@ -1145,7 +1179,12 @@
       "CONTENT": "محتوى الرسالة",
       "MEDIA_URL": "رابط الملف العام HTTPS",
       "FILE_NAME": "اسم الملف",
-      "CAPTION": "وصف مرفق اختياري"
+      "CAPTION": "وصف مرفق اختياري",
+      "MEDIA_FILE": "ملف الوسائط",
+      "SELECT_FILE": "اختر ملفًا",
+      "MAX_FILE_SIZE": "الحد الأقصى: {size}",
+      "REMOVE_FILE": "إزالة الملف",
+      "VOICE_MESSAGE": "إرسال كرسالة صوتية"
     },
     "NODE": {
       "TRIGGER": "نقطة بداية",

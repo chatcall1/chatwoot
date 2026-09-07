@@ -1,12 +1,14 @@
 <script setup>
 import { computed } from 'vue';
 import { Handle, Position } from '@vue-flow/core';
+import NodeActions from './NodeActions.vue';
 
 const props = defineProps({
   data: { type: Object, required: true },
   selected: { type: Boolean, default: false },
   nodeType: { type: String, required: true },
 });
+defineEmits(['duplicate', 'delete']);
 
 const config = computed(
   () =>
@@ -27,9 +29,14 @@ const config = computed(
         color: 'text-amber-400 bg-amber-500/15',
       },
       document: {
-        label: 'مستند PDF',
+        label: 'مستند',
         icon: 'i-lucide-file-text',
         color: 'text-rose-400 bg-rose-500/15',
+      },
+      audio: {
+        label: 'صوت',
+        icon: 'i-lucide-audio-lines',
+        color: 'text-violet-400 bg-violet-500/15',
       },
     })[props.nodeType]
 );
@@ -40,7 +47,7 @@ const preview = computed(() => {
   return (
     props.data.caption ||
     props.data.filename ||
-    props.data.url ||
+    props.data.contentType ||
     'أضف تفاصيل الوسائط'
   );
 });
@@ -48,14 +55,19 @@ const preview = computed(() => {
 
 <template>
   <article
-    class="w-64 rounded-2xl border bg-n-background shadow-2xl transition"
+    class="relative w-64 rounded-2xl border bg-n-background shadow-2xl transition"
     :class="
       selected ? 'border-n-brand ring-2 ring-brand/20' : 'border-n-strong'
     "
   >
+    <NodeActions
+      :selected="selected"
+      @duplicate="$emit('duplicate')"
+      @delete="$emit('delete')"
+    />
     <Handle
       type="target"
-      :position="Position.Left"
+      :position="Position.Top"
       class="!size-3 !border-2 !border-black !bg-n-slate-8"
     />
     <header class="flex items-center gap-3 border-b border-n-weak px-4 py-3">
@@ -81,7 +93,7 @@ const preview = computed(() => {
     </p>
     <Handle
       type="source"
-      :position="Position.Right"
+      :position="Position.Bottom"
       class="!size-3 !border-2 !border-black !bg-n-brand"
     />
   </article>

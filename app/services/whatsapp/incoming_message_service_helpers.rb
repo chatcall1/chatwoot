@@ -42,6 +42,20 @@ module Whatsapp::IncomingMessageServiceHelpers
     response_json
   end
 
+  def whatsapp_interactive_attributes(message)
+    attributes = {}
+    flow_response = message.dig(:interactive, :nfm_reply)
+    if flow_response.present?
+      attributes[:whatsapp_flow_response] = {
+        name: flow_response[:name], body: flow_response[:body],
+        response_json: parse_flow_response_json(flow_response[:response_json])
+      }.compact
+    end
+    reply = message.dig(:interactive, :button_reply) || message.dig(:interactive, :list_reply)
+    attributes[:bot_flow_reply] = { id: reply[:id], title: reply[:title] } if reply.present?
+    attributes
+  end
+
   def file_content_type(file_type)
     return :image if %w[image sticker].include?(file_type)
     return :audio if %w[audio voice].include?(file_type)

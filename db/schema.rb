@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_09_03_212000) do
+ActiveRecord::Schema[7.2].define(version: 2026_09_07_120000) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -316,6 +316,78 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_03_212000) do
     t.boolean "active", default: true, null: false
     t.integer "execution_delay"
     t.index ["account_id"], name: "index_automation_rules_on_account_id"
+  end
+
+  create_table "bot_flow_deliveries", force: :cascade do |t|
+    t.bigint "bot_flow_execution_id", null: false
+    t.integer "message_id"
+    t.string "node_id", null: false
+    t.integer "status", default: 0, null: false
+    t.integer "attempt_count", default: 0, null: false
+    t.datetime "last_attempt_at"
+    t.datetime "retry_scheduled_at"
+    t.text "last_error"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["bot_flow_execution_id", "node_id"], name: "index_bot_flow_deliveries_on_execution_and_node", unique: true
+    t.index ["bot_flow_execution_id"], name: "index_bot_flow_deliveries_on_bot_flow_execution_id"
+    t.index ["message_id"], name: "index_bot_flow_deliveries_on_message_id"
+  end
+
+  create_table "bot_flow_executions", force: :cascade do |t|
+    t.bigint "bot_flow_id", null: false
+    t.bigint "account_id", null: false
+    t.bigint "inbox_id", null: false
+    t.integer "conversation_id", null: false
+    t.bigint "contact_id", null: false
+    t.integer "trigger_message_id", null: false
+    t.string "trigger_kind", null: false
+    t.string "current_node_id"
+    t.integer "status", default: 0, null: false
+    t.jsonb "context", default: {}, null: false
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_bot_flow_executions_on_account_id"
+    t.index ["bot_flow_id", "contact_id", "created_at"], name: "index_bot_flow_executions_on_flow_contact_created_at"
+    t.index ["bot_flow_id"], name: "index_bot_flow_executions_on_bot_flow_id"
+    t.index ["contact_id"], name: "index_bot_flow_executions_on_contact_id"
+    t.index ["conversation_id"], name: "index_bot_flow_executions_on_conversation_id"
+    t.index ["inbox_id"], name: "index_bot_flow_executions_on_inbox_id"
+    t.index ["trigger_message_id"], name: "index_bot_flow_executions_on_trigger_message_id", unique: true
+  end
+
+  create_table "bot_flow_triggers", force: :cascade do |t|
+    t.bigint "bot_flow_id", null: false
+    t.bigint "account_id", null: false
+    t.bigint "inbox_id", null: false
+    t.string "trigger_kind", null: false
+    t.text "normalized_value"
+    t.string "value_hash", limit: 64
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "inbox_id", "value_hash"], name: "idx_bot_flow_triggers_exact_lookup", unique: true, where: "((trigger_kind)::text = 'exact_match'::text)"
+    t.index ["account_id", "inbox_id"], name: "idx_bot_flow_triggers_no_match_lookup", unique: true, where: "((trigger_kind)::text = 'no_match'::text)"
+    t.index ["bot_flow_id"], name: "index_bot_flow_triggers_on_bot_flow_id"
+  end
+
+  create_table "bot_flows", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "inbox_id", null: false
+    t.string "identifier", null: false
+    t.string "name", null: false
+    t.string "trigger_kind", null: false
+    t.integer "status", default: 0, null: false
+    t.jsonb "draft_definition", default: {}, null: false
+    t.jsonb "published_definition"
+    t.datetime "published_at"
+    t.integer "lock_version", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "identifier"], name: "index_bot_flows_on_account_id_and_identifier", unique: true
+    t.index ["account_id", "inbox_id"], name: "index_bot_flows_unique_no_match_per_inbox", unique: true, where: "((trigger_kind)::text = 'no_match'::text)"
+    t.index ["account_id", "updated_at"], name: "index_bot_flows_on_account_id_and_updated_at"
+    t.index ["inbox_id"], name: "index_bot_flows_on_inbox_id"
   end
 
   create_table "calls", force: :cascade do |t|
@@ -1757,6 +1829,19 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_03_212000) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "bot_flow_deliveries", "bot_flow_executions", on_delete: :cascade
+  add_foreign_key "bot_flow_deliveries", "messages", on_delete: :nullify
+  add_foreign_key "bot_flow_executions", "accounts", on_delete: :cascade
+  add_foreign_key "bot_flow_executions", "bot_flows", on_delete: :cascade
+  add_foreign_key "bot_flow_executions", "contacts", on_delete: :cascade
+  add_foreign_key "bot_flow_executions", "conversations", on_delete: :cascade
+  add_foreign_key "bot_flow_executions", "inboxes", on_delete: :cascade
+  add_foreign_key "bot_flow_executions", "messages", column: "trigger_message_id", on_delete: :cascade
+  add_foreign_key "bot_flow_triggers", "accounts", on_delete: :cascade
+  add_foreign_key "bot_flow_triggers", "bot_flows", on_delete: :cascade
+  add_foreign_key "bot_flow_triggers", "inboxes", on_delete: :cascade
+  add_foreign_key "bot_flows", "accounts"
+  add_foreign_key "bot_flows", "inboxes"
   add_foreign_key "campaign_recipients", "accounts", on_delete: :cascade
   add_foreign_key "campaign_recipients", "campaigns", on_delete: :cascade
   add_foreign_key "campaign_recipients", "contacts", on_delete: :cascade

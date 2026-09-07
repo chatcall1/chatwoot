@@ -5,6 +5,7 @@ import { useMapGetter } from 'dashboard/composables/store';
 import AppDialog from '../components/AppDialog.vue';
 import CreateFlowDialog from '../components/CreateFlowDialog.vue';
 import PlatformBadge from '../components/PlatformBadge.vue';
+import FlowStatusBadge from '../components/FlowStatusBadge.vue';
 import { createFlow, duplicateFlow } from '../domain/flowFactory';
 import { flowRepository } from '../repositories/flowRepository';
 
@@ -18,8 +19,13 @@ const importInput = ref(null);
 const errorMessage = ref('');
 
 const hasFlows = computed(() => flows.value.length > 0);
-const reload = () => {
-  flows.value = flowRepository.list();
+const reload = async () => {
+  try {
+    flows.value = await flowRepository.list();
+    errorMessage.value = '';
+  } catch (error) {
+    errorMessage.value = error.response?.data?.message || error.message;
+  }
 };
 
 onMounted(() => {
@@ -27,10 +33,42 @@ onMounted(() => {
   store.dispatch('inboxes/get');
 });
 
-const handleCreate = payload => {
-  const flow = flowRepository.save(createFlow(payload));
-  showCreateDialog.value = false;
-  emit('open', flow);
+const handleCreate = async payload => {
+  try {
+    const candidate = createFlow(payload);
+    const isWelcome = candidate.graph.nodes.some(
+      node => node.type === 'trigger' && node.data.mode === 'no_match'
+    );
+    const existingWelcome = isWelcome
+      ? flows.value.find(
+          flow =>
+            String(flow.inboxIds[0]) === String(payload.inboxIds[0]) &&
+            flow.graph.nodes.some(
+              node => node.type === 'trigger' && node.data.mode === 'no_match'
+            )
+        )
+      : null;
+    const flow = await flowRepository.save(
+      existingWelcome
+        ? {
+            ...candidate,
+            id: existingWelcome.id,
+            reference: existingWelcome.reference,
+            status: existingWelcome.status,
+            lockVersion: existingWelcome.lockVersion,
+          }
+        : candidate
+    );
+    errorMessage.value = '';
+    showCreateDialog.value = false;
+    emit('open', flow);
+  } catch (error) {
+    errorMessage.value =
+      error.response?.data?.message ||
+      error.response?.data?.errors ||
+      error.message;
+    showCreateDialog.value = false;
+  }
 };
 
 const openCreateDialog = async () => {
@@ -38,15 +76,27 @@ const openCreateDialog = async () => {
   showCreateDialog.value = true;
 };
 
-const handleDuplicate = flow => {
-  flowRepository.save(duplicateFlow(flow));
-  reload();
+const handleDuplicate = async flow => {
+  try {
+    await flowRepository.save(duplicateFlow(flow));
+    errorMessage.value = '';
+    reload();
+  } catch (error) {
+    errorMessage.value =
+      error.response?.data?.message ||
+      error.response?.data?.errors ||
+      error.message;
+  }
 };
 
-const handleDelete = () => {
-  flowRepository.remove(deleteTarget.value.id);
-  deleteTarget.value = null;
-  reload();
+const handleDelete = async () => {
+  try {
+    await flowRepository.remove(deleteTarget.value.id);
+    deleteTarget.value = null;
+    await reload();
+  } catch (error) {
+    errorMessage.value = error.response?.data?.message || error.message;
+  }
 };
 
 const exportFlow = flow => {
@@ -65,7 +115,7 @@ const importFlow = async event => {
   event.target.value = '';
   if (!file) return;
   try {
-    flowRepository.import(JSON.parse(await file.text()));
+    await flowRepository.import(JSON.parse(await file.text()));
     errorMessage.value = '';
     reload();
   } catch (error) {
@@ -144,6 +194,9 @@ const formatDate = value =>
                 {{ $t('FLOW_BUILDER.TABLE.CHANNELS') }}
               </th>
               <th class="px-4 py-4 font-medium">
+                {{ $t('FLOW_BUILDER.TABLE.STATUS') }}
+              </th>
+              <th class="px-4 py-4 font-medium">
                 {{ $t('FLOW_BUILDER.TABLE.UPDATED') }}
               </th>
               <th class="w-48 px-4 py-4 text-center font-medium">
@@ -170,13 +223,19 @@ const formatDate = value =>
                 </button>
               </td>
               <td class="px-4 py-4">
-                <div class="flex flex-wrap gap-1.5">
+                <div class="flex items-center gap-2">
                   <PlatformBadge
                     v-for="platform in flow.platforms"
                     :key="platform"
                     :platform="platform"
                   />
+                  <span class="text-sm text-n-slate-12">
+                    {{ flow.inbox?.name || flow.inboxIds[0] }}
+                  </span>
                 </div>
+              </td>
+              <td class="px-4 py-4">
+                <FlowStatusBadge :status="flow.status" />
               </td>
               <td class="px-4 py-4 text-n-slate-11">
                 {{ formatDate(flow.updatedAt) }}
@@ -249,6 +308,7 @@ const formatDate = value =>
     <CreateFlowDialog
       :open="showCreateDialog"
       :inboxes="inboxes"
+      :flows="flows"
       @close="showCreateDialog = false"
       @create="handleCreate"
     />

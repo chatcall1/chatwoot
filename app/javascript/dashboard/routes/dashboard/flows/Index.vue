@@ -4,7 +4,7 @@ import 'flowBuilder/styles.css';
 </script>
 
 <template>
-  <div class="mx-auto h-full min-h-0 w-full max-w-7xl overflow-hidden px-6">
+  <div class="h-full min-h-0 w-full overflow-hidden">
     <FlowBuilder />
   </div>
 </template>

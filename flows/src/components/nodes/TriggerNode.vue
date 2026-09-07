@@ -30,18 +30,30 @@ defineProps({
       </div>
     </header>
     <div class="px-4 py-3 text-xs text-n-slate-11">
-      <p v-if="data.mode === 'keywords'">
+      <p v-if="data.mode === 'exact_match'">
         {{
           data.keywords?.length
             ? `${data.keywords.length} كلمات مفتاحية`
             : $t('FLOW_BUILDER.NODE.ADD_KEYWORDS')
         }}
       </p>
-      <p v-else>{{ $t('FLOW_BUILDER.NODE.NO_MATCH_DESCRIPTION') }}</p>
+      <div v-else class="space-y-1">
+        <p>{{ $t('FLOW_BUILDER.NODE.NO_MATCH_DESCRIPTION') }}</p>
+        <p class="text-n-slate-9">
+          {{
+            {
+              always: 'طوال الوقت',
+              daily: 'مرة في اليوم',
+              weekly: 'مرة في الأسبوع',
+              monthly: 'مرة في الشهر',
+            }[data.noMatchFrequency || 'always']
+          }}
+        </p>
+      </div>
     </div>
     <Handle
       type="source"
-      :position="Position.Right"
+      :position="Position.Bottom"
       class="!size-3 !border-2 !border-black !bg-violet-500"
     />
   </article>

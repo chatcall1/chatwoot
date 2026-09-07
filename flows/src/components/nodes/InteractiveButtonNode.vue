@@ -1,22 +1,29 @@
 <script setup>
 import { Handle, Position } from '@vue-flow/core';
+import NodeActions from './NodeActions.vue';
 
 defineProps({
   data: { type: Object, required: true },
   selected: { type: Boolean, default: false },
 });
+defineEmits(['duplicate', 'delete']);
 </script>
 
 <template>
   <article
-    class="w-48 rounded-xl border bg-n-background shadow-lg transition"
+    class="relative w-48 rounded-xl border bg-n-background shadow-lg transition"
     :class="
       selected ? 'border-n-brand ring-2 ring-n-brand/20' : 'border-n-strong'
     "
   >
+    <NodeActions
+      :selected="selected"
+      @duplicate="$emit('duplicate')"
+      @delete="$emit('delete')"
+    />
     <Handle
       type="target"
-      :position="Position.Left"
+      :position="Position.Top"
       class="!size-3 !border-2 !border-black !bg-n-slate-8"
     />
     <div class="flex items-center gap-2 px-3 py-3">
@@ -27,7 +34,7 @@ defineProps({
     </div>
     <Handle
       type="source"
-      :position="Position.Right"
+      :position="Position.Bottom"
       class="!size-3 !border-2 !border-black !bg-n-brand"
     />
   </article>

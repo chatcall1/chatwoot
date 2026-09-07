@@ -136,6 +136,13 @@ Rails.application.routes.draw do
           resources :automation_rules, only: [:index, :create, :show, :update, :destroy] do
             post :clone
           end
+          resources :bot_flows, only: [:index, :create, :show, :update, :destroy] do
+            post :publish, on: :member
+            post :unpublish, on: :member
+            get :executions, on: :member
+            post :retry_delivery, on: :member
+          end
+          resource :bot_flow_direct_uploads, only: [:create]
           resources :macros, only: [:index, :create, :show, :update, :destroy] do
             post :execute, on: :member
           end
