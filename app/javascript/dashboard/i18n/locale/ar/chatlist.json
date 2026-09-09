@@ -46,7 +46,7 @@
     },
     "CHAT_TIME_STAMP": {
       "CREATED": {
-        "LATEST": "مضاف",
+        "LATEST": "تم الإنشاء",
         "OLDEST": "تم إنشاؤها في:"
       },
       "LAST_ACTIVITY": {

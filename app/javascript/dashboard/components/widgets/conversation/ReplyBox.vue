@@ -1,5 +1,8 @@
 <script>
 import { defineAsyncComponent, useTemplateRef } from 'vue';
+import { useMapGetter } from 'dashboard/composables/store';
+import { useWhatsAppReplyWindow } from 'dashboard/composables/useWhatsAppReplyWindow';
+import WhatsAppReplyWindow from './WhatsAppReplyWindow.vue';
 import { mapGetters } from 'vuex';
 import { useAlert } from 'dashboard/composables';
 import { useUISettings } from 'dashboard/composables/useUISettings';
@@ -72,6 +75,7 @@ export default {
     AttachmentPreview,
     AudioRecorder,
     ReplyBoxBanner,
+    WhatsAppReplyWindow,
     EmojiIconPicker,
     MessageSignatureMissingAlert,
     ReplyBottomPanel,
@@ -97,6 +101,7 @@ export default {
       fetchQuotedReplyFlagFromUISettings,
     } = useUISettings();
 
+    const replyWindow = useWhatsAppReplyWindow(useMapGetter('getSelectedChat'));
     const replyEditor = useTemplateRef('replyEditor');
     const messageEditor = useTemplateRef('messageEditor');
     const copilot = useCopilotReply();
@@ -104,6 +109,7 @@ export default {
     const shortcutKey = useKbd(['$mod', '+', 'enter']);
 
     return {
+      replyWindow,
       uiSettings,
       isEditorHotKeyEnabled,
       fetchSignatureFlagFromUISettings,
@@ -186,6 +192,15 @@ export default {
         this.inboxId
       );
       return !!(templates && templates.length) && !this.isPrivate;
+    },
+    resumptionTemplate() {
+      const templates = this.$store.getters['inboxes/getWhatsAppTemplates'](
+        this.inboxId
+      );
+      return (templates || []).find(
+        template =>
+          template.name === 'appointment_reminder' && template.language === 'ar'
+      );
     },
     showContentTemplates() {
       return this.isATwilioWhatsAppChannel && !this.isPrivate;
@@ -487,7 +502,16 @@ export default {
     isDefaultEditorMode() {
       return !this.showAudioRecorderEditor && !this.copilot.isActive.value;
     },
+    isWhatsAppReplyWindowClosed() {
+      return this.isAWhatsAppCloudChannel && !this.replyWindow.isOpen.value;
+    },
+    isResumptionPanelVisible() {
+      return this.isWhatsAppReplyWindowClosed && !this.isOnPrivateNote;
+    },
     isEditorDisabled() {
+      if (this.isAWhatsAppCloudChannel) {
+        return this.isWhatsAppReplyWindowClosed && !this.isOnPrivateNote;
+      }
       return (
         (this.isAWhatsAppChannel || this.isAPIInbox) &&
         !this.isOnPrivateNote &&
@@ -1004,7 +1028,7 @@ export default {
       }
     },
     async onSendWhatsAppReply(messagePayload) {
-      this.sendMessage({
+      await this.sendMessage({
         conversationId: this.currentChat.id,
         ...messagePayload,
       });
@@ -1337,8 +1361,29 @@ export default {
 </script>
 
 <template>
+  <WhatsappTemplates
+    :inbox-id="inbox.id"
+    :show="showWhatsAppTemplatesModal"
+    :send-rendered-content="isAPIInbox"
+    @close="hideWhatsappTemplatesModal"
+    @on-send="onSendWhatsAppReply"
+    @cancel="hideWhatsappTemplatesModal"
+  />
+
   <ReplyBoxBanner :message="message" :is-on-private-note="isOnPrivateNote" />
   <div ref="replyEditor" class="reply-box" :class="replyBoxClass">
+    <WhatsAppReplyWindow
+      v-if="isAWhatsAppCloudChannel"
+      :key="`open-${conversationId}`"
+      :conversation="currentChat"
+      :inbox-id="inbox.id"
+      :template="resumptionTemplate"
+      :on-send="onSendWhatsAppReply"
+      :is-open="replyWindow.isOpen.value"
+      :is-reply-mode="!isOnPrivateNote"
+      :countdown="replyWindow.countdown.value"
+      :show-resumption="false"
+    />
     <ReplyTopPanel
       :mode="replyType"
       :conversation-id="conversationId"
@@ -1357,13 +1402,31 @@ export default {
       @toggle-copilot="copilot.toggleEditor"
       @execute-copilot-action="executeCopilotAction"
     />
+    <WhatsAppReplyWindow
+      v-if="isAWhatsAppCloudChannel"
+      :key="conversationId"
+      :conversation="currentChat"
+      :inbox-id="inbox.id"
+      :template="resumptionTemplate"
+      :on-send="onSendWhatsAppReply"
+      :is-open="replyWindow.isOpen.value"
+      :is-reply-mode="!isOnPrivateNote"
+      :countdown="replyWindow.countdown.value"
+      :show-resumption="isResumptionPanelVisible"
+      :show-open-banner="false"
+    />
     <ArticleSearchPopover
-      v-if="showArticleSearchPopover && connectedPortalSlug"
+      v-if="
+        !isResumptionPanelVisible &&
+        showArticleSearchPopover &&
+        connectedPortalSlug
+      "
       :selected-portal-slug="connectedPortalSlug"
       @insert="handleInsert"
       @close="onSearchPopoverClose"
     />
     <Transition
+      v-if="!isResumptionPanelVisible"
       mode="out-in"
       enter-active-class="transition-all duration-300 ease-out"
       enter-from-class="opacity-0 translate-y-2 scale-[0.98]"
@@ -1423,7 +1486,7 @@ export default {
           v-model="message"
           :conversation-id="conversationId"
           :editor-id="editorStateId"
-          class="input popover-prosemirror-menu"
+          class="input"
           :is-private="isOnPrivateNote"
           :placeholder="messagePlaceHolder"
           :update-selection-with="updateEditorSelectionWith"
@@ -1480,6 +1543,7 @@ export default {
     </Transition>
 
     <Transition
+      v-if="!isResumptionPanelVisible"
       mode="out-in"
       enter-active-class="transition-all duration-300 ease-out"
       enter-from-class="opacity-0 translate-y-2 scale-[0.98]"
@@ -1531,15 +1595,6 @@ export default {
         @toggle-quoted-reply="toggleQuotedReply"
       />
     </Transition>
-
-    <WhatsappTemplates
-      :inbox-id="inbox.id"
-      :show="showWhatsAppTemplatesModal"
-      :send-rendered-content="isAPIInbox"
-      @close="hideWhatsappTemplatesModal"
-      @on-send="onSendWhatsAppReply"
-      @cancel="hideWhatsappTemplatesModal"
-    />
 
     <ContentTemplates
       :inbox-id="inbox.id"

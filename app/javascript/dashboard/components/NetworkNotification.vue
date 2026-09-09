@@ -29,7 +29,11 @@ const bannerText = computed(() => {
   return t('NETWORK.NOTIFICATION.OFFLINE');
 });
 
-const iconName = computed(() => (isReconnected.value ? 'wifi' : 'wifi-off'));
+const statusEmoji = computed(() => {
+  if (isReconnecting.value) return '⏳';
+  if (isReconnected.value) return '😊';
+  return '😴';
+});
 const canRefresh = computed(
   () => !isReconnecting.value && !isReconnected.value
 );
@@ -108,9 +112,11 @@ onBeforeUnmount(() => {
   <transition name="network-notification-fade" tag="div">
     <div v-show="showNotification" class="fixed z-50 top-2 left-2 group">
       <div
-        class="relative flex items-center justify-between w-full px-2 py-1 bg-n-amber-4 dark:bg-n-amber-8 rounded-lg shadow-lg"
+        class="relative flex items-center justify-between w-full px-2 py-1 bg-n-blue-4 dark:bg-n-blue-4 rounded-lg shadow-lg"
       >
-        <fluent-icon :icon="iconName" class="text-n-amber-12" size="18" />
+        <span class="text-lg leading-none" aria-hidden="true">{{
+          statusEmoji
+        }}</span>
         <span class="px-2 text-xs font-medium tracking-wide text-n-amber-12">
           {{ bannerText }}
         </span>

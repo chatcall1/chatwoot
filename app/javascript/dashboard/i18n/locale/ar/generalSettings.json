@@ -172,9 +172,9 @@
   },
   "NETWORK": {
     "NOTIFICATION": {
-      "OFFLINE": "غير متصل",
-      "RECONNECTING": "جاري إعادة الاتصال...",
-      "RECONNECT_SUCCESS": "تمت إعادة الاتصال"
+      "OFFLINE": "خمول",
+      "RECONNECTING": "جاري الاستئناف",
+      "RECONNECT_SUCCESS": "تم الاستئناف"
     },
     "BUTTON": {
       "REFRESH": "تحديث"

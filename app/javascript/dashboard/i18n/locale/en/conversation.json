@@ -1,5 +1,16 @@
 {
   "CONVERSATION": {
+    "WHATSAPP_WINDOW": {
+      "OPEN": "Reply window open",
+      "EXPIRED": "The reply window has expired. Start the conversation by sending the approved template.",
+      "START": "Start conversation",
+      "SENT": "Conversation started — waiting for the customer to reply",
+      "DELIVERED": "Message delivered — waiting for the customer to reply",
+      "FAILED": "The request could not be sent. You can try again.",
+      "TEMPLATE_PENDING": "The conversation template was created and is pending approval.",
+      "TEMPLATE_UNAVAILABLE": "The conversation template is unavailable for sending.",
+      "ERROR": "Could not start the conversation."
+    },
     "REFERRAL": {
       "AD_LABEL": "Ad",
       "POST_LABEL": "Post",
