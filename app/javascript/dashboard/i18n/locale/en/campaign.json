@@ -125,7 +125,7 @@
           "SCHEDULED_AT": {
             "LABEL": "Scheduled time",
             "PLACEHOLDER": "Please select the time",
-            "ERROR": "Scheduled time is required"
+            "ERROR": "Choose a scheduled time in the future"
           },
           "BUTTONS": {
             "CREATE": "Create",
@@ -148,6 +148,7 @@
       },
       "CARD": {
         "ANALYTICS": "View analytics",
+        "DELETE_PROCESSING_DISABLED": "A campaign cannot be deleted while it is sending.",
         "STATUS": {
           "PROCESSING": "Processing",
           "COMPLETED": "Completed",
@@ -228,7 +229,9 @@
             "SUCCESS": "Audience import completed: {processed} accepted, {rejected} rejected.",
             "ERROR": "Audience import failed. Review the CSV and try again.",
             "RESULT": "{processed} contacts accepted · {rejected} rejected",
-            "DOWNLOAD_REJECTED": "Download rejected rows"
+            "DOWNLOAD_REJECTED": "Download rejected rows",
+            "DOWNLOAD_ERROR": "The rejected rows could not be downloaded. Try again.",
+            "REIMPORT_REQUIRED": "The inbox or target labels changed during import. Import the file again for the current selection."
           },
           "SCHEDULED_AT": {
             "LABEL": "Scheduled time",
@@ -255,6 +258,8 @@
             "META_LIMIT": "Meta messaging limit",
             "DESCRIPTION": "Unique customers per rolling 24-hour period; this is not the remaining balance.",
             "HEALTH_ERROR": "The current Meta messaging limit could not be loaded.",
+            "COUNT_ERROR": "The eligible recipient count could not be loaded. Try again.",
+            "EMPTY_AUDIENCE": "No eligible recipients match the current selection.",
             "LIMIT_WARNING": "The eligible recipient count is above this account's Meta messaging limit.",
             "SPLIT_ADVICE": "Tip: split delivery of this audience across {days} days."
           },
@@ -270,6 +275,7 @@
       },
       "ANALYTICS": {
         "LOADING": "Loading analytics...",
+        "RETRY": "Try again",
         "EMPTY": "No delivery records found.",
         "EMPTY_FILTER": "No {status} delivery records found.",
         "DELIVERIES_ERROR": "Delivery records couldn't be loaded. Refresh the page to try again.",

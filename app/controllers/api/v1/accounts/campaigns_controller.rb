@@ -14,7 +14,7 @@ class Api::V1::Accounts::CampaignsController < Api::V1::Accounts::BaseController
       normalize_phone_audience!(attributes)
       @campaign = Current.account.campaigns.create!(attributes.merge(sender_id: Current.user.id))
     end
-    Campaigns::TriggerOneoffCampaignJob.perform_later(@campaign) if @campaign.scheduled_at <= Time.current
+    Campaigns::TriggerOneoffCampaignJob.perform_later(@campaign) if @campaign.one_off? && @campaign.scheduled_at <= Time.current
   rescue ArgumentError => e
     render json: { message: e.message }, status: :unprocessable_entity
   end
@@ -59,7 +59,7 @@ class Api::V1::Accounts::CampaignsController < Api::V1::Accounts::BaseController
 
   def normalize_phone_audience!(attributes)
     rules = attributes['trigger_rules']
-    return unless rules['audience_type'] == 'phones'
+    return unless rules&.[]('audience_type') == 'phones'
 
     inbox = Current.account.inboxes.find(attributes['inbox_id'])
     rules['phone_numbers'] = Whatsapp::CampaignPhoneAudienceService.new(

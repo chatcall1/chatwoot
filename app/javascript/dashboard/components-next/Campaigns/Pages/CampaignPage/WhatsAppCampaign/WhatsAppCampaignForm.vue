@@ -1,5 +1,12 @@
 <script setup>
-import { reactive, computed, watch, ref } from 'vue';
+import {
+  reactive,
+  computed,
+  watch,
+  ref,
+  onMounted,
+  onBeforeUnmount,
+} from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useVuelidate } from '@vuelidate/core';
 import { required, requiredIf } from '@vuelidate/validators';
@@ -22,6 +29,7 @@ const { t } = useI18n();
 const store = useStore();
 const CUSTOM_MESSAGE = 'custom';
 const MAX_PHONE_NUMBERS = 100;
+const CURRENT_TIME_REFRESH_INTERVAL = 30000;
 const formState = {
   uiFlags: useMapGetter('campaigns/getUIFlags'),
   labels: useMapGetter('labels/getLabels'),
@@ -53,8 +61,14 @@ const isSyncingTemplates = ref(false);
 const isLoadingHealth = ref(false);
 const healthData = ref(null);
 const audienceCount = ref(null);
+const audienceCountError = ref(false);
 const isCountingAudience = ref(false);
+const currentTime = ref(Date.now());
 let countTimer;
+let currentTimeTimer;
+let audienceCountRequestId = 0;
+let healthRequestId = 0;
+let isUnmounted = false;
 const audienceImport = reactive({
   id: null,
   isImporting: false,
@@ -88,6 +102,10 @@ const isPhoneAudienceValid = () =>
   state.audienceType !== 'phones' ||
   (validPhoneNumbers.value.length > 0 &&
     invalidPhoneNumbers.value.length === 0);
+const isScheduledAtValid = () =>
+  state.deliveryType !== 'scheduled' ||
+  (state.scheduledAt &&
+    new Date(state.scheduledAt).getTime() > currentTime.value);
 const phoneNumbersModel = computed({
   get: () => state.phoneNumbersText,
   set: value => {
@@ -116,6 +134,7 @@ const rules = computed(() => ({
   phoneNumbersText: { validPhoneNumbers: isPhoneAudienceValid },
   scheduledAt: {
     required: requiredIf(() => state.deliveryType === 'scheduled'),
+    future: isScheduledAtValid,
   },
 }));
 const v$ = useVuelidate(rules, state);
@@ -161,7 +180,7 @@ const hasRequiredTemplateParams = computed(
     isCustomMessage.value || templateParserRef.value?.isFormInvalid === false
 );
 const currentDateTime = computed(() => {
-  const now = new Date();
+  const now = new Date(currentTime.value);
   return new Date(now.getTime() - now.getTimezoneOffset() * 60000)
     .toISOString()
     .slice(0, 16);
@@ -192,8 +211,15 @@ const isSubmitDisabled = computed(
   () =>
     v$.value.$invalid ||
     !hasRequiredTemplateParams.value ||
+    formState.uiFlags.value.isCreating ||
+    isCountingAudience.value ||
+    audienceCountError.value ||
+    audienceCount.value === null ||
+    audienceCount.value <= 0 ||
     audienceImport.isImporting ||
-    (audienceFile.value && !audienceImport.isComplete)
+    (state.audienceType !== 'phones' &&
+      audienceFile.value &&
+      !audienceImport.isComplete)
 );
 const audienceCountDisplay = computed(() => {
   if (isCountingAudience.value) return '…';
@@ -256,54 +282,76 @@ const prepareCampaignDetails = () => ({
   },
 });
 const refreshAudienceCount = async () => {
+  audienceCountRequestId += 1;
+  const requestId = audienceCountRequestId;
   if (
     !state.inboxId ||
     (state.audienceType === 'labels' && !state.targetLabelIds.length)
   ) {
     audienceCount.value = null;
+    audienceCountError.value = false;
+    isCountingAudience.value = false;
     return;
   }
   isCountingAudience.value = true;
+  audienceCountError.value = false;
   try {
     const { data } = await CampaignsAPI.audienceCount(prepareCampaignDetails());
+    if (requestId !== audienceCountRequestId || isUnmounted) return;
     audienceCount.value = data.count;
   } catch {
+    if (requestId !== audienceCountRequestId || isUnmounted) return;
     audienceCount.value = null;
+    audienceCountError.value = true;
   } finally {
-    isCountingAudience.value = false;
+    if (requestId === audienceCountRequestId && !isUnmounted)
+      isCountingAudience.value = false;
   }
 };
 const refreshHealth = async () => {
-  if (!state.inboxId) return;
+  healthRequestId += 1;
+  const requestId = healthRequestId;
+  if (!state.inboxId) {
+    healthData.value = null;
+    isLoadingHealth.value = false;
+    return;
+  }
   isLoadingHealth.value = true;
   try {
     const { data } = await InboxHealthAPI.getHealthStatus(state.inboxId);
+    if (requestId !== healthRequestId || isUnmounted) return;
     healthData.value = data;
   } catch {
+    if (requestId !== healthRequestId || isUnmounted) return;
     healthData.value = null;
     useAlert(t('CAMPAIGN.WHATSAPP.CREATE.FORM.CAPACITY.HEALTH_ERROR'));
   } finally {
-    isLoadingHealth.value = false;
+    if (requestId === healthRequestId && !isUnmounted)
+      isLoadingHealth.value = false;
   }
 };
 const syncTemplates = async () => {
   if (!state.inboxId || isSyncingTemplates.value) return;
+  const inboxId = state.inboxId;
   isSyncingTemplates.value = true;
   try {
-    await store.dispatch('inboxes/syncTemplates', state.inboxId);
+    await store.dispatch('inboxes/syncTemplates', inboxId);
     await new Promise(resolve => {
       setTimeout(resolve, 1500);
     });
-    const { data } = await InboxesAPI.getMessageTemplates(state.inboxId);
+    const { data } = await InboxesAPI.getMessageTemplates(inboxId);
+    if (inboxId !== state.inboxId || isUnmounted) return;
     localTemplates.value = Array.isArray(data.payload) ? data.payload : null;
     useAlert(t('CAMPAIGN.WHATSAPP.CREATE.FORM.TEMPLATE.SYNC_SUCCESS'));
   } catch {
+    if (isUnmounted) return;
     useAlert(t('CAMPAIGN.WHATSAPP.CREATE.FORM.TEMPLATE.SYNC_ERROR'));
   } finally {
     isSyncingTemplates.value = false;
   }
 };
 const waitForImport = async (importId, attempt = 0) => {
+  if (isUnmounted) throw new Error('Import view closed');
   if (attempt >= 120) throw new Error('Import timed out');
   const { data } = await ContactAPI.importStatus(importId);
   if (['completed', 'completed_with_errors', 'failed'].includes(data.status))
@@ -313,16 +361,36 @@ const waitForImport = async (importId, attempt = 0) => {
   });
   return waitForImport(importId, attempt + 1);
 };
+const resetAudienceImport = () => {
+  Object.assign(audienceImport, {
+    id: null,
+    isComplete: false,
+    processedRecords: 0,
+    rejectedRecords: 0,
+    hasFailedRecords: false,
+  });
+};
 const importAudience = async () => {
-  if (!audienceFile.value || !state.inboxId) return;
+  if (!audienceFile.value || !state.inboxId || audienceImport.isImporting)
+    return;
   audienceImport.isImporting = true;
+  const importInboxId = state.inboxId;
+  const importLabelIds = [...state.targetLabelIds];
   try {
     const { data } = await ContactAPI.importContacts(audienceFile.value, {
-      labelIds: state.targetLabelIds,
-      inboxId: state.inboxId,
+      labelIds: importLabelIds,
+      inboxId: importInboxId,
     });
     const result = await waitForImport(data.id);
     if (result.status === 'failed') throw new Error('Import failed');
+    const selectionChanged =
+      importInboxId !== state.inboxId ||
+      importLabelIds.join(',') !== state.targetLabelIds.join(',');
+    if (selectionChanged) {
+      resetAudienceImport();
+      useAlert(t('CAMPAIGN.WHATSAPP.CREATE.FORM.IMPORT.REIMPORT_REQUIRED'));
+      return;
+    }
     Object.assign(audienceImport, {
       id: result.id,
       isComplete: true,
@@ -333,21 +401,31 @@ const importAudience = async () => {
     useAlert(t('CAMPAIGN.WHATSAPP.CREATE.FORM.IMPORT.SUCCESS', result));
     refreshAudienceCount();
   } catch {
-    useAlert(t('CAMPAIGN.WHATSAPP.CREATE.FORM.IMPORT.ERROR'));
+    if (!isUnmounted) useAlert(t('CAMPAIGN.WHATSAPP.CREATE.FORM.IMPORT.ERROR'));
   } finally {
     audienceImport.isImporting = false;
   }
 };
+const handleAudienceFileChange = event => {
+  if (audienceImport.isImporting) return;
+  audienceFile.value = event.target.files?.[0] || null;
+  resetAudienceImport();
+};
 const downloadRejectedRows = async () => {
-  const { data } = await ContactAPI.downloadFailedImportRecords(
-    audienceImport.id
-  );
-  const url = URL.createObjectURL(data);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'failed-campaign-contacts.csv';
-  link.click();
-  URL.revokeObjectURL(url);
+  if (!audienceImport.id) return;
+  try {
+    const { data } = await ContactAPI.downloadFailedImportRecords(
+      audienceImport.id
+    );
+    const url = URL.createObjectURL(data);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'failed-campaign-contacts.csv';
+    link.click();
+    URL.revokeObjectURL(url);
+  } catch {
+    useAlert(t('CAMPAIGN.WHATSAPP.CREATE.FORM.IMPORT.DOWNLOAD_ERROR'));
+  }
 };
 const sendTestTemplate = async () => {
   if (!canSendTest.value) return;
@@ -360,20 +438,25 @@ const sendTestTemplate = async () => {
       message: isCustomMessage.value ? state.customMessage : undefined,
       template_params: isCustomMessage.value ? {} : buildTemplateParams(),
     });
-    state.testPhoneNumber = normalizedTestPhoneNumber.value;
-    useAlert(t('CAMPAIGN.WHATSAPP.CREATE.FORM.TEST.SUCCESS'));
+    if (!isUnmounted) {
+      state.testPhoneNumber = normalizedTestPhoneNumber.value;
+      useAlert(t('CAMPAIGN.WHATSAPP.CREATE.FORM.TEST.SUCCESS'));
+    }
   } catch (error) {
-    useAlert(
-      error?.response?.data?.message ||
-        t('CAMPAIGN.WHATSAPP.CREATE.FORM.TEST.ERROR')
-    );
+    if (!isUnmounted)
+      useAlert(
+        error?.response?.data?.message ||
+          t('CAMPAIGN.WHATSAPP.CREATE.FORM.TEST.ERROR')
+      );
   } finally {
     isSendingTest.value = false;
   }
 };
 const handleSubmit = async () => {
-  if ((await v$.value.$validate()) && hasRequiredTemplateParams.value)
-    emit('submit', prepareCampaignDetails());
+  if (isSubmitDisabled.value) return;
+  if (!(await v$.value.$validate()) || !hasRequiredTemplateParams.value) return;
+
+  emit('submit', prepareCampaignDetails());
 };
 watch(
   () => state.inboxId,
@@ -382,6 +465,12 @@ watch(
     localTemplates.value = null;
     healthData.value = null;
     refreshHealth();
+  }
+);
+watch(
+  () => [state.inboxId, ...state.targetLabelIds],
+  () => {
+    if (audienceFile.value && audienceImport.isComplete) resetAudienceImport();
   }
 );
 watch(
@@ -403,11 +492,37 @@ watch(
         Array.isArray(value) ? value.length : Boolean(value)
       )
     );
-    clearTimeout(countTimer);
-    countTimer = setTimeout(refreshAudienceCount, 400);
   },
   { deep: true }
 );
+watch(
+  () => [
+    state.inboxId,
+    state.templateId,
+    state.audienceType,
+    state.phoneNumbersText,
+    state.targetLabelIds.join(','),
+    state.excludedLabelIds.join(','),
+    state.conversationLabelIds.join(','),
+  ],
+  () => {
+    clearTimeout(countTimer);
+    countTimer = setTimeout(refreshAudienceCount, 400);
+  },
+  { immediate: true }
+);
+onMounted(() => {
+  currentTimeTimer = window.setInterval(() => {
+    currentTime.value = Date.now();
+  }, CURRENT_TIME_REFRESH_INTERVAL);
+});
+onBeforeUnmount(() => {
+  isUnmounted = true;
+  clearTimeout(countTimer);
+  window.clearInterval(currentTimeTimer);
+  audienceCountRequestId += 1;
+  healthRequestId += 1;
+});
 </script>
 
 <template>
@@ -628,10 +743,7 @@ watch(
           type="file"
           accept=".csv,text/csv"
           class="hidden"
-          @change="
-            audienceFile = $event.target.files?.[0] || null;
-            audienceImport.isComplete = false;
-          "
+          @change="handleAudienceFileChange"
         />
         <div class="flex flex-wrap gap-2">
           <Button
@@ -643,12 +755,13 @@ watch(
               audienceFile?.name ||
               t('CAMPAIGN.WHATSAPP.CREATE.FORM.IMPORT.CHOOSE_FILE')
             "
+            :disabled="audienceImport.isImporting"
             @click="audienceFileInput?.click()"
           /><Button
             v-if="audienceFile"
             type="button"
             :is-loading="audienceImport.isImporting"
-            :disabled="!state.inboxId"
+            :disabled="!state.inboxId || audienceImport.isImporting"
             :label="t('CAMPAIGN.WHATSAPP.CREATE.FORM.IMPORT.ACTION')"
             @click="importAudience"
           />
@@ -716,6 +829,12 @@ watch(
             type="datetime-local"
             :min="currentDateTime"
             :label="t('CAMPAIGN.WHATSAPP.CREATE.FORM.SCHEDULED_AT.LABEL')"
+            :message="
+              !isScheduledAtValid()
+                ? t('CAMPAIGN.WHATSAPP.CREATE.FORM.SCHEDULED_AT.ERROR')
+                : ''
+            "
+            :message-type="!isScheduledAtValid() ? 'error' : 'info'"
           />
         </div>
       </div>
@@ -770,11 +889,29 @@ watch(
     </div>
     <section class="grid grid-cols-1 gap-3 sm:grid-cols-2">
       <div class="p-5 border rounded-xl border-n-strong bg-n-blue-2">
-        <p class="text-sm text-n-slate-11">
-          {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.CAPACITY.AUDIENCE') }}
-        </p>
+        <div class="flex items-center justify-between">
+          <p class="text-sm text-n-slate-11">
+            {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.CAPACITY.AUDIENCE') }}
+          </p>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            color="slate"
+            icon="i-lucide-refresh-cw"
+            :is-loading="isCountingAudience"
+            :disabled="!state.inboxId || isCountingAudience"
+            @click="refreshAudienceCount"
+          />
+        </div>
         <p class="mt-2 text-2xl font-semibold text-n-slate-12">
           {{ audienceCountDisplay }}
+        </p>
+        <p v-if="audienceCountError" class="mt-1 text-xs text-n-ruby-9">
+          {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.CAPACITY.COUNT_ERROR') }}
+        </p>
+        <p v-else-if="audienceCount === 0" class="mt-1 text-xs text-n-amber-11">
+          {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.CAPACITY.EMPTY_AUDIENCE') }}
         </p>
       </div>
       <div class="p-5 border rounded-xl border-n-strong bg-n-blue-2">
@@ -808,6 +945,7 @@ watch(
         color="slate"
         class="w-full"
         :label="t('CAMPAIGN.WHATSAPP.CREATE.FORM.BUTTONS.CANCEL')"
+        :disabled="formState.uiFlags.value.isCreating"
         @click="emit('cancel')"
       /><Button
         type="submit"

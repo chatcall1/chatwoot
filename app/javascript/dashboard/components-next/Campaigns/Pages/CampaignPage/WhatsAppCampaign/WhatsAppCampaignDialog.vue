@@ -48,7 +48,7 @@ const addCampaign = async campaignDetails => {
     close();
   } catch (error) {
     const errorMessage =
-      error?.response?.message ||
+      error?.response?.data?.message ||
       t('CAMPAIGN.WHATSAPP.CREATE.FORM.API.ERROR_MESSAGE');
     useAlert(errorMessage);
   }

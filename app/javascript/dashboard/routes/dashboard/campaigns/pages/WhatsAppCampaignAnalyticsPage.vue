@@ -22,6 +22,7 @@ import CampaignAnalyticsLayout from 'dashboard/components-next/Campaigns/Campaig
 import CampaignMetricCard from 'dashboard/components-next/Campaigns/Pages/CampaignAnalyticsPage/CampaignMetricCard.vue';
 import CampaignDeliveryBreakdown from 'dashboard/components-next/Campaigns/Pages/CampaignAnalyticsPage/CampaignDeliveryBreakdown.vue';
 import CampaignDeliveryTable from 'dashboard/components-next/Campaigns/Pages/CampaignAnalyticsPage/CampaignDeliveryTable.vue';
+import Button from 'dashboard/components-next/button/Button.vue';
 
 const DELIVERIES_PER_PAGE = 25;
 const ANALYTICS_POLL_INTERVAL = 5000;
@@ -34,7 +35,6 @@ const STATUS_FILTERS = [
   'failed',
   'skipped',
 ];
-
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
@@ -324,6 +324,11 @@ const handlePageChange = page => {
 const goToCampaigns = () => {
   router.push({ name: 'campaigns_whatsapp_index' });
 };
+const retryAnalytics = () => {
+  fetchMetrics();
+  fetchDeliveries();
+  store.dispatch('campaigns/get');
+};
 
 // The page is kept alive by the campaigns route view, so the campaign id is the
 // trigger for a full refresh rather than the mount hook.
@@ -450,6 +455,14 @@ onBeforeUnmount(stopPolling);
               {{ analyticsEmptyState.description }}
             </p>
           </div>
+          <Button
+            v-if="state.metricsError"
+            variant="faded"
+            color="slate"
+            icon="i-lucide-refresh-cw"
+            :label="t('CAMPAIGN.WHATSAPP.ANALYTICS.RETRY')"
+            @click="retryAnalytics"
+          />
         </div>
       </div>
 
@@ -473,6 +486,22 @@ onBeforeUnmount(stopPolling);
         :metrics="state.metrics ?? undefined"
         :loading="state.isFetchingMetrics"
       />
+
+      <div
+        v-if="showAnalytics && state.deliveriesError"
+        class="flex flex-wrap items-center justify-between gap-3 p-4 border rounded-xl border-n-weak bg-n-solid-2"
+      >
+        <p class="text-sm text-n-ruby-9">
+          {{ t('CAMPAIGN.WHATSAPP.ANALYTICS.DELIVERIES_ERROR') }}
+        </p>
+        <Button
+          variant="faded"
+          color="slate"
+          icon="i-lucide-refresh-cw"
+          :label="t('CAMPAIGN.WHATSAPP.ANALYTICS.RETRY')"
+          @click="fetchDeliveries()"
+        />
+      </div>
 
       <CampaignDeliveryTable
         v-if="showAnalytics"

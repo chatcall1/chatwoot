@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useMessageFormatter } from 'shared/composables/useMessageFormatter';
-import { getInboxIconByType } from 'dashboard/helper/inbox';
+import { getInboxIconByType, INBOX_TYPES } from 'dashboard/helper/inbox';
 
 import CardLayout from 'dashboard/components-next/CardLayout.vue';
 import Button from 'dashboard/components-next/button/Button.vue';
@@ -60,6 +60,13 @@ const { formatMessage } = useMessageFormatter();
 const isActive = computed(() =>
   props.isLiveChatType ? props.isEnabled : props.status !== STATUS_COMPLETED
 );
+const isWhatsAppCampaign = computed(
+  () =>
+    !props.isLiveChatType && props.inbox?.channel_type === INBOX_TYPES.WHATSAPP
+);
+const isDeleteDisabled = computed(
+  () => isWhatsAppCampaign.value && props.status === STATUS_PROCESSING
+);
 
 const statusTextColor = computed(() => ({
   'text-n-teal-11': isActive.value,
@@ -74,13 +81,19 @@ const campaignStatus = computed(() => {
   }
 
   if (props.status === STATUS_COMPLETED) {
+    if (isWhatsAppCampaign.value)
+      return t('CAMPAIGN.WHATSAPP.CARD.STATUS.COMPLETED');
     return t('CAMPAIGN.SMS.CARD.STATUS.COMPLETED');
   }
 
   if (props.status === STATUS_PROCESSING) {
+    if (isWhatsAppCampaign.value)
+      return t('CAMPAIGN.WHATSAPP.CARD.STATUS.PROCESSING');
     return t('CAMPAIGN.SMS.CARD.STATUS.PROCESSING');
   }
 
+  if (isWhatsAppCampaign.value)
+    return t('CAMPAIGN.WHATSAPP.CARD.STATUS.SCHEDULED');
   return t('CAMPAIGN.SMS.CARD.STATUS.SCHEDULED');
 });
 
@@ -155,6 +168,12 @@ const inboxIcon = computed(() => {
         color="ruby"
         size="sm"
         icon="i-lucide-trash"
+        :disabled="isDeleteDisabled"
+        :title="
+          isDeleteDisabled
+            ? t('CAMPAIGN.WHATSAPP.CARD.DELETE_PROCESSING_DISABLED')
+            : undefined
+        "
         @click="emit('delete')"
       />
     </div>

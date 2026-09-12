@@ -64,12 +64,19 @@ class Campaign < ApplicationRecord
     return unless mark_processing!
 
     execute_campaign
+  rescue StandardError
+    complete_failed_whatsapp_campaign
+    raise
   end
 
   private
 
   def feature_enabled?
     inbox.inbox_type != 'Whatsapp' || account.feature_enabled?(:whatsapp_campaign)
+  end
+
+  def complete_failed_whatsapp_campaign
+    completed! if inbox&.inbox_type == 'Whatsapp' && processing?
   end
 
   def mark_processing!
