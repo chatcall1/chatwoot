@@ -1,0 +1,81 @@
+name: Fork fresh installation
+
+on:
+  push:
+    branches:
+      - feat/internal-chat
+      - 'fix/fresh-install-*'
+  pull_request:
+    branches:
+      - feat/internal-chat
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  fresh-install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      COMPOSE_FILE: docker-compose.production.yaml
+      COMPOSE_PROJECT_NAME: fork-install-check
+      FORCE_SSL: 'false'
+      FRONTEND_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Generate installation configuration
+        run: bin/setup-production-env https://support.example.com
+      - name: Build this fork
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile
+          load: true
+          tags: chatwoot-fork:local
+          cache-from: type=gha,scope=fork-install
+          cache-to: type=gha,mode=max,scope=fork-install
+      - name: Install into empty volumes
+        run: docker compose up -d --no-build
+      - name: Check schema, configuration and repeated preparation
+        run: |
+          docker compose exec -T rails bundle exec rails db:abort_if_pending_migrations
+          docker compose run --rm prepare
+          docker compose exec -T rails bundle exec rails runner - <<'RUBY'
+            connection = ActiveRecord::Base.connection
+            %w[internal_chat_channels internal_chat_messages bot_flows bot_flow_executions bot_flow_deliveries bot_flow_triggers whatsapp_template_media].each do |table|
+              raise "Missing #{table}" unless connection.table_exists?(table)
+            end
+            raise "Missing search function" unless connection.select_value("SELECT to_regprocedure('public.f_unaccent(text)')")
+            account = Account.new(name: "Installation verification")
+            account.send(:enable_default_features)
+            raise "Custom features enabled by default" if account.feature_enabled?(:internal_chat) || account.feature_enabled?(:flow_builder)
+            account.enable_features(:internal_chat, :flow_builder)
+            raise "Custom features cannot be enabled" unless account.feature_enabled?(:internal_chat) && account.feature_enabled?(:flow_builder)
+            require "sidekiq/api"
+            raise "Sidekiq is not running" if Sidekiq::ProcessSet.new.size.zero?
+          RUBY
+      - name: Check HTTP and onboarding assets
+        run: |
+          curl --fail --retry 20 --retry-connrefused --retry-delay 3 http://localhost:3000/health
+          curl --fail http://localhost:3000/installation/onboarding > /tmp/onboarding.html
+          python3 - <<'PY'
+          import re
+          import urllib.request
+          html = open('/tmp/onboarding.html').read()
+          assets = set(re.findall(r'(?:src|href)="(/(?:vite|assets)/[^"?]+)', html))
+          assert assets, 'Onboarding has no compiled assets'
+          for asset in assets:
+              with urllib.request.urlopen('http://localhost:3000' + asset) as response:
+                  assert response.status == 200, asset
+          print(f'Loaded {len(assets)} compiled assets')
+          PY
+      - name: Installation logs
+        if: always()
+        run: |
+          docker compose ps -a
+          docker compose logs --no-color --tail=150 prepare rails sidekiq
+      - name: Remove verification containers and volumes
+        if: always()
+        run: docker compose down -v

@@ -5,6 +5,10 @@ ___
 
 # Chatwoot
 
+> **Installing this fork on a new server:** follow [the fork installation guide](deployment/README.md)
+> ([العربية](deployment/README.ar.md)). Use the `feat/internal-chat` branch and build the included
+> production Compose configuration to install the custom features.
+
 The modern customer support platform, an open-source alternative to Intercom, Zendesk, Salesforce Service Cloud etc.
 
 <p>

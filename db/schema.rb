@@ -19,6 +19,14 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_07_120000) do
   enable_extension "unaccent"
   enable_extension "vector"
 
+  execute <<~SQL
+    CREATE OR REPLACE FUNCTION public.f_unaccent(text)
+     RETURNS text
+     LANGUAGE sql
+     IMMUTABLE PARALLEL SAFE STRICT
+    AS $function$ SELECT public.unaccent('public.unaccent', $1) $function$
+  SQL
+
   create_table "access_tokens", force: :cascade do |t|
     t.string "owner_type"
     t.bigint "owner_id"

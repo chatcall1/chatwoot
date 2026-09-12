@@ -22,6 +22,11 @@ module ActiveRecord
             stream.puts "  enable_extension #{extension.inspect}" unless ignore_extentions.include?(extension)
           end
           stream.puts
+
+          # Expression indexes need this function before their tables are loaded.
+          # Preserve the database definition so future schema dumps remain loadable.
+          definition = @connection.select_value("SELECT pg_get_functiondef(to_regprocedure('public.f_unaccent(text)'))")
+          stream.puts "  execute <<~SQL\n#{definition.indent(4)}  SQL\n\n" if definition
         end
       end
     end

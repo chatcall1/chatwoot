@@ -72,7 +72,7 @@ RUN if [ "$RAILS_ENV" = "production" ]; then \
   fi
 
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm i
+RUN pnpm install --frozen-lockfile
 
 COPY . /app
 
