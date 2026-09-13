@@ -52,7 +52,7 @@ describe Whatsapp::Providers::WhatsappCloudService do
       it 'preserves HTML-like content in normal message requests' do
         message.update!(content: "<a>\n<b></b></a>asdf")
 
-        stub_request(:post, 'https://graph.facebook.com/v13.0/123456789/messages')
+        stub_request(:post, 'https://graph.facebook.com/v14.0/123456789/messages')
           .with(
             body: {
               messaging_product: 'whatsapp',
@@ -206,7 +206,7 @@ describe Whatsapp::Providers::WhatsappCloudService do
           ]
         }.to_json
 
-        stub_request(:post, 'https://graph.facebook.com/v13.0/123456789/messages')
+        stub_request(:post, 'https://graph.facebook.com/v14.0/123456789/messages')
           .with(
             body: {
               messaging_product: 'whatsapp', to: '+123456789',
@@ -326,7 +326,7 @@ describe Whatsapp::Providers::WhatsappCloudService do
     end
 
     it 'sends a text message to a parent BSUID via the recipient field instead of to' do
-      stub_request(:post, 'https://graph.facebook.com/v13.0/123456789/messages')
+      stub_request(:post, 'https://graph.facebook.com/v14.0/123456789/messages')
         .with(
           body: {
             messaging_product: 'whatsapp',
