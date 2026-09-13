@@ -86,8 +86,11 @@ class Whatsapp::Providers::BaseService
   def create_rows(items)
     rows = []
     items.each do |item|
-      row = { 'id' => item['value'], 'title' => item['title'] }
-      description = @interactive_details&.dig('descriptions', item['value'])
+      row = {
+        'id' => item['value'] || item[:value],
+        'title' => item['title'] || item[:title]
+      }
+      description = item_description(item)
       row['description'] = description if description.present?
       rows << row
     end
@@ -106,12 +109,24 @@ class Whatsapp::Providers::BaseService
 
   def create_payload_based_on_items(message)
     @interactive_details = message.content_attributes['bot_flow_interactive'].to_h
+    items = message.content_attributes['items']
     explicit_type = message.content_attributes['bot_flow_interactive_type']
-    if explicit_type == 'buttons' || (explicit_type.blank? && message.content_attributes['items'].length <= 3)
+
+    if explicit_type == 'buttons'
       create_button_payload(message)
-    else
+    elsif explicit_type == 'list' || (explicit_type.blank? && use_list_payload?(items))
       create_list_payload(message)
+    else
+      create_button_payload(message)
     end
+  end
+
+  def use_list_payload?(items)
+    items.length > 3 || items.any? { |item| item_description(item).present? }
+  end
+
+  def item_description(item)
+    item['description'] || item[:description] || @interactive_details&.dig('descriptions', item['value'] || item[:value])
   end
 
   def create_button_payload(message)

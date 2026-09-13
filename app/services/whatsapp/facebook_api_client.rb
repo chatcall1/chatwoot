@@ -33,7 +33,8 @@ class Whatsapp::FacebookApiClient
   def fetch_product_catalogs(waba_id)
     response = HTTParty.get(
       "#{BASE_URI}/#{@api_version}/#{waba_id}/product_catalogs",
-      query: { fields: 'id,name', access_token: @access_token }
+      headers: request_headers,
+      query: { fields: 'id,name' }
     )
 
     handle_response(response, 'WABA product catalogs fetch failed')
@@ -42,7 +43,8 @@ class Whatsapp::FacebookApiClient
   def fetch_flows(waba_id)
     response = HTTParty.get(
       "#{BASE_URI}/#{@api_version}/#{waba_id}/flows",
-      query: { fields: 'id,name,status,categories', limit: 100, access_token: @access_token }
+      headers: request_headers,
+      query: { fields: 'id,name,status,categories', limit: 100 }
     )
 
     handle_response(response, 'WABA Flows fetch failed')
@@ -53,13 +55,83 @@ class Whatsapp::FacebookApiClient
       category: 'AUTHENTICATION',
       languages: language,
       add_security_recommendation: add_security_recommendation,
-      button_types: 'OTP',
-      access_token: @access_token
+      button_types: 'OTP'
     }
     query[:code_expiration_minutes] = code_expiration_minutes if code_expiration_minutes.present?
-    response = HTTParty.get("#{BASE_URI}/#{@api_version}/#{waba_id}/message_template_previews", query: query)
+    response = HTTParty.get(
+      "#{BASE_URI}/#{@api_version}/#{waba_id}/message_template_previews",
+      headers: request_headers,
+      query: query
+    )
 
     handle_response(response, 'Authentication template preview fetch failed')
+  end
+
+  def fetch_all_phone_numbers(waba_id)
+    phone_numbers = []
+    after_cursor = nil
+
+    loop do
+      response = HTTParty.get(
+        "#{BASE_URI}/#{@api_version}/#{waba_id}/phone_numbers",
+        headers: request_headers,
+        query: after_cursor.present? ? { after: after_cursor } : {}
+      )
+      data = handle_response(response, 'WABA phone numbers fetch failed')
+      phone_numbers.concat(data['data'] || [])
+      after_cursor = data.dig('paging', 'next').present? ? data.dig('paging', 'cursors', 'after') : nil
+      break if after_cursor.blank?
+    end
+
+    phone_numbers
+  end
+
+  def fetch_message_templates(waba_id)
+    response = HTTParty.get(
+      "#{BASE_URI}/#{@api_version}/#{waba_id}/message_templates",
+      headers: request_headers,
+      query: { limit: 1 }
+    )
+
+    handle_response(response, 'WABA message templates fetch failed')
+  end
+
+  def fetch_business_profile(phone_number_id)
+    response = HTTParty.get(
+      "#{BASE_URI}/#{@api_version}/#{phone_number_id}/whatsapp_business_profile",
+      headers: request_headers,
+      query: { fields: 'about' }
+    )
+
+    handle_response(response, 'WhatsApp business profile fetch failed')
+  end
+
+  def fetch_permissions
+    response = HTTParty.get(
+      "#{BASE_URI}/#{@api_version}/me/permissions",
+      headers: request_headers
+    )
+
+    handle_response(response, 'Token permissions fetch failed')
+  end
+
+  def fetch_subscribed_apps(waba_id)
+    response = HTTParty.get(
+      "#{BASE_URI}/#{@api_version}/#{waba_id}/subscribed_apps",
+      headers: request_headers
+    )
+
+    handle_response(response, 'WABA webhook subscription fetch failed')
+  end
+
+  def fetch_phone_number(phone_number_id, fields: nil)
+    response = HTTParty.get(
+      "#{BASE_URI}/#{@api_version}/#{phone_number_id}",
+      headers: request_headers,
+      query: fields.present? ? { fields: fields } : {}
+    )
+
+    handle_response(response, 'Phone number fetch failed')
   end
 
   def debug_token(input_token)
@@ -98,11 +170,12 @@ class Whatsapp::FacebookApiClient
   def phone_number_verified?(phone_number_id)
     response = HTTParty.get(
       "#{BASE_URI}/#{@api_version}/#{phone_number_id}",
-      headers: request_headers
+      headers: request_headers,
+      query: { fields: 'status,code_verification_status' }
     )
 
     data = handle_response(response, 'Phone status check failed')
-    data['code_verification_status'] == 'VERIFIED'
+    data['status'] == 'CONNECTED' || data['code_verification_status'] == 'VERIFIED'
   end
 
   def subscribe_phone_number_webhook(waba_id, phone_number_id, callback_url, verify_token, subscribed_fields: nil)

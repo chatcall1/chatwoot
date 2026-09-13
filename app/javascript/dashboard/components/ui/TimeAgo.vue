@@ -5,6 +5,7 @@ const DAY_IN_MILLI_SECONDS = HOUR_IN_MILLI_SECONDS * 24;
 
 import { dynamicTime, shortTimestamp } from 'shared/helpers/timeHelper';
 import { generateRelativeTime } from 'shared/helpers/DateHelper';
+import { useExactTimestamp } from 'shared/composables/useExactTimestamp';
 
 export default {
   name: 'TimeAgo',
@@ -26,6 +27,9 @@ export default {
       default: '',
     },
   },
+  setup() {
+    return { exactTimestamp: useExactTimestamp() };
+  },
   data() {
     return {
       lastActivityAtTimeAgo: dynamicTime(this.lastActivityTimestamp),
@@ -44,31 +48,14 @@ export default {
       return shortTimestamp(this.createdAtTimeAgo);
     },
     createdAt() {
-      if (!this.createdAtTimeAgo) return '';
-
-      const createdTimeDiff = Date.now() - this.createdAtTimestamp * 1000;
-      const isBeforeAMonth = createdTimeDiff > DAY_IN_MILLI_SECONDS * 30;
-      return !isBeforeAMonth
-        ? `${this.$t(
-            'CHAT_LIST.CHAT_TIME_STAMP.CREATED.LATEST'
-          )} ${this.localizedTimeAgo(this.createdAtTimestamp)}`
-        : `${this.$t(
-            'CHAT_LIST.CHAT_TIME_STAMP.CREATED.OLDEST'
-          )} ${this.localizedDate(this.createdAtTimestamp)}`;
+      return `${this.$t(
+        'CHAT_LIST.CHAT_TIME_STAMP.CREATED.OLDEST'
+      )} ${this.exactTimestamp(this.createdAtTimestamp)}`;
     },
     lastActivity() {
-      if (!this.lastActivityAtTimeAgo) return '';
-
-      const lastActivityTimeDiff =
-        Date.now() - this.lastActivityTimestamp * 1000;
-      const isNotActive = lastActivityTimeDiff > DAY_IN_MILLI_SECONDS * 30;
-      return !isNotActive
-        ? `${this.$t(
-            'CHAT_LIST.CHAT_TIME_STAMP.LAST_ACTIVITY.ACTIVE'
-          )} ${this.localizedTimeAgo(this.lastActivityTimestamp)}`
-        : `${this.$t(
-            'CHAT_LIST.CHAT_TIME_STAMP.LAST_ACTIVITY.NOT_ACTIVE'
-          )} ${this.localizedDate(this.lastActivityTimestamp)}`;
+      return `${this.$t(
+        'CHAT_LIST.CHAT_TIME_STAMP.LAST_ACTIVITY.NOT_ACTIVE'
+      )} ${this.exactTimestamp(this.lastActivityTimestamp)}`;
     },
     tooltipText() {
       return `${this.createdAt}\n${this.lastActivity}`;
@@ -129,13 +116,6 @@ export default {
         this.$i18n.locale
       );
     },
-    localizedDate(timestamp) {
-      return new Intl.DateTimeFormat(this.$i18n.locale, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      }).format(new Date(timestamp * 1000));
-    },
     createTimer() {
       this.timer = setTimeout(() => {
         this.lastActivityAtTimeAgo = dynamicTime(this.lastActivityTimestamp);
@@ -162,6 +142,7 @@ export default {
   <div
     v-tooltip.top="{
       content: tooltipText,
+      popperClass: 'whitespace-pre-line',
       delay: { show: 1000, hide: 0 },
     }"
     class="ml-auto leading-4 text-xxs text-n-activity"
