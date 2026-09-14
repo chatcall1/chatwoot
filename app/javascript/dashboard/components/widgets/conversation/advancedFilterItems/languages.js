@@ -744,6 +744,15 @@ export const getLanguageName = (languageCode = '') => {
 };
 
 export const getLanguageDirection = (languageCode = '') => {
+  const configuredLanguage =
+    globalThis.window?.chatwootConfig?.enabledLanguages?.find(
+      language => language.iso_639_1_code === languageCode
+    );
+  if (configuredLanguage?.direction) {
+    return configuredLanguage.direction === 'rtl';
+  }
+
+  // Keep support for message languages that aren't available as dashboard locales.
   const rtlLanguageIds = ['ar', 'as', 'fa', 'he', 'ku', 'ur'];
   return rtlLanguageIds.includes(languageCode);
 };

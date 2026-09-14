@@ -3,7 +3,7 @@
 
 LANGUAGES_CONFIG = {
   0 => { name: 'English (en)', iso_639_3_code: 'eng', iso_639_1_code: 'en', enabled: true },
-  1 => { name: 'العربية (ar)', iso_639_3_code: 'ara', iso_639_1_code: 'ar', enabled: true },
+  1 => { name: 'العربية (ar)', iso_639_3_code: 'ara', iso_639_1_code: 'ar', direction: 'rtl', enabled: true },
   2 => { name: 'Nederlands (nl) ', iso_639_3_code: 'nld', iso_639_1_code: 'nl', enabled: true },
   3 => { name: 'Français (fr)', iso_639_3_code: 'fra', iso_639_1_code: 'fr', enabled: true },
   4 => { name: 'Deutsch (de)', iso_639_3_code: 'deu', iso_639_1_code: 'de', enabled: true },
@@ -21,7 +21,7 @@ LANGUAGES_CONFIG = {
   16 => { name: 'Português Brasileiro (pt-BR)', iso_639_3_code: '', iso_639_1_code: 'pt_BR', enabled: true },
   17 => { name: 'Română (ro)', iso_639_3_code: 'ron', iso_639_1_code: 'ro', enabled: true },
   18 => { name: 'தமிழ் (ta)', iso_639_3_code: 'tam', iso_639_1_code: 'ta', enabled: true },
-  19 => { name: 'فارسی (fa)', iso_639_3_code: 'fas', iso_639_1_code: 'fa', enabled: true },
+  19 => { name: 'فارسی (fa)', iso_639_3_code: 'fas', iso_639_1_code: 'fa', direction: 'rtl', enabled: true },
   20 => { name: '中文 (台湾) (zh-TW)', iso_639_3_code: 'zho', iso_639_1_code: 'zh_TW', enabled: true },
   21 => { name: 'Tiếng Việt (vi)', iso_639_3_code: 'vie', iso_639_1_code: 'vi', enabled: true },
   22 => { name: 'dansk (da)', iso_639_3_code: 'dan', iso_639_1_code: 'da', enabled: true },
@@ -39,7 +39,7 @@ LANGUAGES_CONFIG = {
   34 => { name: 'ภาษาไทย (th)', iso_639_3_code: 'tha', iso_639_1_code: 'th', enabled: true },
   35 => { name: 'latviešu valoda (lv)', iso_639_3_code: 'lav', iso_639_1_code: 'lv', enabled: true },
   36 => { name: 'íslenska (is)', iso_639_3_code: 'isl', iso_639_1_code: 'is', enabled: true },
-  37 => { name: 'עִברִית (he)', iso_639_3_code: 'heb', iso_639_1_code: 'he', enabled: true },
+  37 => { name: 'עִברִית (he)', iso_639_3_code: 'heb', iso_639_1_code: 'he', direction: 'rtl', enabled: true },
   38 => { name: 'lietuvių (lt)', iso_639_3_code: 'lit', iso_639_1_code: 'lt', enabled: true },
   39 => { name: 'Српски (sr)', iso_639_3_code: 'srp', iso_639_1_code: 'sr', enabled: true },
   40 => { name: 'български (bg)', iso_639_3_code: 'bul', iso_639_1_code: 'bg', enabled: true },

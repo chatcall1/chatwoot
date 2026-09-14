@@ -11,6 +11,19 @@ import { getLanguageDirection } from 'dashboard/components/widgets/conversation/
 const findRecordById = ($state, id) =>
   $state.records.find(record => record.id === Number(id)) || {};
 
+const resolveEffectiveLocale = ($state, rootState, rootGetters) => {
+  const accountId = Number(rootState.route?.params?.accountId);
+  const userLocale = rootGetters?.getUISettings?.locale;
+  const accountLocale = accountId && findRecordById($state, accountId)?.locale;
+
+  return (
+    userLocale ||
+    accountLocale ||
+    globalThis.window?.chatwootConfig?.selectedLocale ||
+    'en'
+  );
+};
+
 const TRIAL_PERIOD_DAYS = 15;
 
 const state = {
@@ -31,16 +44,16 @@ export const getters = {
   getUIFlags($state) {
     return $state.uiFlags;
   },
+  effectiveLocale: ($state, _getters, rootState, rootGetters) => {
+    return resolveEffectiveLocale($state, rootState, rootGetters);
+  },
   isRTL: ($state, _getters, rootState, rootGetters) => {
-    const accountId = Number(rootState.route?.params?.accountId);
-    const userLocale = rootGetters?.getUISettings?.locale;
-    const accountLocale =
-      accountId && findRecordById($state, accountId)?.locale;
-
-    // Prefer user locale; fallback to account locale
-    const effectiveLocale = userLocale ?? accountLocale;
-
-    return effectiveLocale ? getLanguageDirection(effectiveLocale) : false;
+    const effectiveLocale = resolveEffectiveLocale(
+      $state,
+      rootState,
+      rootGetters
+    );
+    return getLanguageDirection(effectiveLocale);
   },
   isTrialAccount: $state => id => {
     const account = findRecordById($state, id);

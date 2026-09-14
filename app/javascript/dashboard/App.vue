@@ -21,6 +21,7 @@ import {
 } from './helper/pushHelper';
 import ReconnectService from 'dashboard/helper/ReconnectService';
 import { useUISettings } from 'dashboard/composables/useUISettings';
+import { getLanguageDirection } from 'dashboard/components/widgets/conversation/advancedFilterItems/languages';
 
 export default {
   name: 'App',
@@ -61,6 +62,7 @@ export default {
     ...mapGetters({
       getAccount: 'accounts/getAccount',
       isRTL: 'accounts/isRTL',
+      effectiveLocale: 'accounts/effectiveLocale',
       currentUser: 'getCurrentUser',
       authUIFlags: 'getAuthUIFlags',
     }),
@@ -70,6 +72,12 @@ export default {
   },
 
   watch: {
+    effectiveLocale: {
+      immediate: true,
+      handler(locale) {
+        this.setLocale(locale);
+      },
+    },
     currentAccountId: {
       immediate: true,
       handler() {
@@ -82,10 +90,6 @@ export default {
   mounted() {
     this.initializeColorTheme();
     this.listenToThemeChanges();
-    // If user locale is set, use it; otherwise use account locale
-    this.setLocale(
-      this.uiSettings?.locale || window.chatwootConfig.selectedLocale
-    );
   },
   unmounted() {
     if (this.reconnectService) {
@@ -101,9 +105,13 @@ export default {
       mql.onchange = e => setColorTheme(e.matches);
     },
     setLocale(locale) {
-      if (locale) {
-        this.$root.$i18n.locale = locale;
-      }
+      const effectiveLocale = locale || 'en';
+      this.$root.$i18n.locale = effectiveLocale;
+      document.documentElement.lang = effectiveLocale.replace('_', '-');
+      document.documentElement.dir = getLanguageDirection(effectiveLocale)
+        ? 'rtl'
+        : 'ltr';
+      document.cookie = `chatwoot_locale=${encodeURIComponent(effectiveLocale)}; path=/; max-age=31536000; SameSite=Lax; Secure`;
     },
     async initializeAccount() {
       await this.$store.dispatch('accounts/get');
@@ -111,11 +119,8 @@ export default {
         accountId: this.currentAccountId,
       });
       const account = this.getAccount(this.currentAccountId);
-      const { locale, latest_chatwoot_version: latestChatwootVersion } =
-        account;
+      const { latest_chatwoot_version: latestChatwootVersion } = account;
       const { pubsub_token: pubsubToken } = this.currentUser || {};
-      // If user locale is set, use it; otherwise use account locale
-      this.setLocale(this.uiSettings?.locale || locale);
       this.latestChatwootVersion = latestChatwootVersion;
       vueActionCable.init(this.store, pubsubToken);
       this.reconnectService = new ReconnectService(this.store, this.router);

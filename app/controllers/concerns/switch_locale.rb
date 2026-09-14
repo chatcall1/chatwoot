@@ -10,6 +10,10 @@ module SwitchLocale
     # Use the user's locale if available
     locale ||= locale_from_user
 
+    # Dashboard HTML requests don't carry the API auth headers used by the SPA,
+    # so retain the effective client locale for the next full-page request.
+    locale ||= cookies[:chatwoot_locale]
+
     # Use the locale from a custom domain if applicable
     locale ||= locale_from_custom_domain
 

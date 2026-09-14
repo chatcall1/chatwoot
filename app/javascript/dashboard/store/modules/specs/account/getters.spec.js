@@ -119,4 +119,23 @@ describe('#getters', () => {
       expect(spy).toHaveBeenCalledWith('en');
     });
   });
+
+  describe('effectiveLocale', () => {
+    it('prefers user locale over account locale', () => {
+      const state = { records: [{ id: 1, locale: 'ar' }] };
+      const rootState = { route: { params: { accountId: '1' } } };
+      const rootGetters = { getUISettings: { locale: 'en' } };
+
+      expect(
+        getters.effectiveLocale(state, null, rootState, rootGetters)
+      ).toEqual('en');
+    });
+
+    it('falls back to account locale', () => {
+      const state = { records: [{ id: 1, locale: 'ar' }] };
+      const rootState = { route: { params: { accountId: '1' } } };
+
+      expect(getters.effectiveLocale(state, null, rootState, {})).toEqual('ar');
+    });
+  });
 });

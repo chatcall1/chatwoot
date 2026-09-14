@@ -14,6 +14,34 @@ describe '/app/login', type: :request do
         get '/app/login'
         expect(response).to have_http_status(:success)
         expect(response.body).to include "selectedLocale: 'pt_BR'"
+        expect(response.body).to include "<html lang=\"pt-BR\" dir=\"ltr\">"
+      end
+    end
+  end
+
+  context 'with an RTL locale' do
+    it 'renders the initial document with the matching language and direction' do
+      with_modified_env DEFAULT_LOCALE: 'ar' do
+        get '/app/login'
+
+        expect(response).to have_http_status(:success)
+        expect(response.body).to include "<html lang=\"ar\" dir=\"rtl\">"
+        expect(response.body).to include "selectedLocale: 'ar'"
+        expect(response.body).to include "selectedDirection: 'rtl'"
+      end
+    end
+  end
+
+  context 'with a persisted dashboard locale' do
+    it 'prefers the persisted locale over the default locale' do
+      cookies[:chatwoot_locale] = 'en'
+
+      with_modified_env DEFAULT_LOCALE: 'ar' do
+        get '/app/login'
+
+        expect(response).to have_http_status(:success)
+        expect(response.body).to include "<html lang=\"en\" dir=\"ltr\">"
+        expect(response.body).to include "selectedLocale: 'en'"
       end
     end
   end
